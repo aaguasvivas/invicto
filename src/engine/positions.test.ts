@@ -42,6 +42,40 @@ describe('isEligible', () => {
     }
     expect(isEligible(['DH'], 'DH')).toBe(true);
   });
+
+  test('there are twelve slots: nine hitters plus SP, RP, CL', () => {
+    expect(SLOTS).toHaveLength(12);
+    expect(SLOTS).toContain('SP');
+    expect(SLOTS).toContain('RP');
+    expect(SLOTS).toContain('CL');
+  });
+
+  test('SP and CL require the specific role', () => {
+    expect(isEligible(['SP', 'RP'], 'SP')).toBe(true);
+    expect(isEligible(['RP'], 'SP')).toBe(false);
+    expect(isEligible(['RP', 'CL'], 'CL')).toBe(true);
+    expect(isEligible(['SP', 'RP'], 'CL')).toBe(false);
+  });
+
+  test('RP accepts any pitcher — the DH of the mound', () => {
+    expect(isEligible(['SP', 'RP'], 'RP')).toBe(true);
+    expect(isEligible(['RP', 'CL'], 'RP')).toBe(true);
+    expect(isEligible(['SP'], 'RP')).toBe(true);
+  });
+
+  test('hitters cannot fill pitcher slots and pure pitchers cannot DH', () => {
+    expect(isEligible(['SS', '2B'], 'RP')).toBe(false);
+    expect(isEligible(['C'], 'SP')).toBe(false);
+    expect(isEligible(['SP', 'RP'], 'DH')).toBe(false);
+    expect(isEligible(['RP', 'CL'], 'LF')).toBe(false);
+  });
+
+  test('a two-way star can fill DH and his pitching roles', () => {
+    expect(isEligible(['DH', 'SP', 'RP'], 'DH')).toBe(true);
+    expect(isEligible(['DH', 'SP', 'RP'], 'SP')).toBe(true);
+    expect(isEligible(['DH', 'SP', 'RP'], 'RP')).toBe(true);
+    expect(isEligible(['DH', 'SP', 'RP'], 'CL')).toBe(false);
+  });
 });
 
 describe('eligibleSlots', () => {

@@ -36,7 +36,7 @@
     "pickSlot": "Where does {name} play?",
     "lineup": "Your lineup",
     "noEligible": "Nobody on this roster fits your lineup — free roll 🎰",
-    "posGroups": { "C": "Catchers", "IF": "Infielders", "OF": "Outfielders", "DH": "Designated hitters" }
+    "posGroups": { "C": "Catchers", "IF": "Infielders", "OF": "Outfielders", "DH": "Designated hitters", "P": "Pitchers" }
   },
   "sim": {
     "title": "Play ball!",
@@ -76,6 +76,26 @@
       "{us}-{them}. Even the bullpen got hits today 😤",
       "Early night: {us}-{them}, everybody go home 🧹",
       "{opp} will have nightmares about this: {us}-{them} 😴"
+    ],
+    "win-shutout": [
+      "SHUTOUT! {us}-{them}, not a single run allowed 🧼",
+      "Blanked them: {us}-{them} 🥛",
+      "Zeroes all night: {us}-{them} 🔒",
+      "The staff painted corners: {us}-{them} 🎨",
+      "{opp} left empty-handed: {us}-{them} 0️⃣",
+      "Total domination from the mound: {us}-{them} ⛰️",
+      "A shutout worth framing: {us}-{them} ✨",
+      "{us}-{them}. The pitching gave nothing away 🚫"
+    ],
+    "loss-shutout": [
+      "Shut out: {them}-{us}… not even one run 😶",
+      "Blanked: {them}-{us} 🥛",
+      "The bats never woke up: {them}-{us} 😴",
+      "{them}-{us}. Zero on the board, zero excuses 0️⃣",
+      "Completely handcuffed: {them}-{us} 🎨",
+      "Their pitching tied us in knots: {them}-{us} 🪢",
+      "No answers at the plate: {them}-{us} 🤐",
+      "{them}-{us}. A night of strikeouts and sighs 😮‍💨"
     ],
     "win-blowout": [
       "Comfortable beatdown: {us}-{them}, never broke a sweat 😎",

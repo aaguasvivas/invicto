@@ -1,34 +1,38 @@
-// Lineup → team rating. The five category means are blended with a generalized
-// power mean with negative exponent (a "soft minimum"): one terrible category caps
-// the ceiling no matter how strong the rest is. That gating is what makes 7-0 rare.
+// Lineup → team rating. Five hitter category means plus a pitching category
+// (mean rating of the SP/RP/CL slots) are blended with a generalized power mean
+// with negative exponent (a "soft minimum"): one terrible category caps the
+// ceiling no matter how strong the rest is. That gating is what makes 7-0 rare.
 //
 // Tuning constants here are pinned by the Monte Carlo test (montecarlo.test.ts):
 // retune there if you touch them. See README "Tuning".
 
-import type { EnginePlayer } from './types';
+import { HITTER_SLOTS, PITCHER_SLOTS } from './positions';
+import type { EnginePlayer, LineupSlots } from './types';
 
-export const CATEGORIES = ['contact', 'power', 'speed', 'defense', 'clutch'] as const;
-export type Category = (typeof CATEGORIES)[number];
+export const HITTER_CATEGORIES = ['contact', 'power', 'speed', 'defense', 'clutch'] as const;
+export type Category = (typeof HITTER_CATEGORIES)[number] | 'pitching';
+export const CATEGORIES: readonly Category[] = [...HITTER_CATEGORIES, 'pitching'];
 
 /** Equal weights: the spec wants ANY terrible category to cap the ceiling. */
 export const RATING_WEIGHTS: Record<Category, number> = {
-  contact: 0.2,
-  power: 0.2,
-  speed: 0.2,
-  defense: 0.2,
-  clutch: 0.2,
+  contact: 1 / 6,
+  power: 1 / 6,
+  speed: 1 / 6,
+  defense: 1 / 6,
+  clutch: 1 / 6,
+  pitching: 1 / 6,
 };
 
 /** Soft-min exponent: more negative = harsher gating. */
 export const SOFTMIN_P = -4;
 
 /** Linear calibration from blend space onto the opponent-rating scale. */
-export const CAL_A = 38;
+export const CAL_A = 37.1;
 export const CAL_B = 0.634;
 
-export function categoryMeans(lineup: EnginePlayer[]): Record<Category, number> {
-  const out = {} as Record<Category, number>;
-  for (const cat of CATEGORIES) {
+export function categoryMeans(lineup: EnginePlayer[]): Record<(typeof HITTER_CATEGORIES)[number], number> {
+  const out = {} as Record<(typeof HITTER_CATEGORIES)[number], number>;
+  for (const cat of HITTER_CATEGORIES) {
     out[cat] = lineup.reduce((sum, p) => sum + p[cat], 0) / lineup.length;
   }
   return out;
@@ -43,10 +47,14 @@ export function softMin(values: number[], weights: number[], p: number = SOFTMIN
   return sum ** (1 / p);
 }
 
-export function teamRating(lineup: EnginePlayer[]): number {
-  const means = categoryMeans(lineup);
+export function teamRating(lineup: LineupSlots): number {
+  const hitters = HITTER_SLOTS.map((s) => lineup[s]).filter((p): p is EnginePlayer => Boolean(p));
+  const pitchers = PITCHER_SLOTS.map((s) => lineup[s]).filter((p): p is EnginePlayer => Boolean(p));
+  const means = categoryMeans(hitters.length > 0 ? hitters : Object.values(lineup) as EnginePlayer[]);
+  const pitching = pitchers.length > 0 ? pitchers.reduce((sum, p) => sum + p.rating, 0) / pitchers.length : 50;
+  const all: Record<Category, number> = { ...means, pitching };
   const blend = softMin(
-    CATEGORIES.map((c) => means[c]),
+    CATEGORIES.map((c) => all[c]),
     CATEGORIES.map((c) => RATING_WEIGHTS[c]),
   );
   return Math.max(1, Math.min(99, CAL_A + CAL_B * blend));

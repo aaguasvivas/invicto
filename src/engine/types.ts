@@ -1,6 +1,9 @@
 // Engine domain types. EnginePlayer mirrors the records in public/data/players.json.
 
-export type Slot = 'C' | '1B' | '2B' | '3B' | 'SS' | 'LF' | 'CF' | 'RF' | 'DH';
+export type Slot = 'C' | '1B' | '2B' | '3B' | 'SS' | 'LF' | 'CF' | 'RF' | 'DH' | 'SP' | 'RP' | 'CL';
+
+/** A (possibly partial) drafted lineup keyed by slot. */
+export type LineupSlots = Partial<Record<Slot, EnginePlayer>>;
 
 export interface EnginePlayer {
   id: string;

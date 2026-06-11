@@ -95,6 +95,24 @@ export interface SeasonFielding {
   E: number;
 }
 
+export interface SeasonPitching {
+  year: number;
+  lg: string;
+  G: number;
+  GS: number;
+  SV: number;
+  IPouts: number;
+  ER: number;
+  SO: number;
+  BB: number;
+  BFP: number;
+}
+
+export interface LeaguePitchingRates {
+  era: number;
+  kbbRate: number; // (SO − BB) / BFP
+}
+
 export function normalizeName(s: string): string {
   return s
     .normalize('NFD')
@@ -112,6 +130,8 @@ export interface Databank {
   leagueRates: Map<string, LeagueRates>; // `${year}-${lg}`
   appearancesByPlayer: Map<string, PositionGames[]>;
   fieldingByPlayer: Map<string, SeasonFielding[]>;
+  pitchingByPlayer: Map<string, SeasonPitching[]>;
+  leaguePitchingRates: Map<string, LeaguePitchingRates>; // `${year}-${lg}`
   mlbClubNames: Set<string>; // normalized full franchise names, e.g. "chicago cubs"
 }
 
@@ -229,11 +249,43 @@ export function loadDatabank(): Databank {
     f.G += n(r.G); f.PO += n(r.PO); f.A += n(r.A); f.E += n(r.E);
   }
 
+  // Pitching: aggregate stints per player-year; league ERA / K-BB rates per year+lg.
+  const pitchingByPlayer = new Map<string, SeasonPitching[]>();
+  const pitKey = new Map<string, SeasonPitching>();
+  const lgPitSums = new Map<string, Record<string, number>>();
+  for (const r of load('Pitching')) {
+    const year = Number(r.yearID);
+    const key = `${r.playerID}-${year}`;
+    let s = pitKey.get(key);
+    if (!s) {
+      s = { year, lg: r.lgID, G: 0, GS: 0, SV: 0, IPouts: 0, ER: 0, SO: 0, BB: 0, BFP: 0 };
+      pitKey.set(key, s);
+      const arr = pitchingByPlayer.get(r.playerID) ?? [];
+      arr.push(s);
+      pitchingByPlayer.set(r.playerID, arr);
+    }
+    s.G += n(r.G); s.GS += n(r.GS); s.SV += n(r.SV);
+    s.IPouts += n(r.IPouts); s.ER += n(r.ER); s.SO += n(r.SO); s.BB += n(r.BB); s.BFP += n(r.BFP);
+
+    const lgKey = `${year}-${r.lgID}`;
+    const sums = lgPitSums.get(lgKey) ?? { IPouts: 0, ER: 0, SO: 0, BB: 0, BFP: 0 };
+    sums.IPouts += n(r.IPouts); sums.ER += n(r.ER); sums.SO += n(r.SO); sums.BB += n(r.BB); sums.BFP += n(r.BFP);
+    lgPitSums.set(lgKey, sums);
+  }
+  const leaguePitchingRates = new Map<string, LeaguePitchingRates>();
+  for (const [key, s] of lgPitSums) {
+    if (s.IPouts < 3000 || s.BFP < 1000) continue;
+    leaguePitchingRates.set(key, {
+      era: (s.ER * 27) / s.IPouts,
+      kbbRate: (s.SO - s.BB) / s.BFP,
+    });
+  }
+
   // MLB franchise names for classifying Club columns ("Chicago Cubs" → MLB) on pages without a League column.
   const mlbClubNames = new Set<string>();
   for (const r of load('Teams')) {
     if (Number(r.yearID) >= 1990 && r.name) mlbClubNames.add(normalizeName(r.name));
   }
 
-  return { peopleByDob, peopleByName, battingByPlayer, leagueRates, appearancesByPlayer, fieldingByPlayer, mlbClubNames };
+  return { peopleByDob, peopleByName, battingByPlayer, leagueRates, appearancesByPlayer, fieldingByPlayer, pitchingByPlayer, leaguePitchingRates, mlbClubNames };
 }

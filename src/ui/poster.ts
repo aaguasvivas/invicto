@@ -86,22 +86,22 @@ export function drawSharePoster(canvas: HTMLCanvasElement, data: PosterData): vo
   const strip = data.games.map((g) => `${g.flag}${g.win ? '✅' : '❌'}`).join(' ');
   ctx.fillText(strip, 540, 590);
 
-  // lineup
+  // lineup (12 rows: 9 hitters + SP/RP/CL)
   ctx.textAlign = 'left';
-  const top = 680;
-  const lineH = 62;
+  const top = 648;
+  const lineH = 52;
   data.lineup.forEach((row, i) => {
     const y = top + i * lineH;
     ctx.fillStyle = DIM;
-    ctx.font = '700 28px Inter, sans-serif';
+    ctx.font = '700 26px Inter, sans-serif';
     ctx.fillText(row.slot, 120, y);
-    ctx.font = '36px Inter, sans-serif';
+    ctx.font = '32px Inter, sans-serif';
     ctx.fillText(row.flag, 195, y + 2);
     ctx.fillStyle = TEXT;
-    ctx.font = '600 36px Inter, sans-serif';
-    ctx.fillText(row.name, 260, y);
+    ctx.font = '600 32px Inter, sans-serif';
+    ctx.fillText(row.name, 258, y);
     ctx.fillStyle = DIM;
-    ctx.font = '30px Inter, sans-serif';
+    ctx.font = '28px Inter, sans-serif';
     ctx.textAlign = 'right';
     ctx.fillText(`'${String(row.edition).slice(2)}`, 960, y);
     ctx.textAlign = 'left';

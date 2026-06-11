@@ -13,7 +13,8 @@ import {
 } from '../../game/session';
 import { clear, h, toast } from '../dom';
 
-const SLOT_ORDER: Slot[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
+const SLOT_ORDER: Slot[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH', 'SP', 'RP', 'CL'];
+const PITCHER_POS: Slot[] = ['SP', 'RP', 'CL'];
 const SPIN_MS = 700;
 
 export interface DraftCallbacks {
@@ -86,7 +87,8 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
       { key: 'C', test: (p) => p.positions.includes('C') },
       { key: 'IF', test: (p) => p.positions.some((pos) => ['1B', '2B', '3B', 'SS'].includes(pos)) },
       { key: 'OF', test: (p) => p.positions.some((pos) => ['LF', 'CF', 'RF'].includes(pos)) },
-      { key: 'DH', test: () => true },
+      { key: 'DH', test: (p) => p.positions.some((pos) => !PITCHER_POS.includes(pos)) }, // two-way stars land here
+      { key: 'P', test: () => true }, // pure pitchers
     ];
     const seen = new Set<string>();
     for (const group of groups) {

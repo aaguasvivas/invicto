@@ -283,7 +283,7 @@ h1, h2, h3 { margin: 0; }
   padding: 8px 16px calc(10px + env(safe-area-inset-bottom));
 }
 .lineup-toggle { width: 100%; display: flex; justify-content: space-between; align-items: center; color: var(--text-dim); font-size: 12px; font-weight: 800; letter-spacing: 0.1em; padding: 4px 0; }
-.lineup-grid { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; }
+.lineup-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
 .lineup-cell { text-align: center; border-radius: 8px; padding: 5px 1px; background: var(--surface); border: 1px dashed var(--line); }
 .lineup-cell.filled { border-style: solid; border-color: var(--accent); }
 .lineup-cell .slot { display: block; font-size: 9px; font-weight: 800; color: var(--text-dim); }

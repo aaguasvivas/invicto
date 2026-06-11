@@ -106,9 +106,9 @@ describe('draft state', () => {
     expect(() => applyPick(state, again, '1B')).toThrow();
   });
 
-  test('draft completes after all nine slots are filled', () => {
+  test('draft completes after all twelve slots are filled', () => {
     let state = newDraft();
-    const slots = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'] as const;
+    const slots = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH', 'SP', 'RP', 'CL'] as const;
     for (const slot of slots) {
       expect(isComplete(state)).toBe(false);
       state = applyPick(state, makePlayer({ positions: [slot] }), slot);

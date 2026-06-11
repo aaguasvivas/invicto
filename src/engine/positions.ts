@@ -1,12 +1,24 @@
-// Slot eligibility: corner outfield is interchangeable (and a true CF can cover a
-// corner), CF requires a true CF, DH accepts anyone, everything else is exact.
+// Slot eligibility. Hitters: corner outfield interchangeable (a true CF covers a
+// corner), CF requires a true CF, DH accepts any hitter, infield is exact.
+// Pitchers: SP and CL require the specific role, RP accepts any pitcher.
+// Pure pitchers can't DH; hitters can't take the mound.
 
 import type { Slot } from './types';
 
-export const SLOTS: readonly Slot[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
+export const HITTER_SLOTS: readonly Slot[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
+export const PITCHER_SLOTS: readonly Slot[] = ['SP', 'RP', 'CL'];
+export const SLOTS: readonly Slot[] = [...HITTER_SLOTS, ...PITCHER_SLOTS];
+
+const PITCHER_POS = new Set<Slot>(['SP', 'RP', 'CL']);
+
+export function isPitcher(positions: Slot[]): boolean {
+  return positions.some((p) => PITCHER_POS.has(p));
+}
 
 export function isEligible(positions: Slot[], slot: Slot): boolean {
-  if (slot === 'DH') return true;
+  if (slot === 'RP') return isPitcher(positions);
+  if (slot === 'SP' || slot === 'CL') return positions.includes(slot);
+  if (slot === 'DH') return positions.some((p) => !PITCHER_POS.has(p));
   if (slot === 'LF' || slot === 'RF') {
     return positions.includes('LF') || positions.includes('RF') || positions.includes('CF');
   }

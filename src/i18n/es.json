@@ -36,7 +36,7 @@
     "pickSlot": "¿Dónde juega {name}?",
     "lineup": "Tu lineup",
     "noEligible": "Nadie de este roster entra en tu lineup: tirada gratis 🎰",
-    "posGroups": { "C": "Receptores", "IF": "Infielders", "OF": "Jardineros", "DH": "Bateadores designados" }
+    "posGroups": { "C": "Receptores", "IF": "Infielders", "OF": "Jardineros", "DH": "Bateadores designados", "P": "Lanzadores" }
   },
   "sim": {
     "title": "¡A jugar el Clásico!",
@@ -76,6 +76,26 @@
       "{us}-{them}. Hasta el bullpen bateó hoy 😤",
       "Se acabó temprano: {us}-{them} y todos pa' la casa 🧹",
       "{opp} va a soñar con esto: {us}-{them} 😴"
+    ],
+    "win-shutout": [
+      "¡BLANQUEADA! {us}-{them} y el rival en cero 🧼",
+      "Lechada completa: {us}-{them} 🥛",
+      "Ni una carrerita les dimos: {us}-{them} 🔒",
+      "El picheo pintó las esquinas: {us}-{them} 🎨",
+      "{opp} se fue en blanco: {us}-{them} 0️⃣",
+      "Dominio absoluto desde la loma: {us}-{them} ⛰️",
+      "Blanqueada de lujo: {us}-{them} ✨",
+      "{us}-{them}. El pitcheo no negoció hoy 🚫"
+    ],
+    "loss-shutout": [
+      "Nos blanquearon: {them}-{us}… ni una carrerita 😶",
+      "Lechada en contra: {them}-{us} 🥛",
+      "El bate nunca despertó: {them}-{us} 😴",
+      "{them}-{us}. Cero en la pizarra, cero excusas 0️⃣",
+      "Nos pintaron de blanco: {them}-{us} 🎨",
+      "Su pitcheo nos amarró: {them}-{us} 🪢",
+      "Sin respuestas en el plato: {them}-{us} 🤐",
+      "{them}-{us}. Noche de ponches y suspiros 😮‍💨"
     ],
     "win-blowout": [
       "Paliza seria: {us}-{them} y sin despeinarse 😎",

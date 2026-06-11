@@ -27,13 +27,33 @@ Extracted per player: name (footnotes, captain marks, and CJK readings stripped)
 date of birth (from the hidden `(YYYY-MM-DD)` sort key), club, and league where the page has a
 League column (2013, 2017, 2026, half of 2023).
 
-**Pitchers** are kept in `data/raw/scraped-players.json` with `excludedFromV1: true` and
-rating 0 (v2 can rate them from `Pitching.csv` without re-scraping). They are not shipped in
-`public/data/players.json`.
+**Pitchers** are fully rated and shipped — the draft has 12 slots: the 9 hitting positions plus
+SP, RP, and CL.
 
 **Two-way rule:** a pitcher-listed player with an MLB season of ≥ 200 PA within ±1 year of the
 edition is treated as a hitter (this catches Ohtani in 2023 without any hardcoded names; NL
-pitchers who batted never reached 200 PA).
+pitchers who batted never reached 200 PA). Two-way stars additionally carry their pitching
+roles, so Ohtani can be drafted at DH *or* SP.
+
+### Pitcher ratings
+
+Same windows, blends, and anchors as hitters, on a pitching composite:
+
+```
+composite = 0.65 × ERA+approx + 0.35 × KBB+    (vs that season's league)
+```
+
+with an ERA floor of 1.00, **innings shrinkage** (`IPouts/(IPouts+250)` on the deviation), and
+a **relief discount** (×0.75 on the deviation for seasons with GS < max(3, 20% of G)) — short
+elite relief stints are real but a 99 should be Paul Skenes, not a setup man. Roles come from
+real usage near the edition: SP if GS ≥ max(8, 40% of G), CL if SV ≥ 8; **RP accepts any
+pitcher** (the DH of the mound). Unmatched foreign pitchers stay role-flexible. The curation
+file covers foreign aces (Darvish 2009, Yamamoto 2023, Lazo 2006, Raidel Martínez …) under the
+same citation rules.
+
+In the team rating, pitching is a **sixth gated category** (mean rating of the three pitcher
+slots, soft-min blended with the five hitting categories) — a punted staff caps the ceiling no
+matter how scary the lineup.
 
 ## Matching roster names to Lahman IDs
 

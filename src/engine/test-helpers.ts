@@ -1,5 +1,5 @@
 // Factories for engine tests. Not shipped.
-import type { EnginePlayer, Slot } from './types';
+import type { EnginePlayer, LineupSlots, Slot } from './types';
 
 let counter = 0;
 
@@ -22,16 +22,22 @@ export function makePlayer(overrides: Partial<EnginePlayer> = {}): EnginePlayer 
   };
 }
 
-/** A 9-man lineup whose five category means equal the given values. */
+/** A full 12-slot lineup: hitter category means as given, pitching = mean pitcher rating. */
 export function lineupWithMeans(
   contact: number,
   power: number,
   speed: number,
   defense: number,
   clutch: number,
-): EnginePlayer[] {
-  const slots: Slot[][] = [['C'], ['1B'], ['2B'], ['3B'], ['SS'], ['LF'], ['CF'], ['RF'], ['DH']];
-  return slots.map((positions) =>
-    makePlayer({ positions, contact, power, speed, defense, clutch, rating: Math.round((contact + power) / 2) }),
-  );
+  pitching = 70,
+): LineupSlots {
+  const lineup: LineupSlots = {};
+  const hitterSlots: Slot[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
+  for (const slot of hitterSlots) {
+    lineup[slot] = makePlayer({ positions: [slot], contact, power, speed, defense, clutch, rating: Math.round((contact + power) / 2) });
+  }
+  lineup.SP = makePlayer({ positions: ['SP', 'RP'], rating: pitching, contact: 25, power: 25, speed: 30, defense: 45, clutch: pitching });
+  lineup.RP = makePlayer({ positions: ['RP'], rating: pitching, contact: 25, power: 25, speed: 30, defense: 45, clutch: pitching });
+  lineup.CL = makePlayer({ positions: ['RP', 'CL'], rating: pitching, contact: 25, power: 25, speed: 30, defense: 45, clutch: pitching });
+  return lineup;
 }

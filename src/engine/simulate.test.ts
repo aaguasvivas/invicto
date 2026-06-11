@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { simulateRun } from './simulate';
 import { lineupWithMeans } from './test-helpers';
 
-const mid = () => lineupWithMeans(72, 70, 56, 58, 72);
+const mid = () => lineupWithMeans(72, 70, 56, 58, 72, 70);
 
 describe('simulateRun', () => {
   test('same lineup and seed give identical results', () => {
@@ -71,7 +71,8 @@ describe('simulateRun', () => {
         const margin = Math.abs(g.teamScore - g.oppScore);
         if (g.mercy) expect(margin).toBeGreaterThanOrEqual(10);
         if (g.walkOff) expect(margin).toBe(1);
-        expect(g.flavorKey).toMatch(/^(win|loss)-(mercy|blowout|walkoff|close|normal)$/);
+        if (g.flavorKey.endsWith('shutout')) expect(Math.min(g.teamScore, g.oppScore)).toBe(0);
+        expect(g.flavorKey).toMatch(/^(win|loss)-(mercy|shutout|blowout|walkoff|close|normal)$/);
         expect(g.flavorKey.startsWith(g.win ? 'win' : 'loss')).toBe(true);
         expect(g.flavorVariant).toBeGreaterThanOrEqual(0);
         expect(g.opponent.country).toBeTruthy();

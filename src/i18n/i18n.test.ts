@@ -35,7 +35,7 @@ describe('language tables', () => {
     test(`${code} has ≥8 flavor variants per outcome type`, () => {
       const flavors = (table as { flavor: Record<string, string[]> }).flavor;
       const keys = Object.keys(flavors);
-      expect(keys).toHaveLength(10); // win/loss × mercy/blowout/walkoff/close/normal
+      expect(keys).toHaveLength(12); // win/loss × mercy/shutout/blowout/walkoff/close/normal
       for (const key of keys) {
         expect(flavors[key].length, `${code} flavor.${key}`).toBeGreaterThanOrEqual(8);
       }

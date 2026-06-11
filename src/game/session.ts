@@ -6,7 +6,7 @@ import {
   newDraft, openSlots, rollBase, rollCountryReroll, rollEditionReroll, rollRedraw,
   type DraftState,
 } from '../engine/draft';
-import type { EnginePlayer, Roll, Slot } from '../engine/types';
+import type { EnginePlayer, LineupSlots, Roll, Slot } from '../engine/types';
 import { todayKey, type Mode } from './state';
 import { roster, type GameData } from './data';
 
@@ -68,8 +68,8 @@ export function draftDone(session: Session): boolean {
   return openSlots(session.state).length === 0;
 }
 
-export function lineup(session: Session): EnginePlayer[] {
-  return Object.values(session.state.lineup) as EnginePlayer[];
+export function lineup(session: Session): LineupSlots {
+  return session.state.lineup;
 }
 
 export function canRerollCountry(session: Session): boolean {

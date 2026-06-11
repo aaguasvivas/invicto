@@ -32,17 +32,23 @@ describe('softMin', () => {
 
 describe('teamRating', () => {
   test('stays within 1–99', () => {
-    expect(teamRating(lineupWithMeans(99, 99, 99, 99, 99))).toBeLessThanOrEqual(99);
-    expect(teamRating(lineupWithMeans(1, 1, 1, 1, 1))).toBeGreaterThanOrEqual(1);
+    expect(teamRating(lineupWithMeans(99, 99, 99, 99, 99, 99))).toBeLessThanOrEqual(99);
+    expect(teamRating(lineupWithMeans(1, 1, 1, 1, 1, 1))).toBeGreaterThanOrEqual(1);
   });
 
   test('a gated lineup rates clearly below a balanced lineup with the same mean', () => {
-    const balanced = teamRating(lineupWithMeans(84, 84, 84, 84, 84));
-    const gated = teamRating(lineupWithMeans(95, 95, 95, 95, 40));
+    const balanced = teamRating(lineupWithMeans(84, 84, 84, 84, 84, 84));
+    const gated = teamRating(lineupWithMeans(95, 95, 95, 95, 40, 95));
     expect(gated).toBeLessThan(balanced - 5);
   });
 
+  test('terrible pitching caps a monster offense', () => {
+    const armed = teamRating(lineupWithMeans(85, 85, 85, 85, 85, 85));
+    const armless = teamRating(lineupWithMeans(85, 85, 85, 85, 85, 40));
+    expect(armless).toBeLessThan(armed - 5);
+  });
+
   test('better players produce a better team', () => {
-    expect(teamRating(lineupWithMeans(85, 88, 62, 60, 85))).toBeGreaterThan(teamRating(lineupWithMeans(70, 68, 55, 56, 70)));
+    expect(teamRating(lineupWithMeans(85, 88, 62, 60, 85, 82))).toBeGreaterThan(teamRating(lineupWithMeans(70, 68, 55, 56, 70, 68)));
   });
 });

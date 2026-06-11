@@ -12,9 +12,9 @@ import { COUNTRIES } from './lib/countries.js';
 import { loadCuration, verifyCuration, TIER_VALUES } from './lib/curation.js';
 import { DATABANK_SOURCE, loadDatabank, normalizeName } from './lib/databank.js';
 import {
-  bestMlbSeason, buildClubLeagueMap, classifyLeague, clamp99, compositeToRating, defenseRating,
-  matchPlayer, refinePositions, relScoreToRating, seededRng, speedScoreToRating,
-  type Position, type RatedPlayer, type RatingMethod,
+  bestMlbPitching, bestMlbSeason, buildClubLeagueMap, classifyLeague, clamp99, compositeToRating,
+  defenseRating, matchPlayer, pitcherRoles, refinePositions, relScoreToRating, seededRng,
+  speedScoreToRating, type Position, type RatedPlayer, type RatingMethod,
 } from './lib/ratings.js';
 import { EDITIONS, loadPage, parseEdition, type ScrapedPlayer } from './lib/wikipedia.js';
 
@@ -22,7 +22,8 @@ const LEAGUE_MULT: Record<string, number> = { mlb: 1.0, npb: 0.92, kbo: 0.85, cp
 const TIER_COMPOSITE = { A: 125, B: 100, C: 85 } as const;
 const TWO_WAY_PA = 200; // a "pitcher" with a ≥200 PA MLB season near the edition bats (Ohtani rule)
 /** Positional offense adjustment (OPS+-scale points) — premium positions get bat credit. */
-const POS_ADJ: Record<Position, number> = { C: 12, SS: 7, CF: 6, '2B': 4, '3B': 4, RF: 0, LF: 0, '1B': -3, DH: -6 };
+const POS_ADJ: Record<Position, number> = { C: 12, SS: 7, CF: 6, '2B': 4, '3B': 4, RF: 0, LF: 0, '1B': -3, DH: -6, SP: 0, RP: 0, CL: 0 };
+const ALL_PITCHER_ROLES: Position[] = ['SP', 'RP', 'CL'];
 
 async function main() {
   console.log('— Invicto data build —\n');
@@ -69,25 +70,64 @@ async function main() {
     const rng = seededRng(id);
 
     const match = matchPlayer(p, db);
-    const offense = match ? bestMlbSeason(match.person, p.edition, db) : null;
     const isPitcher = p.posGroups.includes('P');
     const isTwoWay =
       isPitcher && match
         ? (db.battingByPlayer.get(match.person.playerID) ?? []).some((s) => Math.abs(s.year - p.edition) <= 1 && s.PA >= TWO_WAY_PA)
         : false;
-    const excludedFromV1 = isPitcher && !isTwoWay;
+    const rosterLeague = classifyLeague(p, db, clubLeagues); // league at the time, from the roster row
+    const rng2 = rng; // alias for readability below
 
-    if (excludedFromV1) {
-      // Pitchers are kept raw and unrated; v2 rates them from Pitching.csv.
+    if (isPitcher && !isTwoWay) {
+      // -------------------- pitcher path --------------------
+      const pitching = match ? bestMlbPitching(match.person, p.edition, db) : null;
+      const roles = match ? (pitcherRoles(match.person, p.edition, db) ?? ALL_PITCHER_ROLES) : ALL_PITCHER_ROLES;
+      let composite: number;
+      let method: RatingMethod;
+      if (pitching) {
+        composite = pitching.composite;
+        method = pitching.method;
+      } else {
+        const cls = match ? 'milb' : rosterLeague;
+        const age = p.dob ? p.edition - Number(p.dob.slice(0, 4)) : 27;
+        const tier = age >= 23 && age <= 34 ? 'B' : 'C';
+        composite = TIER_COMPOSITE[tier] * (LEAGUE_MULT[cls] ?? LEAGUE_MULT.other);
+        method = 'heuristic';
+      }
+      const curationKey = `${p.edition}|${p.country}|${p.name}`;
+      const curated = curationIndex.get(curationKey);
+      if (curated) {
+        curationUsed.add(curationKey);
+        const curatedComposite = TIER_VALUES[curated.tier] * (LEAGUE_MULT[rosterLeague] ?? LEAGUE_MULT.other);
+        if (curatedComposite > composite) {
+          curationLifts.push(`${p.edition} ${p.country} ${p.name}: ${Math.round(composite)} → ${Math.round(curatedComposite)} (${curated.tier}, P)`);
+          composite = curatedComposite;
+          method = 'curated';
+        }
+      }
+      const rating = clamp99(compositeToRating(composite));
+      methodCount[method] = (methodCount[method] ?? 0) + 1;
       return {
         id, personKey: `${slug}|${p.dob ?? '?'}`, name: p.name, edition: p.edition, country: p.country,
-        posGroup: p.posRaw, positions: [] as Position[], rating: 0, contact: 0, power: 0, speed: 0, defense: 0, clutch: 0,
-        club: p.club, ratingMethod: 'heuristic' as RatingMethod, excludedFromV1: true, source: p.source,
+        posGroup: p.posRaw, positions: roles,
+        rating,
+        contact: clamp99(Math.round(22 + rng2() * 16)),
+        power: clamp99(Math.round(20 + rng2() * 14)),
+        speed: clamp99(Math.round(28 + rng2() * 14)),
+        defense: clamp99(Math.round(45 + (rng2() - 0.5) * 10)),
+        clutch: clamp99(Math.round(rating + (rng2() - 0.5) * 10)),
+        club: p.club, ratingMethod: method, excludedFromV1: false, source: p.source,
       };
     }
 
+    // -------------------- hitter path (incl. two-way) --------------------
+    const offense = match ? bestMlbSeason(match.person, p.edition, db) : null;
     const positions = refinePositions(p, match, db);
-    const rosterLeague = classifyLeague(p, db, clubLeagues); // league at the time, from the roster row
+    if (isTwoWay && match) {
+      // Ohtani rule, part two: a two-way star can be drafted as a hitter OR into a pitcher slot.
+      const roles = pitcherRoles(match.person, p.edition, db) ?? ['SP', 'RP'];
+      for (const role of roles) if (!positions.includes(role)) positions.push(role);
+    }
     const speedPrior: Partial<Record<Position, number>> = { SS: 60, CF: 62, '2B': 58, LF: 52, RF: 52, '3B': 48, '1B': 40, C: 36, DH: 38 };
     let composite: number;
     let method: RatingMethod;
@@ -147,7 +187,9 @@ async function main() {
     };
   });
 
-  const hitters = rated.filter((r) => !r.excludedFromV1);
+  const isPitcherOnly = (r: RatedPlayer) => r.positions.length > 0 && r.positions.every((pos) => pos === 'SP' || pos === 'RP' || pos === 'CL');
+  const hitters = rated.filter((r) => !r.excludedFromV1 && !isPitcherOnly(r));
+  const pitchers = rated.filter((r) => !r.excludedFromV1 && isPitcherOnly(r));
 
   // 3) Validation ----------------------------------------------------------
   const errors: string[] = [];
@@ -161,11 +203,13 @@ async function main() {
   for (const [key, list] of byTeam) {
     if (list.length < 25 || list.length > 32) flagged.push(`${key}: ${list.length} players (outside 25–32)`);
     else if (list.length < 26 || list.length > 31) flagged.push(`${key}: ${list.length} players (outside 26–31)`);
-    const teamHitters = list.filter((r) => !r.excludedFromV1);
+    const teamHitters = list.filter((r) => !r.excludedFromV1 && !isPitcherOnly(r));
+    const teamPitchers = list.filter((r) => !r.excludedFromV1 && isPitcherOnly(r));
     if (teamHitters.length < 9) errors.push(`${key}: only ${teamHitters.length} hitters — not draftable`);
+    if (teamPitchers.length < 3) errors.push(`${key}: only ${teamPitchers.length} pitchers — not draftable`);
   }
-  for (const h of hitters) {
-    if (h.positions.length === 0) errors.push(`${h.id}: hitter with no positions`);
+  for (const h of [...hitters, ...pitchers]) {
+    if (h.positions.length === 0) errors.push(`${h.id}: player with no positions`);
     if (h.rating < 1 || h.rating > 99) errors.push(`${h.id}: rating ${h.rating} out of range`);
   }
   if (usedIds.size !== rated.length) errors.push('duplicate IDs detected');
@@ -205,8 +249,8 @@ async function main() {
   console.log(widths.map((w) => '-'.repeat(w)).join('  '));
   for (const r of rows) console.log(fmt(r));
 
-  console.log(`\nTotals: ${rated.length} players, ${hitters.length} hitters in v1 pool`);
-  console.log(`Rating methods (hitters): ${JSON.stringify(methodCount)}`);
+  console.log(`\nTotals: ${rated.length} players — ${hitters.length} hitters + ${pitchers.length} pitchers in the pool`);
+  console.log(`Rating methods: ${JSON.stringify(methodCount)}`);
 
   console.log('\n=== Hitter rating histogram ===\n');
   const buckets = new Map<number, number>();
@@ -222,6 +266,11 @@ async function main() {
   for (const year of EDITIONS) {
     const top = hitters.filter((h) => h.edition === year).sort((a, b) => b.rating - a.rating).slice(0, 20);
     console.log(`\n${year}: ${top.map((t) => `${t.name} ${t.rating}${t.ratingMethod === 'curated' ? '*' : ''} (${t.country})`).join(', ')}`);
+  }
+  console.log('\n=== Top 12 pitchers per edition ===');
+  for (const year of EDITIONS) {
+    const top = pitchers.filter((h) => h.edition === year).sort((a, b) => b.rating - a.rating).slice(0, 12);
+    console.log(`\n${year}: ${top.map((t) => `${t.name} ${t.rating}${t.ratingMethod === 'curated' ? '*' : ''} [${t.positions.join('/')}] (${t.country})`).join(', ')}`);
   }
   if (curationLifts.length) {
     console.log(`\n=== Curated lifts applied: ${curationLifts.length} ===`);
@@ -242,8 +291,8 @@ async function main() {
   // 5) Write outputs -------------------------------------------------------
   mkdirSync('public/data', { recursive: true });
   mkdirSync('data/raw', { recursive: true });
-  const publicHitters = hitters.map(({ excludedFromV1: _e, ...rest }) => rest);
-  writeFileSync('public/data/players.json', JSON.stringify({ generatedAt: new Date().toISOString(), databank: DATABANK_SOURCE, players: publicHitters }));
+  const publicPlayers = [...hitters, ...pitchers].map(({ excludedFromV1: _e, ...rest }) => rest);
+  writeFileSync('public/data/players.json', JSON.stringify({ generatedAt: new Date().toISOString(), databank: DATABANK_SOURCE, players: publicPlayers }));
   writeFileSync(
     'public/data/editions.json',
     JSON.stringify({

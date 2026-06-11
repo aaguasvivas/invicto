@@ -8,11 +8,11 @@
 //   3. Unmatched: league-quality multiplier × tier baseline ("heuristic").
 //   4. Composite → 1–99 rating through fixed anchors (not percentile), so a 99 stays rare.
 
-import type { Databank, Person, SeasonBatting } from './databank.js';
+import type { Databank, Person, SeasonBatting, SeasonPitching } from './databank.js';
 import { normalizeName } from './databank.js';
 import type { PosGroup, ScrapedPlayer } from './wikipedia.js';
 
-export type Position = 'C' | '1B' | '2B' | '3B' | 'SS' | 'LF' | 'CF' | 'RF' | 'DH';
+export type Position = 'C' | '1B' | '2B' | '3B' | 'SS' | 'LF' | 'CF' | 'RF' | 'DH' | 'SP' | 'RP' | 'CL';
 export type RatingMethod = 'mlb-window' | 'mlb-nearest' | 'heuristic' | 'curated';
 
 export interface RatedPlayer {
@@ -201,6 +201,68 @@ export function bestMlbSeason(person: Person, edition: number, db: Databank): Of
 }
 
 // ---------------------------------------------------------------------------
+// Pitching: approximate ERA+ blended with K-BB%, same windows/blends as hitters.
+
+function scorePitchingSeason(s: SeasonPitching, db: Databank): number | null {
+  const lg = db.leaguePitchingRates.get(`${s.year}-${s.lg}`);
+  if (!lg || s.IPouts < 1 || s.BFP < 1) return null;
+  const era = Math.max((s.ER * 27) / s.IPouts, 1.0); // floor so sub-1.00 relief ERAs don't explode the ratio
+  const eraPlus = 100 * (lg.era / era);
+  const kbbPlus = lg.kbbRate > 0 ? (100 * ((s.SO - s.BB) / s.BFP)) / lg.kbbRate : 100;
+  const raw = 0.65 * eraPlus + 0.35 * kbbPlus;
+  // 70 elite relief innings are real but not ace-season real: shrink hard by
+  // innings, then discount relief deviations — rate stats in short stints
+  // overstate value vs starters (a 99 should be Skenes, not a setup man).
+  const reliability = s.IPouts / (s.IPouts + 250);
+  const isRelief = s.GS < Math.max(3, 0.2 * s.G);
+  const rolePenalty = isRelief ? 0.75 : 1;
+  return 100 + (raw - 100) * reliability * rolePenalty;
+}
+
+export function bestMlbPitching(person: Person, edition: number, db: Databank): OffenseResult | null {
+  const seasons = db.pitchingByPlayer.get(person.playerID) ?? [];
+  const inWindow = seasons.filter((s) => Math.abs(s.year - edition) <= 1 && s.IPouts >= 90);
+  const scored = inWindow
+    .map((s) => ({ year: s.year, comp: scorePitchingSeason(s, db) }))
+    .filter((s): s is { year: number; comp: number } => s.comp !== null);
+  if (scored.length > 0) {
+    const best = scored.reduce((a, b) => (b.comp > a.comp ? b : a));
+    const others = scored.filter((s) => s !== best);
+    const composite =
+      others.length > 0 ? 0.7 * best.comp + 0.3 * (others.reduce((sum, s) => sum + s.comp, 0) / others.length) : best.comp;
+    return { composite, contactScore: 0, powerScore: 0, speedScore: 0, method: 'mlb-window' };
+  }
+  const nearby = seasons
+    .filter((s) => Math.abs(s.year - edition) <= 4 && s.IPouts >= 150)
+    .sort((a, b) => Math.abs(a.year - edition) - Math.abs(b.year - edition));
+  if (nearby.length > 0) {
+    const comp = scorePitchingSeason(nearby[0], db);
+    if (comp !== null) {
+      const dist = Math.max(0, Math.abs(nearby[0].year - edition) - 1);
+      return { composite: comp * (1 - 0.05 * dist), contactScore: 0, powerScore: 0, speedScore: 0, method: 'mlb-nearest' };
+    }
+  }
+  return null;
+}
+
+/** SP/CL from real usage near the edition; RP accepts any pitcher (the DH of the mound). */
+export function pitcherRoles(person: Person, edition: number, db: Databank): Position[] | null {
+  const seasons = db.pitchingByPlayer.get(person.playerID) ?? [];
+  for (const span of [1, 4]) {
+    const win = seasons.filter((s) => Math.abs(s.year - edition) <= span);
+    const G = win.reduce((sum, s) => sum + s.G, 0);
+    const GS = win.reduce((sum, s) => sum + s.GS, 0);
+    const SV = win.reduce((sum, s) => sum + s.SV, 0);
+    if (G < 10) continue;
+    const roles: Position[] = ['RP'];
+    if (GS >= Math.max(8, 0.4 * G)) roles.unshift('SP');
+    if (SV >= 8) roles.push('CL');
+    return roles;
+  }
+  return null; // unknown usage — caller grants full flexibility
+}
+
+// ---------------------------------------------------------------------------
 // Composite → 1–99 rating via fixed anchors. composite is on the OPS+ scale.
 
 const ANCHORS: [number, number][] = [
@@ -242,7 +304,7 @@ export function seededRng(seed: string): () => number {
 // Position eligibility
 
 const GROUP_POSITIONS: Record<PosGroup, Position[]> = {
-  P: ['DH'], // two-way players that survive the pitcher filter bat as DH unless refined
+  P: ['RP'], // pitchers get real roles in the build; this is only a fallback
   C: ['C'],
   IF: ['1B', '2B', '3B', 'SS'],
   OF: ['LF', 'CF', 'RF'],
@@ -281,7 +343,7 @@ export function refinePositions(p: ScrapedPlayer, match: Match | null, db: Datab
 
 // Defense baseline by primary position; small quality adjustment from fielding stats for matched players.
 const DEFENSE_BASELINE: Record<Position, number> = {
-  C: 68, SS: 70, CF: 68, '2B': 60, '3B': 58, RF: 52, LF: 50, '1B': 42, DH: 25,
+  C: 68, SS: 70, CF: 68, '2B': 60, '3B': 58, RF: 52, LF: 50, '1B': 42, DH: 25, SP: 45, RP: 45, CL: 45,
 };
 
 export function defenseRating(positions: Position[], match: Match | null, edition: number, db: Databank, rng: () => number): number {

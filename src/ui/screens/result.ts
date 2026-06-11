@@ -11,7 +11,7 @@ import { confetti } from '../confetti';
 import type { PosterData } from '../poster';
 import { emojiCard, copyText, sharePoster, type ShareContext } from '../share';
 
-const SLOT_ORDER: Slot[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
+const SLOT_ORDER: Slot[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH', 'SP', 'RP', 'CL'];
 
 export interface ResultCallbacks {
   onAgain: () => void;

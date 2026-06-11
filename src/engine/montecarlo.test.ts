@@ -18,12 +18,12 @@ function rate7and0(lineup: ReturnType<typeof lineupWithMeans>): number {
 }
 
 describe('Monte Carlo calibration', () => {
-  // Best realistically draftable lineup: elite bats, ordinary legs/gloves.
-  const elite = lineupWithMeans(85, 88, 62, 60, 85);
+  // Best realistically draftable lineup: elite bats + a frontline staff.
+  const elite = lineupWithMeans(85, 88, 62, 60, 85, 84);
   // A solid-but-casual draft.
-  const casual = lineupWithMeans(72, 70, 56, 58, 72);
-  // Four monster categories, one disaster (the gating hazard).
-  const gated = lineupWithMeans(95, 95, 95, 95, 40);
+  const casual = lineupWithMeans(72, 70, 56, 58, 72, 70);
+  // Five monster categories, one disaster (the gating hazard).
+  const gated = lineupWithMeans(95, 95, 95, 95, 40, 95);
 
   test('elite lineup goes 7-0 between 2% and 5% of the time', () => {
     const rate = rate7and0(elite);

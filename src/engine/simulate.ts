@@ -6,7 +6,7 @@
 import { POWERS } from './draft';
 import { rngFor } from './rng';
 import { teamRating } from './teamRating';
-import type { EnginePlayer, GameResult, Outcome, RunResult, Stage } from './types';
+import type { GameResult, LineupSlots, Outcome, RunResult, Stage } from './types';
 
 export const LOGISTIC_SCALE = 7;
 export const GAME_NOISE_SD = 3;
@@ -72,12 +72,13 @@ function playGame(team: number, stage: Stage, opponent: Opponent, seed: string):
   // Scores: margin grows with the (signed) strength gap in the winner's favor.
   const winnerGap = win ? Math.max(0, gap) : Math.max(0, -gap);
   const margin = Math.min(18, 1 + Math.floor(rng() * 3) + Math.round(winnerGap / 4));
-  const loserScore = Math.floor(rng() * rng() * 6);
+  const loserScore = Math.floor(rng() * 5 + rng() * 2); // 0 ≈ 5% — shutouts stay special
   const winnerScore = loserScore + margin;
   const mercy = margin >= 10;
   const walkOff = margin === 1 && rng() < 0.3;
+  const shutout = loserScore === 0;
   const flavorBase = win ? 'win' : 'loss';
-  const flavorKind = mercy ? 'mercy' : margin >= 6 ? 'blowout' : walkOff ? 'walkoff' : margin <= 2 ? 'close' : 'normal';
+  const flavorKind = mercy ? 'mercy' : walkOff ? 'walkoff' : shutout ? 'shutout' : margin >= 6 ? 'blowout' : margin <= 2 ? 'close' : 'normal';
 
   return {
     stage,
@@ -92,7 +93,7 @@ function playGame(team: number, stage: Stage, opponent: Opponent, seed: string):
   };
 }
 
-export function simulateRun(lineup: EnginePlayer[], seed: string): RunResult {
+export function simulateRun(lineup: LineupSlots, seed: string): RunResult {
   const team = teamRating(lineup);
   const schedule = scheduleOpponents(seed);
   const games: GameResult[] = [];
