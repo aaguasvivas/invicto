@@ -54,6 +54,17 @@ The win-curve and rarity constants live in:
 
 - `scripts/lib/ratings.ts` — rating anchors (`ANCHORS`, `REL_ANCHORS`), league multipliers,
   defense baselines.
-- `src/engine/` (Phase 2) — opponent strengths per round, the soft-min category gating, and the
-  logistic win-probability curve. The Monte Carlo test asserts a top-percentile lineup goes 7-0
-  about 2–5% of the time; retune there if you touch any of this.
+- `src/engine/teamRating.ts` — the soft-min gating exponent (`SOFTMIN_P`) and the calibration
+  line (`CAL_A`, `CAL_B`).
+- `src/engine/simulate.ts` — opponent tier strengths, knockout ratings (78/84/90), logistic
+  scale, per-game noise.
+
+The Monte Carlo test (`src/engine/montecarlo.test.ts`) pins the band: a top-percentile lineup
+goes 7-0 about 2–5% of the time, a casual lineup's median finish is 4–6 wins, and one terrible
+category caps the ceiling. Retune there if you touch any constant. Two diagnostic scripts print
+where the calibration actually landed:
+
+```sh
+npx tsx scripts/calibration-report.ts   # synthetic lineups + global-best lineup
+npx tsx scripts/draft-bot-report.ts     # 3000 real drafts (greedy bot), 7-0 rate by percentile
+```

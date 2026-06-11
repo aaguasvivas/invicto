@@ -18,5 +18,5 @@ const leagues = new Map<string, number>();
 for (const p of all) if (p.leagueRaw) leagues.set(p.leagueRaw, (leagues.get(p.leagueRaw) ?? 0) + 1);
 for (const [l, n] of [...leagues.entries()].sort((a, b) => b[1] - a[1])) console.log(`  ${n}\t${l}`);
 console.log(`\nDOB coverage: ${all.filter((p) => p.dob).length}/${all.length}`);
-const hitters = all.filter((p) => p.posGroup !== 'P');
+const hitters = all.filter((p) => !p.posGroups.includes('P'));
 console.log(`Hitters (non-P groups): ${hitters.length}`);

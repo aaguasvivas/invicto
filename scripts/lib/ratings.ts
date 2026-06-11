@@ -35,17 +35,6 @@ export interface RatedPlayer {
   source: { url: string; retrievedAt: string };
 }
 
-// League-quality multipliers for players without usable MLB stats (see DATA.md).
-const LEAGUE_MULTIPLIERS: Record<string, number> = {
-  mlb: 1.0,
-  npb: 0.92,
-  kbo: 0.85,
-  cpbl: 0.78,
-  cuba: 0.8,
-  milb: 0.75,
-  other: 0.7,
-};
-
 const LEAGUE_PATTERNS: [RegExp, string][] = [
   [/major league/i, 'mlb'],
   [/minor league|triple-a|double-a|complex league|^eastern league$|american association|atlantic league|frontier|pioneer|can-am|north american league/i, 'milb'],
