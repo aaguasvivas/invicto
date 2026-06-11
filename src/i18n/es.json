@@ -5,7 +5,7 @@
     "dailyNum": "Reto del Día #{n}",
     "free": "Juego libre",
     "hard": "Modo Duro 🔥",
-    "hardSub": "Sin ratings: pura memoria",
+    "hardSub": "Sin números: pura memoria",
     "howto": "¿Cómo se juega?",
     "streak": "🔥 Racha: {n}",
     "playedToday": "Ya jugaste el reto de hoy: {record}. Puedes practicar sin puntuar.",
@@ -20,7 +20,7 @@
     {
       "icon": "🔁",
       "title": "Dos salvavidas",
-      "body": "Tienes 1 cambio de país (misma edición) y 1 cambio de edición (mismo país) por partida. Úsalos con cabeza: ¿China 2009 o gastar el reroll?"
+      "body": "Tienes 1 cambio de país (misma edición) y 1 cambio de edición (mismo país) por partida. Úsalos con cabeza: ¿te quedas con China 2009 o gastas un cambio?"
     },
     {
       "icon": "🏆",
@@ -46,7 +46,7 @@
   },
   "result": {
     "invicto": "¡INVICTO!",
-    "invictoSub": "Perfecto. 7-0. Nadie te tocó. 🇻🇪🥹",
+    "invictoSub": "Perfecto. 7-0. Nadie te tocó.",
     "campeon": "¡CAMPEÓN!",
     "campeonSub": "Te cayeron una vez… y levantaste la copa igual.",
     "subcampeon": "Subcampeón",
@@ -61,6 +61,7 @@
     "copy": "📋 Copiar tarjeta",
     "copied": "¡Copiado! Pégalo donde quieras 🔥",
     "again": "⚾ Jugar otra vez",
+    "home": "Volver al inicio",
     "practice": "Partida de práctica (no puntúa)",
     "eliminatedShare": "Eliminado en {stage} {record}",
     "stageShort": { "pool": "grupos", "qf": "cuartos", "sf": "semis", "final": "la final" }

@@ -25,7 +25,7 @@
     {
       "icon": "🏆",
       "title": "Run the table",
-      "body": "4 pool games, quarters, semis, the final. Win the tournament and you're a CHAMPION 🏆. Win it 7-0… and you're INVICTO ⭐."
+      "body": "4 pool games, quarters, semis, the final. Win the tournament and you're CAMPEÓN 🏆. Win it all 7-0… that's INVICTO ⭐ — the perfect run."
     }
   ],
   "draft": {
@@ -46,8 +46,8 @@
   },
   "result": {
     "invicto": "INVICTO!",
-    "invictoSub": "Perfect. 7-0. Nobody touched you. ⭐",
-    "campeon": "CHAMPION!",
+    "invictoSub": "Perfect. 7-0. Nobody touched you.",
+    "campeon": "CAMPEÓN!",
     "campeonSub": "They got you once… and you lifted the trophy anyway.",
     "subcampeon": "Runner-up",
     "subcampeonSub": "One game short. That stings.",
@@ -61,6 +61,7 @@
     "copy": "📋 Copy card",
     "copied": "Copied! Paste it anywhere 🔥",
     "again": "⚾ Play again",
+    "home": "Back to title",
     "practice": "Practice run (not scored)",
     "eliminatedShare": "Out in {stage} {record}",
     "stageShort": { "pool": "pool play", "qf": "the quarters", "sf": "the semis", "final": "the final" }
@@ -170,7 +171,7 @@
   "share": {
     "title": "INVICTO",
     "url": "invicto.game",
-    "tiers": { "invicto": "7-0 ⭐ INVICTO", "campeon": "{record} 🏆 CHAMPION", "subcampeon": "Runner-up {record} 🥈" }
+    "tiers": { "invicto": "7-0 ⭐ INVICTO", "campeon": "{record} 🏆 CAMPEÓN", "subcampeon": "Runner-up {record} 🥈" }
   },
   "footer": {
     "disclaimer": "Invicto is not affiliated with, endorsed by, or sponsored by the World Baseball Classic, WBCI, MLB, NPB, or any team or players' association. Player names and historical statistics are used as factual references.",

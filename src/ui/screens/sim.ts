@@ -3,6 +3,7 @@
 import type { GameResult, RunResult, Stage } from '../../engine/types';
 import { flavor, getLang, t } from '../../i18n';
 import type { GameData } from '../../game/data';
+import { setAccent } from '../accents';
 import { clear, h } from '../dom';
 import { crowdRoar } from '../sound';
 
@@ -10,6 +11,7 @@ const REVEAL_MS = 600;
 
 export function renderSim(app: HTMLElement, run: RunResult, data: GameData, onDone: () => void): void {
   clear(app);
+  setAccent(null);
 
   const recordEl = h('div.sim-record', {}, '0-0');
   const stageEl = h('div.sim-stage-label', {}, t('sim.title'));

@@ -2,9 +2,11 @@
 // position, reroll buttons, pinned lineup tray. Ratings hidden in hard mode.
 
 import { eligibleSlots } from '../../engine/positions';
-import { openSlots } from '../../engine/draft';
+import { openSlots, POWERS } from '../../engine/draft';
 import type { EnginePlayer, Slot } from '../../engine/types';
 import { getLang, t } from '../../i18n';
+import { setAccent } from '../accents';
+import { crowdRoar } from '../sound';
 import type { Session } from '../../game/session';
 import {
   canRerollCountry, canRerollEdition, currentRoster, draftDone, pick, rerollCountry, rerollEdition,
@@ -13,7 +15,7 @@ import type { Country } from '../../game/data';
 import { clear, h, toast } from '../dom';
 
 const SLOT_ORDER: Slot[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
-const SPIN_MS = 800;
+const SPIN_MS = 700;
 
 export interface DraftCallbacks {
   onDone: () => void;
@@ -33,7 +35,7 @@ function countryName(c: Country): string {
 function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, spin: boolean): void {
   clear(screen);
   const country = session.data.countries.get(session.roll.country)!;
-  document.documentElement.style.setProperty('--accent', 'var(--gold)');
+  setAccent(spin ? null : session.roll.country);
 
   if (session.autoRedrew) toast(t('draft.noEligible'));
 
@@ -192,13 +194,14 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
   // --- slot machine spin ---
   if (spin) {
     const all = [...session.data.countries.values()];
+    const years = Object.keys(session.data.editionTeams);
     rollCard.classList.add('spinning');
     let stopped = false;
     const interval = setInterval(() => {
       const random = all[Math.floor(Math.random() * all.length)];
       flagEl.textContent = random.flag;
       nameEl.textContent = countryName(random);
-      editionEl.textContent = `WBC 20${Math.floor(Math.random() * 3) ? '2' : '0'}${Math.floor(Math.random() * 10)}`;
+      editionEl.textContent = `WBC ${years[Math.floor(Math.random() * years.length)]}`;
     }, 70);
     const settle = () => {
       if (stopped) return;
@@ -208,11 +211,17 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
       flagEl.textContent = country.flag;
       nameEl.textContent = countryName(country);
       editionEl.textContent = `WBC ${session.roll.edition}`;
+      setAccent(session.roll.country);
+      if (POWERS.includes(session.roll.country)) {
+        rollCard.classList.add('power-roll');
+        crowdRoar(0.5);
+      }
       renderRoster();
     };
     rollCard.addEventListener('click', settle, { once: true });
     setTimeout(settle, SPIN_MS);
   } else {
+    if (POWERS.includes(session.roll.country)) rollCard.classList.add('power-roll');
     renderRoster();
   }
 }

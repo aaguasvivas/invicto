@@ -129,8 +129,8 @@ export function drawOgPoster(canvas: HTMLCanvasElement, data: Pick<PosterData, '
   ctx.shadowBlur = 0;
 
   ctx.fillStyle = TEXT;
-  ctx.font = '600 44px Inter, sans-serif';
-  ctx.fillText(data.tagline, 600, 380);
+  ctx.font = '600 54px Inter, sans-serif';
+  ctx.fillText(data.tagline, 600, 385);
 
   ctx.fillStyle = DIM;
   ctx.font = '40px Inter, sans-serif';

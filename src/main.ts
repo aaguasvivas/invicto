@@ -30,7 +30,10 @@ function startRun(data: GameData, mode: Mode): void {
 function runTournament(session: Session): void {
   const run = simulateRun(lineup(session), session.seed);
   renderSim(app, run, session.data, () => {
-    renderResult(app, session, run, () => showTitle(session.data));
+    renderResult(app, session, run, {
+      onAgain: () => startRun(session.data, session.mode), // one more run, zero friction
+      onHome: () => showTitle(session.data),
+    });
   });
 }
 

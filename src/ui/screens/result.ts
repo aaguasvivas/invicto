@@ -2,9 +2,10 @@
 // confetti, and offers share / copy / play-again.
 
 import type { RunResult, Slot } from '../../engine/types';
-import { getLang, t } from '../../i18n';
+import { getLocale, t } from '../../i18n';
 import type { Session } from '../../game/session';
 import { dailyNumber, saveBest, saveDailyResult } from '../../game/state';
+import { setAccent } from '../accents';
 import { clear, h, toast } from '../dom';
 import { confetti } from '../confetti';
 import type { PosterData } from '../poster';
@@ -12,8 +13,14 @@ import { emojiCard, copyText, sharePoster, type ShareContext } from '../share';
 
 const SLOT_ORDER: Slot[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
 
-export function renderResult(app: HTMLElement, session: Session, run: RunResult, onAgain: () => void): void {
+export interface ResultCallbacks {
+  onAgain: () => void;
+  onHome: () => void;
+}
+
+export function renderResult(app: HTMLElement, session: Session, run: RunResult, cb: ResultCallbacks): void {
   clear(app);
+  setAccent(null);
   const record = `${run.wins}-${run.losses}`;
   const tier: PosterData['tier'] =
     run.outcome === 'invicto' ? 'invicto' : run.outcome === 'campeon' ? 'campeon' : run.outcome === 'subcampeon' ? 'subcampeon' : 'out';
@@ -30,7 +37,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
   });
   const gameFlags = run.games.map((g) => ({ flag: session.data.countries.get(g.opponent.country)!.flag, win: g.win }));
   const dailyNum = session.mode === 'daily' ? dailyNumber() : null;
-  const dateStr = new Intl.DateTimeFormat(getLang() === 'es' ? 'es' : 'en', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date());
+  const dateStr = new Intl.DateTimeFormat(getLocale(), { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date());
   const footerLine = [t('share.url'), dateStr, dailyNum ? `#${dailyNum}` : null].filter(Boolean).join('  ·  ');
 
   const stageKey = run.outcome.startsWith('eliminated') ? run.outcome.replace('eliminated-', '') : null;
@@ -102,7 +109,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
       },
       t('result.copy'),
     ),
-    h('button.btn', { onclick: onAgain }, t('result.again')),
+    h('button.btn', { onclick: cb.onAgain }, t('result.again')),
   );
 
   app.append(
@@ -113,6 +120,11 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
       posterEl,
       buttons,
       !session.scored && session.mode === 'daily' ? h('div.result-meta', {}, t('result.practice')) : null,
+      h(
+        'div.result-meta',
+        {},
+        h('a', { href: '#', style: 'color:var(--text-dim)', onclick: (e: Event) => { e.preventDefault(); cb.onHome(); } }, t('result.home')),
+      ),
     ),
   );
 

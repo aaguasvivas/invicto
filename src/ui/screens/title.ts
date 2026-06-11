@@ -1,7 +1,8 @@
 // Title screen: daily challenge (primary), free play, hard mode, how-to, footer.
 
-import { getLang, howtoPanels, t, toggleLang } from '../../i18n';
+import { cycleLang, howtoPanels, nextLangLabel, t } from '../../i18n';
 import { currentStreak, dailyNumber, dailyResult, personalBest, setSound, soundOn, type Mode } from '../../game/state';
+import { setAccent } from '../accents';
 import { clear, h } from '../dom';
 
 export interface TitleCallbacks {
@@ -11,6 +12,7 @@ export interface TitleCallbacks {
 
 export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
   clear(app);
+  setAccent(null);
   const played = dailyResult();
   const streak = currentStreak();
   const bestFree = personalBest('free');
@@ -33,7 +35,7 @@ export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
         },
         soundOn() ? '🔊' : '🔇',
       ),
-      h('button.chip-btn', { onclick: () => { toggleLang(); cb.onRerender(); } }, getLang() === 'es' ? 'EN' : 'ES'),
+      h('button.chip-btn', { onclick: () => { cycleLang(); cb.onRerender(); } }, `🌐 ${nextLangLabel()}`),
     ),
   );
 
@@ -71,7 +73,13 @@ export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
     h(
       'div.title-screen',
       {},
-      h('div.logo-block', {}, h('div.logo', {}, 'INVICTO'), h('div.tagline', {}, t('tagline'))),
+      h(
+        'div.logo-block',
+        {},
+        h('div.logo', {}, 'INVICTO'),
+        h('div.tagline', {}, t('tagline')),
+        h('div.flag-strip', {}, '🇻🇪 🇩🇴 🇵🇷 🇯🇵 🇺🇸 🇲🇽 🇨🇺 🇰🇷 🇳🇱 🇹🇼'),
+      ),
       menu,
       h('div.menu-meta', {}, metaBits.join('  ·  ')),
       footer,

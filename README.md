@@ -36,6 +36,20 @@ comma-delimited version from https://sabr.org/lahman-database/ (files: `People.c
 The build validates roster sizes, positions, duplicate IDs, and famous-player spot checks, then
 prints a summary table and rating histogram. See [DATA.md](DATA.md) for the full methodology.
 
+## Adding a language
+
+The brand nouns (INVICTO, CAMPEÓN) stay untranslated in every language — they're the tier
+names. Everything else localizes. To add Japanese, Korean, etc.:
+
+1. Copy `src/i18n/es.json` to `src/i18n/ja.json` and translate it **natively** (the same bar as
+   the Spanish: real baseball register, never machine-translated — including all 80 flavor
+   lines).
+2. Register it in `src/i18n/index.ts`:
+   `{ code: 'ja', label: '日本語', table: ja, locale: 'ja' }`.
+
+That's it — the title-screen switcher cycles through every registered language, browser
+detection picks it up via `navigator.languages`, and dates format through the `locale` tag.
+
 ## Deploying (Cloudflare Pages)
 
 Static output, no server:
