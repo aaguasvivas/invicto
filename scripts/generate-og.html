@@ -1,0 +1,33 @@
+<!doctype html>
+<!-- Dev-only OG image generator. Open via the Vite dev server:
+     http://localhost:5173/scripts/generate-og.html
+     It draws public/og.png content with the SAME canvas code as the share poster
+     (src/ui/poster.ts) and shows a download link / exposes window.ogDataUrl. -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>OG generator</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;700;800&display=swap"
+    />
+    <style>body { background: #0a1228; color: #eef2ff; font-family: Inter, sans-serif; padding: 20px; }</style>
+  </head>
+  <body>
+    <canvas id="og" style="max-width: 100%"></canvas>
+    <p><a id="dl" download="og.png" style="color: #f5b942">Download og.png</a></p>
+    <script type="module">
+      import { drawOgPoster, ensurePosterFonts } from '/src/ui/poster.ts';
+      await ensurePosterFonts();
+      const canvas = document.getElementById('og');
+      drawOgPoster(canvas, {
+        brand: 'INVICTO',
+        tagline: '¿Puedes quedar invicto? · Can you run the table?',
+        subline: 'Clásico Mundial de Béisbol · 2006–2026 · invicto.game',
+      });
+      const url = canvas.toDataURL('image/png');
+      document.getElementById('dl').href = url;
+      window.ogDataUrl = url;
+    </script>
+  </body>
+</html>

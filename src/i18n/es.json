@@ -1,0 +1,185 @@
+{
+  "tagline": "¿Puedes quedar invicto?",
+  "title": {
+    "daily": "Reto del Día",
+    "dailyNum": "Reto del Día #{n}",
+    "free": "Juego libre",
+    "hard": "Modo Duro 🔥",
+    "hardSub": "Sin ratings: pura memoria",
+    "howto": "¿Cómo se juega?",
+    "streak": "🔥 Racha: {n}",
+    "playedToday": "Ya jugaste el reto de hoy: {record}. Puedes practicar sin puntuar.",
+    "best": "Mejor marca: {record}"
+  },
+  "howto": [
+    {
+      "icon": "🎰",
+      "title": "Arma tu equipo",
+      "body": "9 rondas, 9 posiciones. En cada ronda sale un país y una edición del Clásico al azar: elige un pelotero de ese roster para tu lineup. Cada quien juega una sola vez."
+    },
+    {
+      "icon": "🔁",
+      "title": "Dos salvavidas",
+      "body": "Tienes 1 cambio de país (misma edición) y 1 cambio de edición (mismo país) por partida. Úsalos con cabeza: ¿China 2009 o gastar el reroll?"
+    },
+    {
+      "icon": "🏆",
+      "title": "Quedar invicto",
+      "body": "4 juegos de grupo, cuartos, semis y final. Ganar el torneo te hace CAMPEÓN 🏆. Ganarlo 7-0… eso es quedar INVICTO ⭐."
+    }
+  ],
+  "draft": {
+    "round": "Ronda {n} de 9",
+    "search": "Busca un pelotero…",
+    "rerollCountry": "🔁 Cambiar país",
+    "rerollEdition": "🗓️ Cambiar edición",
+    "pickSlot": "¿Dónde juega {name}?",
+    "lineup": "Tu lineup",
+    "noEligible": "Nadie de este roster entra en tu lineup: tirada gratis 🎰",
+    "posGroups": { "C": "Receptores", "IF": "Infielders", "OF": "Jardineros", "DH": "Bateadores designados" }
+  },
+  "sim": {
+    "title": "¡A jugar el Clásico!",
+    "skip": "Toca para adelantar",
+    "stages": { "pool": "Fase de grupos", "qf": "Cuartos de final", "sf": "Semifinal", "final": "LA FINAL" },
+    "you": "Tu Equipo"
+  },
+  "result": {
+    "invicto": "¡INVICTO!",
+    "invictoSub": "Perfecto. 7-0. Nadie te tocó. 🇻🇪🥹",
+    "campeon": "¡CAMPEÓN!",
+    "campeonSub": "Te cayeron una vez… y levantaste la copa igual.",
+    "subcampeon": "Subcampeón",
+    "subcampeonSub": "Te quedaste en la puerta. Duele.",
+    "eliminated-sf": "Eliminado en semis",
+    "eliminated-sfSub": "A un paso de la final. La pelota es cruel.",
+    "eliminated-qf": "Eliminado en cuartos",
+    "eliminated-qfSub": "El torneo no perdona.",
+    "eliminated-pool": "Eliminado en grupos",
+    "eliminated-poolSub": "Ni a los cuartos… toca rearmar el lineup.",
+    "share": "📤 Compartir",
+    "copy": "📋 Copiar tarjeta",
+    "copied": "¡Copiado! Pégalo donde quieras 🔥",
+    "again": "⚾ Jugar otra vez",
+    "practice": "Partida de práctica (no puntúa)",
+    "eliminatedShare": "Eliminado en {stage} {record}",
+    "stageShort": { "pool": "grupos", "qf": "cuartos", "sf": "semis", "final": "la final" }
+  },
+  "flavor": {
+    "win-mercy": [
+      "¡Nocaut técnico! {us}-{them} y a la ducha 💀",
+      "Paliza histórica: {us}-{them}. {opp} pidió la hora 🥊",
+      "¡{us}-{them}! Eso fue una clínica de bateo 🔥",
+      "Knockout en el 7mo. {opp} no quería estar ahí 💀",
+      "Le pasamos por encima: {us}-{them} 🚂",
+      "{us}-{them}. Hasta el bullpen bateó hoy 😤",
+      "Se acabó temprano: {us}-{them} y todos pa' la casa 🧹",
+      "{opp} va a soñar con esto: {us}-{them} 😴"
+    ],
+    "win-blowout": [
+      "Paliza seria: {us}-{them} y sin despeinarse 😎",
+      "¡{us}-{them}! Batazos por todos lados 💥",
+      "Cómodo, cómodo: {us}-{them} 🛋️",
+      "Lluvia de hits: {us}-{them} 🌧️",
+      "{opp} nunca encontró el ritmo: {us}-{them} 🎺",
+      "Jonrón va, jonrón viene: {us}-{them} 💣",
+      "Dominio total: {us}-{them} 🦾",
+      "El picheo de {opp} salió en llamas: {us}-{them} 🔥"
+    ],
+    "win-walkoff": [
+      "¡LO DEJAMOS EN EL TERRENO! {us}-{them} 💥",
+      "Walk-off en la novena: {us}-{them} 😱",
+      "¡Hit de oro! {us}-{them} y el estadio explotó 🎆",
+      "Se acabó con el madero: {us}-{them} en la última 🧨",
+      "¡Épico! La del triunfo en el 9no: {us}-{them} 🫀",
+      "Dejados en el terreno: {us}-{them} 🥳",
+      "La novena fue nuestra: {us}-{them} ⚡",
+      "Final de película: {us}-{them} 🎬"
+    ],
+    "win-close": [
+      "Sufrido pero ganado: {us}-{them} 😮‍💨",
+      "A puro corazón: {us}-{them} ❤️‍🔥",
+      "Juegazo de pitcheo: {us}-{them} 🥶",
+      "Ganamos {us}-{them} con el alma en la mano 🙏",
+      "Apretado, pero el bullpen aguantó: {us}-{them} 💪",
+      "{us}-{them}. Cardíaco, pero son tres outs 🫣",
+      "Por la mínima: {us}-{them} 🤏",
+      "La defensa cerró el candado: {us}-{them} 🧤"
+    ],
+    "win-normal": [
+      "Victoria sólida: {us}-{them} ✅",
+      "Buen béisbol y pa'lante: {us}-{them} 👏",
+      "Se ganó como se debe: {us}-{them} 🫡",
+      "Control total del juego: {us}-{them} 🎯",
+      "{us}-{them}. Oficio puro 🛠️",
+      "Bateo oportuno: {us}-{them} 📈",
+      "Otro día en la oficina: {us}-{them} 💼",
+      "{opp} dio pelea, pero no alcanzó: {us}-{them} ⚖️"
+    ],
+    "loss-mercy": [
+      "Nos noquearon: {them}-{us}… ni mires el boxscore 💀",
+      "Paliza dolorosa: {them}-{us}. A olvidarla rápido 🙈",
+      "{them}-{us}. El picheo nunca apareció 😵",
+      "Nocaut en contra: {them}-{us}. Duele 💔",
+      "Nos pasaron por arriba: {them}-{us} 🚜",
+      "Noche de pesadilla: {them}-{us} 😱",
+      "{them}-{us}… hasta la mascota nos bateó 🤡",
+      "Borrón y cuenta nueva: {them}-{us} 🧹"
+    ],
+    "loss-blowout": [
+      "Nos dieron duro: {them}-{us} 🤕",
+      "{them}-{us}. No era nuestro día ☔",
+      "El bateo se quedó en el hotel: {them}-{us} 🏨",
+      "{opp} le pegó a todo: {them}-{us} 😬",
+      "Mala noche: {them}-{us} 🌚",
+      "{them}-{us} y muchas preguntas 🤔",
+      "Sin respuestas ante {opp}: {them}-{us} 🧱",
+      "Nos leyeron el manual: {them}-{us} 📖"
+    ],
+    "loss-walkoff": [
+      "Nos dejaron en el terreno: {them}-{us} 💔",
+      "Walk-off en contra: {them}-{us}. Silencio total 🤫",
+      "{them}-{us} en la novena… eso dolió 🥀",
+      "A un out del triunfo: {them}-{us} 😭",
+      "El cierre se nos escapó: {them}-{us} 🫠",
+      "{opp} celebró en nuestra cara: {them}-{us} 🎉",
+      "Final cruel: {them}-{us} 🗡️",
+      "La pelota es redonda: {them}-{us} en la última ⚾"
+    ],
+    "loss-close": [
+      "Por nada: {them}-{us} 😤",
+      "{them}-{us}. Faltó un hit 🤏",
+      "Duelo de pitcheo… y lo perdimos: {them}-{us} 🥶",
+      "Se escapó por la mínima: {them}-{us} 😣",
+      "Tan cerca y tan lejos: {them}-{us} 🪫",
+      "{them}-{us}. Las oportunidades no se perdonan ⚠️",
+      "Un error y chao: {them}-{us} 💔",
+      "Nos ponchamos con la de ganar: {them}-{us} 😖"
+    ],
+    "loss-normal": [
+      "Derrota sin excusas: {them}-{us} 📉",
+      "{opp} fue mejor hoy: {them}-{us} 🤝",
+      "No cayeron los hits: {them}-{us} 🫤",
+      "{them}-{us}. A pensar en el próximo 🔄",
+      "Faltó chispa: {them}-{us} 🕯️",
+      "El bullpen no aguantó: {them}-{us} 🧯",
+      "{them}-{us}. El béisbol da revancha 🌅",
+      "Día gris: {them}-{us} 🌫️"
+    ]
+  },
+  "share": {
+    "title": "INVICTO",
+    "url": "invicto.game",
+    "tiers": { "invicto": "7-0 ⭐ INVICTO", "campeon": "{record} 🏆 CAMPEÓN", "subcampeon": "Subcampeón {record} 🥈" }
+  },
+  "footer": {
+    "disclaimer": "Invicto no está afiliado, avalado ni patrocinado por el World Baseball Classic, WBCI, MLB, NPB ni por ningún equipo o asociación de jugadores. Los nombres de peloteros y sus estadísticas históricas se usan como referencia factual.",
+    "about": "Acerca de",
+    "aboutText": "Invicto es un homenaje al género de los juegos de «temporada perfecta» (82-0 de la NBA, 162-0 de MLB). Datos de rosters: Wikipedia. Estadísticas: SABR Lahman Baseball Database. Hecho con cariño para la afición del Caribe y de todo el mundo beisbolero.",
+    "close": "Cerrar"
+  },
+  "meta": {
+    "title": "Invicto — ¿Puedes quedar invicto en el Clásico Mundial?",
+    "description": "Arma tu lineup con rosters reales del Clásico Mundial de Béisbol (2006–2026) y trata de ganar el torneo 7-0. Gratis, en español y en 3 minutos."
+  }
+}

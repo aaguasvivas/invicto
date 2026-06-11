@@ -1,0 +1,185 @@
+{
+  "tagline": "Can you run the table?",
+  "title": {
+    "daily": "Daily Challenge",
+    "dailyNum": "Daily Challenge #{n}",
+    "free": "Free play",
+    "hard": "Hard Mode 🔥",
+    "hardSub": "No ratings — pure memory",
+    "howto": "How to play",
+    "streak": "🔥 Streak: {n}",
+    "playedToday": "You already played today's challenge: {record}. Practice runs won't count.",
+    "best": "Personal best: {record}"
+  },
+  "howto": [
+    {
+      "icon": "🎰",
+      "title": "Draft your squad",
+      "body": "9 rounds, 9 positions. Each round rolls a random country and WBC edition — pick one hitter from that roster for your lineup. Each player can only be drafted once."
+    },
+    {
+      "icon": "🔁",
+      "title": "Two lifelines",
+      "body": "You get 1 country reroll (same edition) and 1 edition reroll (same country) per run. Spend them wisely: live with China 2009, or burn the reroll?"
+    },
+    {
+      "icon": "🏆",
+      "title": "Run the table",
+      "body": "4 pool games, quarters, semis, the final. Win the tournament and you're a CHAMPION 🏆. Win it 7-0… and you're INVICTO ⭐."
+    }
+  ],
+  "draft": {
+    "round": "Round {n} of 9",
+    "search": "Search for a player…",
+    "rerollCountry": "🔁 New country",
+    "rerollEdition": "🗓️ New edition",
+    "pickSlot": "Where does {name} play?",
+    "lineup": "Your lineup",
+    "noEligible": "Nobody on this roster fits your lineup — free roll 🎰",
+    "posGroups": { "C": "Catchers", "IF": "Infielders", "OF": "Outfielders", "DH": "Designated hitters" }
+  },
+  "sim": {
+    "title": "Play ball!",
+    "skip": "Tap to skip ahead",
+    "stages": { "pool": "Pool play", "qf": "Quarterfinal", "sf": "Semifinal", "final": "THE FINAL" },
+    "you": "Your Team"
+  },
+  "result": {
+    "invicto": "INVICTO!",
+    "invictoSub": "Perfect. 7-0. Nobody touched you. ⭐",
+    "campeon": "CHAMPION!",
+    "campeonSub": "They got you once… and you lifted the trophy anyway.",
+    "subcampeon": "Runner-up",
+    "subcampeonSub": "One game short. That stings.",
+    "eliminated-sf": "Out in the semis",
+    "eliminated-sfSub": "One step from the final. Baseball is cruel.",
+    "eliminated-qf": "Out in the quarters",
+    "eliminated-qfSub": "The bracket forgives nothing.",
+    "eliminated-pool": "Out in pool play",
+    "eliminated-poolSub": "Didn't even make the quarters… back to the drawing board.",
+    "share": "📤 Share",
+    "copy": "📋 Copy card",
+    "copied": "Copied! Paste it anywhere 🔥",
+    "again": "⚾ Play again",
+    "practice": "Practice run (not scored)",
+    "eliminatedShare": "Out in {stage} {record}",
+    "stageShort": { "pool": "pool play", "qf": "the quarters", "sf": "the semis", "final": "the final" }
+  },
+  "flavor": {
+    "win-mercy": [
+      "Mercy rule! {us}-{them}, hit the showers 💀",
+      "Historic beatdown: {us}-{them}. {opp} wanted out 🥊",
+      "{us}-{them}! That was a hitting clinic 🔥",
+      "Mercy'd in the 7th. {opp} did not want to be there 💀",
+      "We ran them over: {us}-{them} 🚂",
+      "{us}-{them}. Even the bullpen got hits today 😤",
+      "Early night: {us}-{them}, everybody go home 🧹",
+      "{opp} will have nightmares about this: {us}-{them} 😴"
+    ],
+    "win-blowout": [
+      "Comfortable beatdown: {us}-{them}, never broke a sweat 😎",
+      "{us}-{them}! Barrels everywhere 💥",
+      "Easy does it: {us}-{them} 🛋️",
+      "Raining hits: {us}-{them} 🌧️",
+      "{opp} never found a rhythm: {us}-{them} 🎺",
+      "Homer here, homer there: {us}-{them} 💣",
+      "Total control: {us}-{them} 🦾",
+      "{opp}'s pitching went up in flames: {us}-{them} 🔥"
+    ],
+    "win-walkoff": [
+      "WALK-OFF! {us}-{them} 💥",
+      "Walked it off in the 9th: {us}-{them} 😱",
+      "Golden hit! {us}-{them} and the stadium exploded 🎆",
+      "Ended it with the lumber: {us}-{them} in the last AB 🧨",
+      "Epic! Winning run in the 9th: {us}-{them} 🫀",
+      "Sent them home crying: {us}-{them} 🥳",
+      "The 9th belonged to us: {us}-{them} ⚡",
+      "Movie ending: {us}-{them} 🎬"
+    ],
+    "win-close": [
+      "Ugly but it counts: {us}-{them} 😮‍💨",
+      "Pure heart: {us}-{them} ❤️‍🔥",
+      "A real pitchers' duel: {us}-{them} 🥶",
+      "Won {us}-{them} with our soul on the line 🙏",
+      "Tight one, but the bullpen held: {us}-{them} 💪",
+      "{us}-{them}. Cardiac, but it's three outs 🫣",
+      "By the skin of our teeth: {us}-{them} 🤏",
+      "Defense slammed the door: {us}-{them} 🧤"
+    ],
+    "win-normal": [
+      "Solid win: {us}-{them} ✅",
+      "Good baseball, moving on: {us}-{them} 👏",
+      "Won it the right way: {us}-{them} 🫡",
+      "Controlled it wire to wire: {us}-{them} 🎯",
+      "{us}-{them}. Pure craft 🛠️",
+      "Timely hitting: {us}-{them} 📈",
+      "Another day at the office: {us}-{them} 💼",
+      "{opp} put up a fight, not enough: {us}-{them} ⚖️"
+    ],
+    "loss-mercy": [
+      "We got mercy'd: {them}-{us}… don't look at the box score 💀",
+      "Painful beatdown: {them}-{us}. Forget it fast 🙈",
+      "{them}-{us}. The pitching never showed up 😵",
+      "Mercy rule against us: {them}-{us}. That hurts 💔",
+      "They ran us over: {them}-{us} 🚜",
+      "Nightmare night: {them}-{us} 😱",
+      "{them}-{us}… even their mascot got a hit 🤡",
+      "Wipe it and move on: {them}-{us} 🧹"
+    ],
+    "loss-blowout": [
+      "They got us good: {them}-{us} 🤕",
+      "{them}-{us}. Not our day ☔",
+      "The bats stayed at the hotel: {them}-{us} 🏨",
+      "{opp} hit everything we threw: {them}-{us} 😬",
+      "Rough night: {them}-{us} 🌚",
+      "{them}-{us} and a lot of questions 🤔",
+      "No answers for {opp}: {them}-{us} 🧱",
+      "They read our scouting report: {them}-{us} 📖"
+    ],
+    "loss-walkoff": [
+      "Walked off: {them}-{us} 💔",
+      "Walk-off against us: {them}-{us}. Dead silence 🤫",
+      "{them}-{us} in the 9th… that one hurt 🥀",
+      "One out from winning: {them}-{us} 😭",
+      "The save slipped away: {them}-{us} 🫠",
+      "{opp} partied in our face: {them}-{us} 🎉",
+      "Cruel ending: {them}-{us} 🗡️",
+      "Baseball, man: {them}-{us} on the last pitch ⚾"
+    ],
+    "loss-close": [
+      "By a hair: {them}-{us} 😤",
+      "{them}-{us}. One hit short 🤏",
+      "Pitchers' duel… and we lost it: {them}-{us} 🥶",
+      "Slipped away by one: {them}-{us} 😣",
+      "So close, so far: {them}-{us} 🪫",
+      "{them}-{us}. Missed chances get punished ⚠️",
+      "One error and goodbye: {them}-{us} 💔",
+      "Struck out with the winning run on: {them}-{us} 😖"
+    ],
+    "loss-normal": [
+      "No excuses: {them}-{us} 📉",
+      "{opp} was better today: {them}-{us} 🤝",
+      "The hits never fell: {them}-{us} 🫤",
+      "{them}-{us}. On to the next one 🔄",
+      "Missing a spark: {them}-{us} 🕯️",
+      "Bullpen couldn't hold it: {them}-{us} 🧯",
+      "{them}-{us}. Baseball always gives a rematch 🌅",
+      "Gray day: {them}-{us} 🌫️"
+    ]
+  },
+  "share": {
+    "title": "INVICTO",
+    "url": "invicto.game",
+    "tiers": { "invicto": "7-0 ⭐ INVICTO", "campeon": "{record} 🏆 CHAMPION", "subcampeon": "Runner-up {record} 🥈" }
+  },
+  "footer": {
+    "disclaimer": "Invicto is not affiliated with, endorsed by, or sponsored by the World Baseball Classic, WBCI, MLB, NPB, or any team or players' association. Player names and historical statistics are used as factual references.",
+    "about": "About",
+    "aboutText": "Invicto is a tribute to the perfect-season game genre (the NBA's 82-0, MLB's 162-0). Roster data: Wikipedia. Stats: SABR Lahman Baseball Database. Made with love for Caribbean baseball fandom and the whole baseball world.",
+    "close": "Close"
+  },
+  "meta": {
+    "title": "Invicto — Can you run the table at the World Baseball Classic?",
+    "description": "Draft a lineup from real World Baseball Classic rosters (2006–2026) and try to win it all 7-0. Free, bilingual, three minutes a run."
+  }
+}

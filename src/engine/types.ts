@@ -15,6 +15,8 @@ export interface EnginePlayer {
   speed: number;
   defense: number;
   clutch: number;
+  /** display only — current club at the time of the edition */
+  club?: string | null;
 }
 
 /** Edition year → country codes that played it (from editions.json). */
