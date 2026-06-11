@@ -181,6 +181,31 @@
   },
   "meta": {
     "title": "Invicto — Can you run the table at the World Baseball Classic?",
-    "description": "Draft a lineup from real World Baseball Classic rosters (2006–2026) and try to win it all 7-0. Free, bilingual, three minutes a run."
+    "description": "Draft a lineup from real World Baseball Classic rosters (2006–2026) and try to win it all 7-0. Free, multilingual, three minutes a run."
+  },
+  "countries": {
+    "AUS": "Australia",
+    "BRA": "Brazil",
+    "CAN": "Canada",
+    "CHN": "China",
+    "COL": "Colombia",
+    "CUB": "Cuba",
+    "CZE": "Czech Republic",
+    "DOM": "Dominican Republic",
+    "ESP": "Spain",
+    "GBR": "Great Britain",
+    "ISR": "Israel",
+    "ITA": "Italy",
+    "JPN": "Japan",
+    "KOR": "South Korea",
+    "MEX": "Mexico",
+    "NCA": "Nicaragua",
+    "NED": "Netherlands",
+    "PAN": "Panama",
+    "PUR": "Puerto Rico",
+    "RSA": "South Africa",
+    "TPE": "Chinese Taipei",
+    "USA": "United States",
+    "VEN": "Venezuela"
   }
 }

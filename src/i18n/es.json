@@ -182,5 +182,30 @@
   "meta": {
     "title": "Invicto — ¿Puedes quedar invicto en el Clásico Mundial?",
     "description": "Arma tu lineup con rosters reales del Clásico Mundial de Béisbol (2006–2026) y trata de ganar el torneo 7-0. Gratis, en español y en 3 minutos."
+  },
+  "countries": {
+    "AUS": "Australia",
+    "BRA": "Brasil",
+    "CAN": "Canadá",
+    "CHN": "China",
+    "COL": "Colombia",
+    "CUB": "Cuba",
+    "CZE": "Chequia",
+    "DOM": "República Dominicana",
+    "ESP": "España",
+    "GBR": "Gran Bretaña",
+    "ISR": "Israel",
+    "ITA": "Italia",
+    "JPN": "Japón",
+    "KOR": "Corea del Sur",
+    "MEX": "México",
+    "NCA": "Nicaragua",
+    "NED": "Países Bajos",
+    "PAN": "Panamá",
+    "PUR": "Puerto Rico",
+    "RSA": "Sudáfrica",
+    "TPE": "Taipéi Chino",
+    "USA": "Estados Unidos",
+    "VEN": "Venezuela"
   }
 }

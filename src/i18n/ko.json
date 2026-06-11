@@ -1,0 +1,211 @@
+{
+  "tagline": "7전 전승, 할 수 있겠어?",
+  "title": {
+    "daily": "오늘의 챌린지",
+    "dailyNum": "오늘의 챌린지 #{n}",
+    "free": "자유 플레이",
+    "hard": "하드 모드 🔥",
+    "hardSub": "능력치 없이 순수 기억력으로",
+    "howto": "게임 방법",
+    "streak": "🔥 연속 기록: {n}",
+    "playedToday": "오늘의 챌린지는 이미 플레이했어요: {record}. 연습 플레이는 점수에 들어가지 않습니다.",
+    "best": "최고 기록: {record}"
+  },
+  "howto": [
+    {
+      "icon": "🎰",
+      "title": "팀을 만들자",
+      "body": "9라운드, 9개 포지션. 라운드마다 무작위로 나라와 대회 연도가 나오면, 그 로스터에서 한 명을 골라 라인업에 넣으세요. 같은 선수는 한 번만 뽑을 수 있습니다."
+    },
+    {
+      "icon": "🔁",
+      "title": "두 개의 구명줄",
+      "body": "국가 다시 뽑기(같은 연도) 1회, 연도 다시 뽑기(같은 국가) 1회. 타이밍이 승부처: 2009년 중국으로 버틸까, 여기서 쓸까?"
+    },
+    {
+      "icon": "🏆",
+      "title": "전승 우승에 도전",
+      "body": "조별리그 4경기, 8강, 4강, 결승. 우승하면 CAMPEÓN 🏆. 7전 전승이면… 그게 바로 INVICTO ⭐, 완벽한 우승."
+    }
+  ],
+  "draft": {
+    "round": "라운드 {n}/9",
+    "search": "선수 검색…",
+    "rerollCountry": "🔁 국가 변경",
+    "rerollEdition": "🗓️ 연도 변경",
+    "pickSlot": "{name}의 포지션은?",
+    "lineup": "내 라인업",
+    "noEligible": "이 로스터엔 넣을 수 있는 선수가 없어요: 무료로 다시 뽑기 🎰",
+    "posGroups": { "C": "포수", "IF": "내야수", "OF": "외야수", "DH": "지명타자" }
+  },
+  "sim": {
+    "title": "플레이볼!",
+    "skip": "탭하면 빨리 감기",
+    "stages": { "pool": "조별리그", "qf": "8강", "sf": "4강", "final": "결승" },
+    "you": "내 팀"
+  },
+  "result": {
+    "invicto": "INVICTO!",
+    "invictoSub": "완벽. 7전 전승. 아무도 건드리지 못했다.",
+    "campeon": "CAMPEÓN!",
+    "campeonSub": "한 번 졌지만… 그래도 트로피는 우리 것.",
+    "subcampeon": "준우승",
+    "subcampeonSub": "한 경기가 모자랐다. 쓰리다.",
+    "eliminated-sf": "4강 탈락",
+    "eliminated-sfSub": "결승까지 한 걸음. 야구는 잔인하다.",
+    "eliminated-qf": "8강 탈락",
+    "eliminated-qfSub": "토너먼트는 용서가 없다.",
+    "eliminated-pool": "조별리그 탈락",
+    "eliminated-poolSub": "8강도 못 갔다… 라인업부터 다시 짜자.",
+    "share": "📤 공유하기",
+    "copy": "📋 결과 복사",
+    "copied": "복사 완료! 아무 데나 붙여넣으세요 🔥",
+    "again": "⚾ 한 판 더",
+    "home": "처음으로",
+    "practice": "연습 플레이 (점수 미반영)",
+    "eliminatedShare": "{stage} 탈락 {record}",
+    "stageShort": { "pool": "조별리그", "qf": "8강", "sf": "4강", "final": "결승" }
+  },
+  "flavor": {
+    "win-mercy": [
+      "콜드게임 승리! {us}-{them}로 조기 종료 💀",
+      "역사적인 대승: {us}-{them}. {opp}는 집에 가고 싶었다 🚌",
+      "{us}-{them}! 타격 교과서 같은 경기 🔥",
+      "7회 콜드. {opp}에겐 너무 긴 하루 💀",
+      "그냥 밟고 지나갔다: {us}-{them} 🚂",
+      "{us}-{them}. 벤치 멤버까지 다 쳤다 😤",
+      "일찍 끝났다: {us}-{them}, 다들 퇴근 🧹",
+      "{opp}는 오늘 밤 악몽 꾼다: {us}-{them} 😴"
+    ],
+    "win-blowout": [
+      "여유로운 완승: {us}-{them} 😎",
+      "{us}-{them}! 타구가 쉴 새 없이 날았다 💥",
+      "편안하게 끝냈다: {us}-{them} 🛋️",
+      "안타가 비처럼 쏟아졌다: {us}-{them} 🌧️",
+      "{opp}는 리듬을 못 찾았다: {us}-{them} 🎺",
+      "홈런 잔치: {us}-{them} 💣",
+      "완벽한 지배: {us}-{them} 🦾",
+      "{opp} 마운드가 무너졌다: {us}-{them} 🔥"
+    ],
+    "win-walkoff": [
+      "끝내기 승리! {us}-{them} 💥",
+      "9회말에 끝냈다: {us}-{them} 😱",
+      "천금 같은 한 방! {us}-{them}, 구장이 터졌다 🎆",
+      "방망이로 마침표를 찍었다: {us}-{them} 🧨",
+      "극적이다! 9회 결승점: {us}-{them} 🫀",
+      "울면서 돌려보냈다: {us}-{them} 🥳",
+      "9회는 우리 것이었다: {us}-{them} ⚡",
+      "영화 같은 결말: {us}-{them} 🎬"
+    ],
+    "win-close": [
+      "고생했지만 이겼다: {us}-{them} 😮‍💨",
+      "순전히 깡으로 이겼다: {us}-{them} ❤️‍🔥",
+      "명품 투수전: {us}-{them} 🥶",
+      "영혼을 갈아 넣은 {us}-{them} 승리 🙏",
+      "접전을 불펜이 지켜냈다: {us}-{them} 💪",
+      "{us}-{them}. 심장에 안 좋지만 승리는 승리 🫣",
+      "간발의 차이: {us}-{them} 🤏",
+      "수비가 경기를 잠갔다: {us}-{them} 🧤"
+    ],
+    "win-normal": [
+      "단단한 승리: {us}-{them} ✅",
+      "좋은 야구였다: {us}-{them} 👏",
+      "이길 만해서 이겼다: {us}-{them} 🫡",
+      "처음부터 끝까지 지배했다: {us}-{them} 🎯",
+      "{us}-{them}. 장인의 솜씨 🛠️",
+      "찬스에서 제대로 터졌다: {us}-{them} 📈",
+      "평소처럼 출근, 평소처럼 승리: {us}-{them} 💼",
+      "{opp}도 버텼지만 역부족: {us}-{them} ⚖️"
+    ],
+    "loss-mercy": [
+      "콜드게임 패배: {them}-{us}… 기록지는 보지 마세요 💀",
+      "뼈아픈 대패: {them}-{us}. 빨리 잊자 🙈",
+      "{them}-{us}. 마운드가 실종됐다 😵",
+      "설마 했던 콜드패: {them}-{us}. 아프다 💔",
+      "그냥 깔렸다: {them}-{us} 🚜",
+      "악몽 같은 밤: {them}-{us} 😱",
+      "{them}-{us}… 마스코트한테도 맞은 기분 🤡",
+      "지우고 다음 경기로: {them}-{us} 🧹"
+    ],
+    "loss-blowout": [
+      "제대로 당했다: {them}-{us} 🤕",
+      "{them}-{us}. 우리 날이 아니었다 ☔",
+      "방망이를 호텔에 두고 왔다: {them}-{us} 🏨",
+      "{opp}가 다 받아쳤다: {them}-{us} 😬",
+      "험한 밤이었다: {them}-{us} 🌚",
+      "{them}-{us}, 숙제만 잔뜩 받았다 🤔",
+      "{opp} 공략법을 못 찾았다: {them}-{us} 🧱",
+      "전력 분석을 다 읽혔다: {them}-{us} 📖"
+    ],
+    "loss-walkoff": [
+      "끝내기 패배: {them}-{us} 💔",
+      "9회에 찾아온 침묵: {them}-{us} 🤫",
+      "9회 {them}-{us}… 이건 아프다 🥀",
+      "승리까지 아웃 하나: {them}-{us} 😭",
+      "마무리가 무너졌다: {them}-{us} 🫠",
+      "{opp}가 눈앞에서 환호했다: {them}-{us} 🎉",
+      "잔인한 결말: {them}-{us} 🗡️",
+      "이게 야구다: 마지막 공에 {them}-{us} ⚾"
+    ],
+    "loss-close": [
+      "한 끗 차이: {them}-{us} 😤",
+      "{them}-{us}. 안타 하나가 모자랐다 🤏",
+      "투수전을 내줬다: {them}-{us} 🥶",
+      "아슬아슬하게 놓쳤다: {them}-{us} 😣",
+      "가깝고도 멀었다: {them}-{us} 🪫",
+      "{them}-{us}. 찬스를 놓치면 벌을 받는다 ⚠️",
+      "실책 하나에 끝났다: {them}-{us} 💔",
+      "끝내기 주자를 두고 삼진: {them}-{us} 😖"
+    ],
+    "loss-normal": [
+      "변명 없는 패배: {them}-{us} 📉",
+      "오늘은 {opp}가 더 잘했다: {them}-{us} 🤝",
+      "안타가 안 나왔다: {them}-{us} 🫤",
+      "{them}-{us}. 털고 다음 경기로 🔄",
+      "2% 부족했다: {them}-{us} 🕯️",
+      "불펜이 못 버텼다: {them}-{us} 🧯",
+      "{them}-{us}. 야구는 내일이 있다 🌅",
+      "흐린 날이었다: {them}-{us} 🌫️"
+    ]
+  },
+  "share": {
+    "title": "INVICTO",
+    "url": "invicto.game",
+    "tiers": { "invicto": "7-0 ⭐ INVICTO", "campeon": "{record} 🏆 CAMPEÓN", "subcampeon": "준우승 {record} 🥈" }
+  },
+  "footer": {
+    "disclaimer": "Invicto는 World Baseball Classic, WBCI, MLB, NPB 및 어떤 구단이나 선수 협회와도 제휴·승인·후원 관계가 없습니다. 선수 이름과 과거 성적은 사실에 대한 참고로만 사용됩니다.",
+    "about": "소개",
+    "aboutText": "Invicto는 '퍼펙트 시즌' 장르 게임(NBA 82-0, MLB 162-0)에 대한 오마주입니다. 로스터 데이터: Wikipedia. 성적 데이터: SABR Lahman Baseball Database. 전 세계 야구 팬들을 위해 만들었습니다.",
+    "close": "닫기"
+  },
+  "meta": {
+    "title": "Invicto — WBC 전승 우승에 도전!",
+    "description": "WBC(2006–2026) 실제 로스터로 라인업을 짜고 7전 전승 우승에 도전하세요. 무료, 한 판에 3분."
+  },
+  "countries": {
+    "AUS": "호주",
+    "BRA": "브라질",
+    "CAN": "캐나다",
+    "CHN": "중국",
+    "COL": "콜롬비아",
+    "CUB": "쿠바",
+    "CZE": "체코",
+    "DOM": "도미니카 공화국",
+    "ESP": "스페인",
+    "GBR": "영국",
+    "ISR": "이스라엘",
+    "ITA": "이탈리아",
+    "JPN": "일본",
+    "KOR": "대한민국",
+    "MEX": "멕시코",
+    "NCA": "니카라과",
+    "NED": "네덜란드",
+    "PAN": "파나마",
+    "PUR": "푸에르토리코",
+    "RSA": "남아공",
+    "TPE": "대만",
+    "USA": "미국",
+    "VEN": "베네수엘라"
+  }
+}

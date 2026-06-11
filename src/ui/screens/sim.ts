@@ -1,7 +1,7 @@
 // Simulation screen: bracket cards flip one at a time (~600ms, tap to skip).
 
 import type { GameResult, RunResult, Stage } from '../../engine/types';
-import { flavor, getLang, t } from '../../i18n';
+import { countryName, flavor, t } from '../../i18n';
 import type { GameData } from '../../game/data';
 import { setAccent } from '../accents';
 import { clear, h } from '../dom';
@@ -40,7 +40,7 @@ export function renderSim(app: HTMLElement, run: RunResult, data: GameData, onDo
   const revealCard = (game: GameResult) => {
     const card = cards.get(game.stage)!;
     const country = data.countries.get(game.opponent.country)!;
-    const oppName = getLang() === 'es' ? country.nameEs : country.nameEn;
+    const oppName = countryName(country);
     clear(card);
     card.classList.remove('pending');
     card.classList.add(game.win ? 'win' : 'loss', 'reveal');

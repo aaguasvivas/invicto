@@ -36,19 +36,22 @@ comma-delimited version from https://sabr.org/lahman-database/ (files: `People.c
 The build validates roster sizes, positions, duplicate IDs, and famous-player spot checks, then
 prints a summary table and rating histogram. See [DATA.md](DATA.md) for the full methodology.
 
-## Adding a language
+## Languages
 
-The brand nouns (INVICTO, CAMPEÓN) stay untranslated in every language — they're the tier
-names. Everything else localizes. To add Japanese, Korean, etc.:
+Ships with Spanish (the source language), English, Japanese, and Korean. The brand nouns
+(INVICTO, CAMPEÓN) stay untranslated everywhere — they're the tier names. To add another
+language:
 
-1. Copy `src/i18n/es.json` to `src/i18n/ja.json` and translate it **natively** (the same bar as
-   the Spanish: real baseball register, never machine-translated — including all 80 flavor
-   lines).
+1. Copy `src/i18n/es.json` to `src/i18n/<code>.json` and translate it **natively** (the same
+   bar as the Spanish: real baseball register, never machine-translated — including all 80
+   flavor lines and the 23 country names).
 2. Register it in `src/i18n/index.ts`:
-   `{ code: 'ja', label: '日本語', table: ja, locale: 'ja' }`.
+   `{ code: 'xx', label: '<native name>', table: xx, locale: 'xx' }`.
 
-That's it — the title-screen switcher cycles through every registered language, browser
-detection picks it up via `navigator.languages`, and dates format through the `locale` tag.
+The title-screen switcher cycles through every registered language, browser detection works via
+`navigator.languages`, dates format through the `locale` tag, and `src/i18n/i18n.test.ts` fails
+the build if any table drifts from the Spanish key tree, drops below 8 flavor variants per
+outcome type, or misses a country name.
 
 ## Deploying (Cloudflare Pages)
 

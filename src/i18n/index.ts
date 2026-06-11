@@ -7,6 +7,8 @@
 
 import es from './es.json';
 import en from './en.json';
+import ja from './ja.json';
+import ko from './ko.json';
 
 export interface LanguageDef {
   code: string;
@@ -20,8 +22,8 @@ export interface LanguageDef {
 export const REGISTRY: LanguageDef[] = [
   { code: 'es', label: 'Español', table: es, locale: 'es' },
   { code: 'en', label: 'English', table: en, locale: 'en' },
-  // Future: { code: 'ja', label: '日本語', table: ja, locale: 'ja' },
-  //         { code: 'ko', label: '한국어', table: ko, locale: 'ko' },
+  { code: 'ja', label: '日本語', table: ja, locale: 'ja' },
+  { code: 'ko', label: '한국어', table: ko, locale: 'ko' },
 ];
 
 export type Lang = string;
@@ -100,6 +102,12 @@ export function flavor(key: string, variant: number, params: Record<string, stri
 /** The three how-to-play panels. */
 export function howtoPanels(): { icon: string; title: string; body: string }[] {
   return lookup('howto') as { icon: string; title: string; body: string }[];
+}
+
+/** Localized country display name; falls back to the English name from the data. */
+export function countryName(c: { code: string; nameEn: string }): string {
+  const localized = lookup(`countries.${c.code}`);
+  return typeof localized === 'string' ? localized : c.nameEn;
 }
 
 export function applyMeta(): void {

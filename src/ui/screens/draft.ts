@@ -4,14 +4,13 @@
 import { eligibleSlots } from '../../engine/positions';
 import { openSlots, POWERS } from '../../engine/draft';
 import type { EnginePlayer, Slot } from '../../engine/types';
-import { getLang, t } from '../../i18n';
+import { countryName, t } from '../../i18n';
 import { setAccent } from '../accents';
 import { crowdRoar } from '../sound';
 import type { Session } from '../../game/session';
 import {
   canRerollCountry, canRerollEdition, currentRoster, draftDone, pick, rerollCountry, rerollEdition,
 } from '../../game/session';
-import type { Country } from '../../game/data';
 import { clear, h, toast } from '../dom';
 
 const SLOT_ORDER: Slot[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
@@ -26,10 +25,6 @@ export function renderDraft(app: HTMLElement, session: Session, cb: DraftCallbac
   const screen = h('div.draft-screen');
   app.append(screen);
   drawRound(screen, session, cb, true);
-}
-
-function countryName(c: Country): string {
-  return getLang() === 'es' ? c.nameEs : c.nameEn;
 }
 
 function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, spin: boolean): void {
