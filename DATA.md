@@ -48,13 +48,21 @@ pitchers who batted never reached 200 PA).
 
 ### MLB-matched players (`ratingMethod: "mlb-window"`)
 
-Best MLB season with **PA ≥ 100 within ±1 calendar year of the edition** (for 2026, only
-seasons through 2025 exist yet, which is still inside the window). Era adjustment comes free by
+Seasons with **PA ≥ 100 within ±1 calendar year of the edition** (for 2026, only seasons
+through 2025 exist yet, which is still inside the window). Era adjustment comes free by
 computing everything relative to that season's league (AL/NL totals from `Batting.csv`):
 
 ```
 OPS+approx = 100 × (OBP/lgOBP + SLG/lgSLG − 1)
 ```
+
+Two corrections keep "superstar" meaning superstar:
+
+- **Reliability shrinkage** — each season's deviation from league average is scaled by
+  `PA/(PA+100)`, so a hot 140-PA stint can't rate like a full elite season.
+- **Peak blend** — the window composite is `0.7 × best season + 0.3 × mean(other window
+  seasons)`. Sustained greats (Pujols, Cabrera, Trout, Judge, Ohtani) stay at the top; a single
+  career year (2005 Derrek Lee, 2006 Morneau) lands a tier below.
 
 No park adjustment (documented simplification). If a matched player has no qualifying season in
 the window but has one with ≥ 200 PA within ±4 years, that season is used decayed by **5% per
@@ -82,8 +90,33 @@ Cuban National Series players and affiliated minor leaguers aren't lumped with a
 | Everything else (ABL, LMB, European, amateur…) | 0.70 |
 
 League is read from the roster page's League column when present; otherwise classified from the
-club name (MLB franchise names from `Teams.csv`; "(farm)" suffix → minors). Unclassifiable →
-"everything else".
+club name: MLB franchise names from `Teams.csv`, "(farm)" suffix → minors, and a **club →
+league map voted from every roster row that does have a League column** (the 2006/2009 pages
+only list clubs, so "Yomiuri Giants" resolves to NPB through what later editions say about that
+club). Unclassifiable → "everything else".
+
+### Curated foreign stars (`ratingMethod: "curated"`)
+
+The tier heuristic can't see that 2023 Murakami was coming off 56 HR. The fix is a hand-curated
+tier file, `data/curation/foreign-stars.json` (~130 entries), under strict integrity rules:
+
+- An entry can only **lift** a player who is already on a scraped roster — `(edition, exact
+  roster name)` must match or the build fails. Curation can never invent a roster spot.
+- Every entry cites a Wikipedia article. The build fetches each citation (cached) and fails on
+  HTTP errors; it warns when the article doesn't mention the claimed league. (This caught two
+  wrong-person redirects on the first run.)
+- The applied composite is `max(computed, tierValue × league multiplier)` — it never lowers.
+- Tiers: **S** = 150 (generational: 2023 Murakami, 2012 Abe, peak Yamada, 2006 Lee Seung-yeop,
+  2026 Kim Do-yeong), **A+** = 135, **A** = 125, **B+** = 110. Where a player's accomplishments
+  are thin or absent, they are deliberately *not* curated — absence of accomplishments is
+  itself the signal, and the tier heuristic stands.
+
+### Positional offense adjustment
+
+The overall rating adds a positional adjustment to the composite (premium positions get bat
+credit, like real positional adjustments): C +12, SS +7, CF +6, 2B/3B +4, corners 0, 1B −3,
+DH −6, plus a small speed credit (`0.15 × (speed − 50)`). Defense remains a gated category in
+the team-rating blend but no longer double-counts into the overall number.
 
 ### Composite → rating curve
 

@@ -13,7 +13,7 @@ import { normalizeName } from './databank.js';
 import type { PosGroup, ScrapedPlayer } from './wikipedia.js';
 
 export type Position = 'C' | '1B' | '2B' | '3B' | 'SS' | 'LF' | 'CF' | 'RF' | 'DH';
-export type RatingMethod = 'mlb-window' | 'mlb-nearest' | 'heuristic';
+export type RatingMethod = 'mlb-window' | 'mlb-nearest' | 'heuristic' | 'curated';
 
 export interface RatedPlayer {
   id: string;
@@ -44,7 +44,30 @@ const LEAGUE_PATTERNS: [RegExp, string][] = [
   [/cuban national/i, 'cuba'],
 ];
 
-export function classifyLeague(p: ScrapedPlayer, db: Databank): string {
+/**
+ * Build club → league-class pairs from every roster row that has an explicit
+ * League column (2013/2017/2026 and half of 2023). The 2006/2009 pages only
+ * list clubs, so "Yomiuri Giants" etc. resolve through this map.
+ */
+export function buildClubLeagueMap(players: ScrapedPlayer[]): Map<string, string> {
+  const votes = new Map<string, Map<string, number>>();
+  for (const p of players) {
+    if (!p.leagueRaw || !p.club) continue;
+    let cls = 'other';
+    for (const [re, c] of LEAGUE_PATTERNS) if (re.test(p.leagueRaw)) { cls = c; break; }
+    const club = normalizeName(p.club.replace(/\(farm\)/i, ''));
+    if (!club) continue;
+    const v = votes.get(club) ?? votes.set(club, new Map()).get(club)!;
+    v.set(cls, (v.get(cls) ?? 0) + 1);
+  }
+  const map = new Map<string, string>();
+  for (const [club, v] of votes) {
+    map.set(club, [...v.entries()].sort((a, b) => b[1] - a[1])[0][0]);
+  }
+  return map;
+}
+
+export function classifyLeague(p: ScrapedPlayer, db: Databank, clubLeagues?: Map<string, string>): string {
   if (p.leagueRaw) {
     for (const [re, cls] of LEAGUE_PATTERNS) if (re.test(p.leagueRaw)) return cls;
     return 'other';
@@ -53,6 +76,8 @@ export function classifyLeague(p: ScrapedPlayer, db: Databank): string {
     const clubNorm = normalizeName(p.club.replace(/\(farm\)/i, ''));
     if (/\(farm\)/i.test(p.club)) return 'milb';
     if (db.mlbClubNames.has(clubNorm)) return 'mlb';
+    const fromMap = clubLeagues?.get(clubNorm);
+    if (fromMap) return fromMap;
   }
   return 'other';
 }
@@ -125,9 +150,13 @@ function scoreSeason(s: SeasonBatting, db: Databank): SeasonScore | null {
   const avg = s.H / s.AB;
   const iso = slg - avg;
   const kRate = s.PA > 0 ? s.SO / s.PA : lg.kRate;
+  const rawOpsPlus = 100 * (obp / lg.obp + slg / lg.slg - 1);
+  // Reliability shrinkage: a hot 140-PA stint shouldn't rate like a full elite
+  // season — deviations from league average shrink by PA/(PA+100).
+  const reliability = s.PA / (s.PA + 100);
   return {
     year: s.year,
-    opsPlus: 100 * (obp / lg.obp + slg / lg.slg - 1),
+    opsPlus: 100 + (rawOpsPlus - 100) * reliability,
     contactScore: avg / lg.avg - 0.5 * (kRate / lg.kRate - 1),
     powerScore: iso / lg.iso,
     speedScore: s.PA > 0 ? (s.SB + 2 * s.T) / s.PA : 0,
@@ -145,17 +174,17 @@ export interface OffenseResult {
 export function bestMlbSeason(person: Person, edition: number, db: Databank): OffenseResult | null {
   const seasons = db.battingByPlayer.get(person.playerID) ?? [];
   const inWindow = seasons.filter((s) => Math.abs(s.year - edition) <= 1 && s.PA >= 100);
-  const pick = (pool: SeasonBatting[]): SeasonScore | null => {
-    let best: SeasonScore | null = null;
-    for (const s of pool) {
-      const sc = scoreSeason(s, db);
-      if (sc && (!best || sc.opsPlus > best.opsPlus)) best = sc;
-    }
-    return best;
-  };
-  const windowBest = pick(inWindow);
-  if (windowBest) {
-    return { composite: windowBest.opsPlus, contactScore: windowBest.contactScore, powerScore: windowBest.powerScore, speedScore: windowBest.speedScore, method: 'mlb-window' };
+  const scored = inWindow.map((s) => scoreSeason(s, db)).filter((s): s is SeasonScore => s !== null);
+  if (scored.length > 0) {
+    // Blend the peak with the surrounding seasons so a single hot year doesn't
+    // rate like sustained greatness (2006 Derrek Lee vs prime Pujols).
+    const best = scored.reduce((a, b) => (b.opsPlus > a.opsPlus ? b : a));
+    const others = scored.filter((s) => s !== best);
+    const composite =
+      others.length > 0
+        ? 0.7 * best.opsPlus + 0.3 * (others.reduce((sum, s) => sum + s.opsPlus, 0) / others.length)
+        : best.opsPlus;
+    return { composite, contactScore: best.contactScore, powerScore: best.powerScore, speedScore: best.speedScore, method: 'mlb-window' };
   }
   // Nearest qualifying season within ±4 years, decayed 5% per year beyond the window.
   const nearby = seasons
@@ -225,10 +254,11 @@ const GROUP_POSITIONS: Record<PosGroup, Position[]> = {
 export function refinePositions(p: ScrapedPlayer, match: Match | null, db: Databank): Position[] {
   if (match) {
     const apps = db.appearancesByPlayer.get(match.person.playerID) ?? [];
+    // Window then widen — but never the full career: a 2006 edition shouldn't
+    // inherit positions a player only took up in MLB a decade later.
     const windows = [
       apps.filter((a) => Math.abs(a.year - p.edition) <= 1),
       apps.filter((a) => Math.abs(a.year - p.edition) <= 4),
-      apps,
     ];
     for (const win of windows) {
       const total = win.reduce((s, a) => s + a.G_all, 0);

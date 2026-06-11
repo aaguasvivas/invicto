@@ -9,10 +9,11 @@
 
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { COUNTRIES } from './lib/countries.js';
+import { loadCuration, verifyCuration, TIER_VALUES } from './lib/curation.js';
 import { DATABANK_SOURCE, loadDatabank, normalizeName } from './lib/databank.js';
 import {
-  bestMlbSeason, classifyLeague, clamp99, compositeToRating, defenseRating, matchPlayer,
-  refinePositions, relScoreToRating, seededRng, speedScoreToRating,
+  bestMlbSeason, buildClubLeagueMap, classifyLeague, clamp99, compositeToRating, defenseRating,
+  matchPlayer, refinePositions, relScoreToRating, seededRng, speedScoreToRating,
   type Position, type RatedPlayer, type RatingMethod,
 } from './lib/ratings.js';
 import { EDITIONS, loadPage, parseEdition, type ScrapedPlayer } from './lib/wikipedia.js';
@@ -20,6 +21,8 @@ import { EDITIONS, loadPage, parseEdition, type ScrapedPlayer } from './lib/wiki
 const LEAGUE_MULT: Record<string, number> = { mlb: 1.0, npb: 0.92, kbo: 0.85, cpbl: 0.78, cuba: 0.8, milb: 0.75, other: 0.7 };
 const TIER_COMPOSITE = { A: 125, B: 100, C: 85 } as const;
 const TWO_WAY_PA = 200; // a "pitcher" with a ≥200 PA MLB season near the edition bats (Ohtani rule)
+/** Positional offense adjustment (OPS+-scale points) — premium positions get bat credit. */
+const POS_ADJ: Record<Position, number> = { C: 12, SS: 7, CF: 6, '2B': 4, '3B': 4, RF: 0, LF: 0, '1B': -3, DH: -6 };
 
 async function main() {
   console.log('— Invicto data build —\n');
@@ -42,9 +45,19 @@ async function main() {
   console.log(`Scraped ${scraped.length} players across ${EDITIONS.length} editions`);
   for (const w of warnings) console.log(`  WARN ${w}`);
 
-  // 2) Databank + ratings
+  // 2) Databank + curation + ratings
   const db = loadDatabank();
-  console.log('Databank loaded\n');
+  console.log('Databank loaded');
+  const clubLeagues = buildClubLeagueMap(scraped);
+  console.log(`Club → league map: ${clubLeagues.size} clubs from League-column rows`);
+
+  const curation = loadCuration();
+  const curationWarnings = await verifyCuration(curation);
+  for (const w of curationWarnings) console.log(`  CURATION WARN ${w}`);
+  const curationIndex = new Map(curation.map((c) => [`${c.edition}|${c.country}|${c.name}`, c]));
+  const curationUsed = new Set<string>();
+  const curationLifts: string[] = [];
+  console.log(`Curation: ${curation.length} cited entries verified\n`);
 
   const usedIds = new Set<string>();
   const methodCount: Record<string, number> = {};
@@ -74,6 +87,8 @@ async function main() {
     }
 
     const positions = refinePositions(p, match, db);
+    const rosterLeague = classifyLeague(p, db, clubLeagues); // league at the time, from the roster row
+    const speedPrior: Partial<Record<Position, number>> = { SS: 60, CF: 62, '2B': 58, LF: 52, RF: 52, '3B': 48, '1B': 40, C: 36, DH: 38 };
     let composite: number;
     let method: RatingMethod;
     let contact: number, power: number, speed: number;
@@ -84,7 +99,7 @@ async function main() {
       power = relScoreToRating(offense.powerScore);
       speed = speedScoreToRating(offense.speedScore);
     } else {
-      const cls = match ? 'milb' : classifyLeague(p, db); // matched but never batted ≥100 PA ≈ org depth
+      const cls = match ? 'milb' : rosterLeague; // matched but never batted ≥100 PA ≈ org depth
       const age = p.dob ? p.edition - Number(p.dob.slice(0, 4)) : 27;
       const tier = age >= 23 && age <= 34 ? 'B' : 'C';
       composite = TIER_COMPOSITE[tier] * (LEAGUE_MULT[cls] ?? LEAGUE_MULT.other);
@@ -92,13 +107,35 @@ async function main() {
       const base = compositeToRating(composite);
       contact = clamp99(Math.round(base - 2 + (rng() - 0.5) * 16));
       power = clamp99(Math.round(base - 8 + (rng() - 0.5) * 20));
-      const speedPrior: Partial<Record<Position, number>> = { SS: 60, CF: 62, '2B': 58, LF: 52, RF: 52, '3B': 48, '1B': 40, C: 36, DH: 38 };
       const prior = Math.max(...positions.map((pos) => speedPrior[pos] ?? 50));
       speed = clamp99(Math.round(prior + (rng() - 0.5) * 20));
     }
+
+    // Curated tier lift: max(computed, tier × league multiplier) — never lowers.
+    const curationKey = `${p.edition}|${p.country}|${p.name}`;
+    const curated = curationIndex.get(curationKey);
+    if (curated) {
+      curationUsed.add(curationKey);
+      const curatedComposite = TIER_VALUES[curated.tier] * (LEAGUE_MULT[rosterLeague] ?? LEAGUE_MULT.other);
+      if (curatedComposite > composite) {
+        curationLifts.push(`${p.edition} ${p.country} ${p.name}: ${Math.round(composite)} → ${Math.round(curatedComposite)} (${curated.tier})`);
+        composite = curatedComposite;
+        method = 'curated';
+        // Computed subratings reflect the path that lost (bad MLB stint or flat
+        // heuristic) — resynthesize them around the curated level instead.
+        const base = compositeToRating(curatedComposite);
+        contact = clamp99(Math.round(base - 2 + (rng() - 0.5) * 16));
+        power = clamp99(Math.round(base - 8 + (rng() - 0.5) * 20));
+        const prior = Math.max(...positions.map((pos) => speedPrior[pos] ?? 50));
+        speed = clamp99(Math.round(prior + (rng() - 0.5) * 20));
+      }
+    }
+
     const defense = defenseRating(positions, match, p.edition, db, rng);
-    // Overall: offense composite nudged by defensive/speed value (OPS+-scale points).
-    const totalComposite = composite + (defense - 50) * 0.3 + ((speed ?? 50) - 50) * 0.15;
+    // Overall: composite + positional offense adjustment + small speed credit.
+    // (Defense stays a gated category; it no longer double-counts into overall.)
+    const posAdj = Math.max(...positions.map((pos) => POS_ADJ[pos]));
+    const totalComposite = composite + posAdj + 0.15 * (speed - 50);
     const rating = clamp99(compositeToRating(totalComposite));
     const clutch = clamp99(Math.round(rating + (rng() - 0.5) * 10));
     methodCount[method] = (methodCount[method] ?? 0) + 1;
@@ -132,6 +169,9 @@ async function main() {
     if (h.rating < 1 || h.rating > 99) errors.push(`${h.id}: rating ${h.rating} out of range`);
   }
   if (usedIds.size !== rated.length) errors.push('duplicate IDs detected');
+  for (const [key] of curationIndex) {
+    if (!curationUsed.has(key)) errors.push(`curation entry matched no scraped player: ${key.replace(/\|/g, ' ')}`);
+  }
 
   const spotChecks: [number, string, string[]][] = [
     [2017, 'NED', ['xander bogaerts', 'andrelton simmons', 'jurickson profar', 'jonathan schoop']],
@@ -178,9 +218,15 @@ async function main() {
     const bar = '█'.repeat(Math.round((count / maxCount) * 50));
     console.log(`${String(b).padStart(2)}-${String(b + 4).padEnd(2)} ${String(count).padStart(4)} ${bar}`);
   }
-  const top = [...hitters].sort((a, b) => b.rating - a.rating).slice(0, 12);
-  console.log('\nTop-rated hitters:');
-  for (const t of top) console.log(`  ${t.rating}  ${t.name} — ${t.country} ${t.edition} (${t.ratingMethod})`);
+  console.log('\n=== Top 20 hitters per edition ===');
+  for (const year of EDITIONS) {
+    const top = hitters.filter((h) => h.edition === year).sort((a, b) => b.rating - a.rating).slice(0, 20);
+    console.log(`\n${year}: ${top.map((t) => `${t.name} ${t.rating}${t.ratingMethod === 'curated' ? '*' : ''} (${t.country})`).join(', ')}`);
+  }
+  if (curationLifts.length) {
+    console.log(`\n=== Curated lifts applied: ${curationLifts.length} ===`);
+    for (const lift of curationLifts) console.log(`  ${lift}`);
+  }
 
   if (flagged.length) {
     console.log('\n=== Flagged for manual review (roster size) ===');
