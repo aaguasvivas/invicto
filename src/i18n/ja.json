@@ -188,6 +188,13 @@
       "灰色の一日：{them}-{us} 🌫️"
     ]
   },
+  "global": {
+    "beat": "🌎 今日のマネージャーの{pct}%に勝利",
+    "first": "🏁 今日最初のマネージャーだ！",
+    "counts": "今日: {total}人参加 · INVICTO {invictos}人",
+    "rarest": "💎 一番レアな指名: {name}（選んだのは{pct}%だけ）",
+    "top": "今日のトップ{pct}%"
+  },
   "share": {
     "title": "INVICTO",
     "url": "invictobaseball.com/ja/",

@@ -2,7 +2,7 @@
 // The Git-connected build runs `npm run build` then `npx wrangler deploy`.
 {
   "name": "invicto",
-  "compatibility_date": "2026-06-11",
+  "compatibility_date": "2026-05-01",
   "assets": {
     "directory": "./dist",
     "not_found_handling": "single-page-application"

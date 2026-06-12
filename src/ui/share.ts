@@ -12,12 +12,15 @@ export interface ShareContext {
   gameFlags: { flag: string; win: boolean }[];
 }
 
-export function emojiCard(ctx: ShareContext): string {
+export function emojiCard(ctx: ShareContext, extraLine?: string | null): string {
   const header = `${t('share.title')}${ctx.dailyNum ? ` #${ctx.dailyNum}` : ''}${ctx.hard ? ' 🔥' : ''} ⚾`;
   const pool = ctx.gameFlags.slice(0, 4).map((g) => `${g.flag}${g.win ? '✅' : '❌'}`).join(' ');
   const ko = ctx.gameFlags.slice(4).map((g) => `${g.flag}${g.win ? '✅' : '❌'}`).join(' ');
   const games = ko ? `${pool} | ${ko}` : pool;
-  return `${header}\n${games}\n${ctx.tierLine}\n${t('share.url')}`;
+  const lines = [header, games, ctx.tierLine];
+  if (extraLine) lines.push(extraLine);
+  lines.push(t('share.url'));
+  return lines.join('\n');
 }
 
 export async function copyText(text: string): Promise<boolean> {

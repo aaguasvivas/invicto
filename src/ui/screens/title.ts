@@ -1,7 +1,8 @@
 // Title screen: daily challenge (primary), free play, hard mode, how-to, footer.
 
 import { cycleLang, howtoPanels, nextLangLabel, t } from '../../i18n';
-import { currentStreak, dailyNumber, dailyResult, personalBest, setSound, soundOn, type Mode } from '../../game/state';
+import { currentStreak, dailyNumber, dailyResult, personalBest, setSound, soundOn, todayKey, type Mode } from '../../game/state';
+import { fetchToday } from '../../game/stats';
 import { setAccent } from '../accents';
 import { clear, h } from '../dom';
 
@@ -61,6 +62,13 @@ export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
   if (streak > 0) metaBits.push(t('title.streak', { n: streak }));
   if (bestFree) metaBits.push(t('title.best', { record: bestFree.record }));
 
+  const metaEl = h('div.menu-meta', {}, metaBits.join('  ·  '));
+  void fetchToday(todayKey()).then((today) => {
+    if (!today || today.total < 1) return;
+    metaBits.push(t('global.counts', { total: today.total, invictos: today.invictos }));
+    metaEl.textContent = metaBits.join('  ·  ');
+  });
+
   const footer = h(
     'footer.footer',
     {},
@@ -81,7 +89,7 @@ export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
         h('div.flag-strip', {}, '🇻🇪 🇩🇴 🇵🇷 🇯🇵 🇺🇸 🇲🇽 🇨🇺 🇰🇷 🇳🇱 🇹🇼'),
       ),
       menu,
-      h('div.menu-meta', {}, metaBits.join('  ·  ')),
+      metaEl,
       footer,
     ),
   );

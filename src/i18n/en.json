@@ -188,6 +188,13 @@
       "Gray day: {them}-{us} 🌫️"
     ]
   },
+  "global": {
+    "beat": "🌎 You beat {pct}% of today's managers",
+    "first": "🏁 You're the first manager of the day!",
+    "counts": "Today: {total} managers · {invictos} INVICTO",
+    "rarest": "💎 Your rarest pick: {name} (only {pct}% chose him)",
+    "top": "Top {pct}% today"
+  },
   "share": {
     "title": "INVICTO",
     "url": "invictobaseball.com/en/",

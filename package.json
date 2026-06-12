@@ -5,13 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build && tsx scripts/postbuild-locales.ts",
+    "build": "tsc --noEmit && tsc -p worker --noEmit && vite build && tsx scripts/postbuild-locales.ts",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "build-data": "tsx scripts/build-data.ts"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260612.1",
     "@types/node": "^18.19.130",
     "cheerio": "^1.0.0-rc.12",
     "tsx": "^4.19.0",

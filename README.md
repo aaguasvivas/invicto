@@ -53,6 +53,29 @@ The title-screen switcher cycles through every registered language, browser dete
 the build if any table drifts from the Spanish key tree, drops below 8 flavor variants per
 outcome type, or misses a country name.
 
+## Global daily stats (D1)
+
+Anonymous daily aggregates ("you beat X% of today's managers", INVICTO counts, pick rarity)
+served by two routes on the same Worker (`worker/index.ts`): `POST /api/result` and
+`GET /api/today`. No accounts, no cookies, no IPs — a random client UUID dedupes resubmits.
+The client fails silently if the API is unreachable; the game never depends on it.
+
+One-time setup (needs Node ≥ 20 for wrangler):
+
+```sh
+npx wrangler login
+npx wrangler d1 create invicto-stats          # note the database_id it prints
+npx wrangler d1 execute invicto-stats --remote --file=worker/schema.sql
+```
+
+Then put the `database_id` into `wrangler.jsonc` (`d1_databases[0].database_id`, alongside
+`"main": "worker/index.ts"` and the assets `run_worker_first` block mirroring
+`wrangler.dev.jsonc`) and push.
+
+Local development: `npx wrangler d1 execute invicto-stats --local --config wrangler.dev.jsonc
+--file=worker/schema.sql`, then `npx wrangler dev --config wrangler.dev.jsonc` (port 8787 —
+the Vite dev server proxies `/api` there).
+
 ## Deploying (Cloudflare Pages)
 
 Static output, no server:

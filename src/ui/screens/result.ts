@@ -4,7 +4,8 @@
 import type { RunResult, Slot } from '../../engine/types';
 import { getLocale, t } from '../../i18n';
 import type { Session } from '../../game/session';
-import { dailyNumber, saveBest, saveDailyResult } from '../../game/state';
+import { dailyNumber, saveBest, saveDailyResult, todayKey } from '../../game/state';
+import { percentileBeaten, rarestPick, submitResult, topSharePct } from '../../game/stats';
 import { setAccent } from '../accents';
 import { clear, h, toast } from '../dom';
 import { confetti } from '../confetti';
@@ -87,6 +88,29 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
     h('div.poster-foot', {}, footerLine + (session.mode === 'hard' ? '  ·  🔥' : '')),
   );
 
+  // Global daily stats: submit scored dailies, then enrich the screen + shares.
+  let globalTopPct: number | null = null;
+  const globalLine = () => (globalTopPct !== null ? t('global.top', { pct: globalTopPct }) : null);
+  const posterForShare = (): PosterData =>
+    globalTopPct !== null ? { ...posterData, footer: `${footerLine}  ·  ${t('global.top', { pct: globalTopPct })}` } : posterData;
+  const statsEl = h('div.result-meta');
+  if (session.mode === 'daily' && session.scored) {
+    const picks = SLOT_ORDER.map((slot) => session.state.lineup[slot]!.id);
+    void submitResult({ day: todayKey(), wins: run.wins, losses: run.losses, outcome: run.outcome, picks }).then((today) => {
+      if (!today) return;
+      globalTopPct = topSharePct(run.wins, today.distribution);
+      const pct = percentileBeaten(run.wins, today.distribution);
+      const parts = [pct === null ? t('global.first') : t('global.beat', { pct })];
+      parts.push(t('global.counts', { total: today.total, invictos: today.invictos }));
+      const rare = rarestPick(today.yourPicks ?? [], today.total);
+      if (rare) {
+        const who = Object.values(session.state.lineup).find((p) => p?.id === rare.id);
+        if (who) parts.push(t('global.rarest', { name: who.name, pct: rare.pct }));
+      }
+      statsEl.append(...parts.map((line) => h('div', {}, line)));
+    });
+  }
+
   const buttons = h(
     'div.result-btns',
     {},
@@ -94,7 +118,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
       'button.btn.primary',
       {
         onclick: async () => {
-          const result = await sharePoster(posterData, emojiCard(shareCtx));
+          const result = await sharePoster(posterForShare(), emojiCard(shareCtx, globalLine()));
           if (result === 'copied-image' || result === 'copied-text') toast(t('result.copied'));
         },
       },
@@ -104,7 +128,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
       'button.btn',
       {
         onclick: async () => {
-          if (await copyText(emojiCard(shareCtx))) toast(t('result.copied'));
+          if (await copyText(emojiCard(shareCtx, globalLine()))) toast(t('result.copied'));
         },
       },
       t('result.copy'),
@@ -119,6 +143,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
       h('div', { style: 'height:14px' }),
       posterEl,
       buttons,
+      statsEl,
       !session.scored && session.mode === 'daily' ? h('div.result-meta', {}, t('result.practice')) : null,
       h(
         'div.result-meta',

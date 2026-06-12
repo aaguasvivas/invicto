@@ -188,6 +188,13 @@
       "Día gris: {them}-{us} 🌫️"
     ]
   },
+  "global": {
+    "beat": "🌎 Superaste al {pct}% de los mánagers de hoy",
+    "first": "🏁 ¡Eres el primer mánager del día!",
+    "counts": "Hoy: {total} mánagers · {invictos} INVICTO",
+    "rarest": "💎 Tu pick más raro: {name} (solo el {pct}% lo eligió)",
+    "top": "Top {pct}% de hoy"
+  },
   "share": {
     "title": "INVICTO",
     "url": "invictobaseball.com",

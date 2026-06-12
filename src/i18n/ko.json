@@ -188,6 +188,13 @@
       "흐린 날이었다: {them}-{us} 🌫️"
     ]
   },
+  "global": {
+    "beat": "🌎 오늘 매니저의 {pct}%를 이겼다",
+    "first": "🏁 오늘의 첫 매니저!",
+    "counts": "오늘: {total}명 참가 · INVICTO {invictos}명",
+    "rarest": "💎 가장 희귀한 픽: {name} (단 {pct}%만 선택)",
+    "top": "오늘 상위 {pct}%"
+  },
   "share": {
     "title": "INVICTO",
     "url": "invictobaseball.com/ko/",
