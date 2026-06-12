@@ -1,13 +1,18 @@
-// Simulation screen: bracket cards flip one at a time (~600ms, tap to skip).
+// Simulation screen: bracket cards flip one at a time, and the pacing escalates
+// with the stakes (tap anywhere skips everything, even mid-beat). A 6-0 team
+// gets a gold pre-reveal beat before the final: THE moment.
 
 import type { GameResult, HeroMoment, LineupSlots, RunResult, Stage } from '../../engine/types';
 import { countryName, flavor, t } from '../../i18n';
 import type { GameData } from '../../game/data';
 import { setAccent } from '../accents';
 import { clear, h } from '../dom';
-import { crowdRoar } from '../sound';
+import { crowdRoar, vibrate } from '../sound';
 
-const REVEAL_MS = 600;
+/** Delay before each card flips, by stage: anticipation grows with the stakes. */
+const REVEAL_MS = { pool: 600, qf: 750, sf: 950, final: 1300 } as const;
+const FINAL_BEAT_MS = 1800;
+const SF_BEAT_MS = 400;
 
 function heroLine(hero: HeroMoment, lineup: LineupSlots): string | null {
   const player = lineup[hero.slot];
@@ -48,6 +53,16 @@ export function renderSim(app: HTMLElement, run: RunResult, data: GameData, line
 
   let wins = 0;
   let losses = 0;
+  let finalBeatShown = false;
+  let sfBeatShown = false;
+  let beatLine: HTMLElement | null = null;
+
+  const clearBeat = () => {
+    beatLine?.remove();
+    beatLine = null;
+    for (const card of cards.values()) card.classList.remove('beat-gold', 'beat-soft');
+  };
+
   const revealCard = (game: GameResult) => {
     const card = cards.get(game.stage)!;
     const country = data.countries.get(game.opponent.country)!;
@@ -76,7 +91,8 @@ export function renderSim(app: HTMLElement, run: RunResult, data: GameData, line
     else losses++;
     recordEl.textContent = `${wins}-${losses}`;
     stageEl.textContent = t(`sim.stages.${stageOf(game.stage)}`);
-    if (game.win) crowdRoar(game.stage === 'final' ? 1.4 : 0.9);
+    if (game.stage === 'final') vibrate([30, 40, 30]);
+    if (game.win) crowdRoar(game.stage === 'final' ? (finalBeatShown ? 1.7 : 1.4) : 0.9);
   };
 
   let next = 0;
@@ -88,11 +104,30 @@ export function renderSim(app: HTMLElement, run: RunResult, data: GameData, line
   };
   const step = () => {
     if (next >= run.games.length) return finish();
-    revealCard(run.games[next++]);
-    timer = window.setTimeout(step, REVEAL_MS);
+    const game = run.games[next];
+    if (game.stage === 'final' && wins === 6 && losses === 0 && !finalBeatShown) {
+      finalBeatShown = true;
+      const card = cards.get(game.stage)!;
+      beatLine = h('div.beat-line', {}, t('sim.beatFinal'));
+      bracket.insertBefore(beatLine, card);
+      card.classList.add('beat-gold');
+      timer = window.setTimeout(step, FINAL_BEAT_MS);
+      return;
+    }
+    if (game.stage === 'sf' && wins === 5 && losses === 0 && !sfBeatShown) {
+      sfBeatShown = true;
+      cards.get(game.stage)!.classList.add('beat-soft');
+      timer = window.setTimeout(step, SF_BEAT_MS);
+      return;
+    }
+    clearBeat();
+    revealCard(game);
+    next++;
+    timer = window.setTimeout(step, next < run.games.length ? REVEAL_MS[stageOf(run.games[next].stage)] : REVEAL_MS.pool);
   };
   const skipAll = () => {
     window.clearTimeout(timer);
+    clearBeat();
     while (next < run.games.length) revealCard(run.games[next++]);
     finish();
   };

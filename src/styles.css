@@ -370,6 +370,36 @@ h1, h2, h3 { margin: 0; }
 .game-result-badge { flex: none; font-size: 18px; }
 .skip-hint { text-align: center; color: #5e6b96; font-size: 12px; margin-top: 14px; }
 
+/* pre-reveal beats: gold drumroll before the final at 6-0, soft pulse before the SF at 5-0 */
+.beat-line {
+  text-align: center;
+  font-family: var(--display);
+  font-size: 19px;
+  letter-spacing: 0.14em;
+  color: var(--gold);
+  text-shadow: 0 0 20px rgba(245, 185, 66, 0.5);
+  margin: 10px 2px 0;
+  animation: beat-line-in 0.5s ease;
+}
+@keyframes beat-line-in { from { opacity: 0; transform: translateY(8px); } }
+.game-card.beat-gold {
+  opacity: 0.95;
+  border-color: var(--gold);
+  animation: beat-gold 0.9s ease-in-out infinite;
+}
+@keyframes beat-gold {
+  0%, 100% { box-shadow: 0 0 0 rgba(245, 185, 66, 0); }
+  50% { box-shadow: 0 0 28px rgba(245, 185, 66, 0.55); }
+}
+.game-card.beat-soft {
+  opacity: 0.6;
+  animation: beat-soft 0.8s ease-in-out;
+}
+@keyframes beat-soft {
+  0%, 100% { box-shadow: 0 0 0 rgba(245, 185, 66, 0); }
+  50% { box-shadow: 0 0 16px rgba(245, 185, 66, 0.3); }
+}
+
 /* ---------- result poster ---------- */
 .result-screen { display: flex; flex-direction: column; flex: 1; padding-bottom: 24px; }
 .poster {

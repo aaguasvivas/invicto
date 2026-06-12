@@ -43,7 +43,8 @@
     "title": "プレイボール！",
     "skip": "タップでスキップ",
     "stages": { "pool": "予選ラウンド", "qf": "準々決勝", "sf": "準決勝", "final": "決勝" },
-    "you": "マイチーム"
+    "you": "マイチーム",
+    "beatFinal": "全勝制覇まで、あと1勝…"
   },
   "result": {
     "invicto": "INVICTO!",

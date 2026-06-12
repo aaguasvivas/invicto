@@ -43,7 +43,8 @@
     "title": "플레이볼!",
     "skip": "탭하면 빨리 감기",
     "stages": { "pool": "조별리그", "qf": "8강", "sf": "4강", "final": "결승" },
-    "you": "내 팀"
+    "you": "내 팀",
+    "beatFinal": "전승 우승까지 단 한 경기…"
   },
   "result": {
     "invicto": "INVICTO!",

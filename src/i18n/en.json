@@ -43,7 +43,8 @@
     "title": "Play ball!",
     "skip": "Tap to skip ahead",
     "stages": { "pool": "Pool play", "qf": "Quarterfinal", "sf": "Semifinal", "final": "THE FINAL" },
-    "you": "Your Team"
+    "you": "Your Team",
+    "beatFinal": "FOR THE PERFECT RUN…"
   },
   "result": {
     "invicto": "INVICTO!",

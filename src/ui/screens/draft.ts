@@ -6,7 +6,7 @@ import { openSlots, POWERS } from '../../engine/draft';
 import type { EnginePlayer, Slot } from '../../engine/types';
 import { countryName, t } from '../../i18n';
 import { setAccent } from '../accents';
-import { crowdRoar } from '../sound';
+import { crowdRoar, vibrate } from '../sound';
 import type { Session } from '../../game/session';
 import {
   canRerollCountry, canRerollEdition, currentRoster, draftDone, pick, rerollCountry, rerollEdition,
@@ -214,6 +214,7 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
       if (POWERS.includes(session.roll.country)) {
         rollCard.classList.add('power-roll');
         crowdRoar(0.5);
+        vibrate(15);
       }
       renderRoster();
     };

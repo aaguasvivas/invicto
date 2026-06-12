@@ -1,8 +1,18 @@
 // Optional crowd roar, synthesized with WebAudio (no assets). Off by default.
+// Haptics live here too: same "ambient feedback" job, same best-effort rules.
 
 import { soundOn } from '../game/state';
 
 let ctx: AudioContext | null = null;
+
+/** Haptic tick(s); silent no-op where the Vibration API is unavailable. */
+export function vibrate(pattern: number | number[]): void {
+  try {
+    navigator.vibrate?.(pattern);
+  } catch {
+    // haptics are best-effort
+  }
+}
 
 export function crowdRoar(intensity = 1): void {
   if (!soundOn()) return;

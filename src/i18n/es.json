@@ -43,7 +43,8 @@
     "title": "¡A jugar el Clásico!",
     "skip": "Toca para adelantar",
     "stages": { "pool": "Fase de grupos", "qf": "Cuartos de final", "sf": "Semifinal", "final": "LA FINAL" },
-    "you": "Tu Equipo"
+    "you": "Tu Equipo",
+    "beatFinal": "POR EL INVICTO…"
   },
   "result": {
     "invicto": "¡INVICTO!",
