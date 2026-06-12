@@ -1,6 +1,6 @@
 // Simulation screen: bracket cards flip one at a time (~600ms, tap to skip).
 
-import type { GameResult, RunResult, Stage } from '../../engine/types';
+import type { GameResult, HeroMoment, LineupSlots, RunResult, Stage } from '../../engine/types';
 import { countryName, flavor, t } from '../../i18n';
 import type { GameData } from '../../game/data';
 import { setAccent } from '../accents';
@@ -9,7 +9,18 @@ import { crowdRoar } from '../sound';
 
 const REVEAL_MS = 600;
 
-export function renderSim(app: HTMLElement, run: RunResult, data: GameData, onDone: () => void): void {
+function heroLine(hero: HeroMoment, lineup: LineupSlots): string | null {
+  const player = lineup[hero.slot];
+  if (!player) return null;
+  const params: Record<string, string | number> = { name: player.name };
+  if (hero.kind === 'slugger') Object.assign(params, { hr: hero.n1, rbi: hero.n2 });
+  if (hero.kind === 'contact') Object.assign(params, { h: hero.n1, ab: hero.n2 });
+  if (hero.kind === 'starter') Object.assign(params, { ip: hero.n1, k: hero.n2 });
+  if (hero.kind === 'closer') Object.assign(params, { k: hero.n1 });
+  return t(`hero.${hero.kind}`, params);
+}
+
+export function renderSim(app: HTMLElement, run: RunResult, data: GameData, lineup: LineupSlots, onDone: () => void): void {
   clear(app);
   setAccent(null);
 
@@ -57,6 +68,7 @@ export function renderSim(app: HTMLElement, run: RunResult, data: GameData, onDo
           h('span', {}, `${oppName} ${game.oppScore}`),
         ),
         h('div.game-flavor', {}, flavor(game.flavorKey, game.flavorVariant, { opp: oppName, us: game.teamScore, them: game.oppScore })),
+        game.hero && heroLine(game.hero, lineup) ? h('div.game-flavor.hero', {}, heroLine(game.hero, lineup)) : null,
       ),
       h('span.game-result-badge', {}, game.win ? '✅' : '❌'),
     );

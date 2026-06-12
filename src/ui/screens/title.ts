@@ -4,6 +4,7 @@ import { cycleLang, howtoPanels, nextLangLabel, t } from '../../i18n';
 import { currentStreak, dailyNumber, dailyResult, personalBest, setSound, soundOn, todayKey, type Mode } from '../../game/state';
 import { fetchToday } from '../../game/stats';
 import { setAccent } from '../accents';
+import { mountAd } from '../ads';
 import { clear, h } from '../dom';
 
 export interface TitleCallbacks {
@@ -69,6 +70,9 @@ export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
     metaEl.textContent = metaBits.join('  ·  ');
   });
 
+  const adBox = h('div.ad-box');
+  mountAd(adBox, 'title');
+
   const footer = h(
     'footer.footer',
     {},
@@ -90,6 +94,7 @@ export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
       ),
       menu,
       metaEl,
+      adBox,
       footer,
     ),
   );

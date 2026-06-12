@@ -7,6 +7,7 @@ import type { Session } from '../../game/session';
 import { dailyNumber, saveBest, saveDailyResult, todayKey } from '../../game/state';
 import { percentileBeaten, rarestPick, submitResult, topSharePct } from '../../game/stats';
 import { setAccent } from '../accents';
+import { mountAd } from '../ads';
 import { clear, h, toast } from '../dom';
 import { confetti } from '../confetti';
 import type { PosterData } from '../poster';
@@ -136,6 +137,9 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
     h('button.btn', { onclick: cb.onAgain }, t('result.again')),
   );
 
+  const adBox = h('div.ad-box');
+  mountAd(adBox, 'result');
+
   app.append(
     h(
       'div.result-screen',
@@ -145,6 +149,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
       buttons,
       statsEl,
       !session.scored && session.mode === 'daily' ? h('div.result-meta', {}, t('result.practice')) : null,
+      adBox,
       h(
         'div.result-meta',
         {},

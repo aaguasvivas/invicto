@@ -188,6 +188,14 @@
       "흐린 날이었다: {them}-{us} 🌫️"
     ]
   },
+  "hero": {
+    "slugger": "⭐ {name}: 홈런 {hr}개, {rbi}타점",
+    "contact": "⭐ {name}: {ab}타수 {h}안타 맹타",
+    "starter": "⭐ {name}: {ip}이닝 {k}탈삼진 역투",
+    "closer": "⭐ {name}: 9회를 잠그고 세이브, 탈삼진 {k}개",
+    "goatK": "💔 {name}, 동점 주자를 두고 삼진",
+    "goatBlown": "💔 {name}, 마무리에 실패"
+  },
   "global": {
     "beat": "🌎 오늘 매니저의 {pct}%를 이겼다",
     "first": "🏁 오늘의 첫 매니저!",

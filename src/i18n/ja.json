@@ -188,6 +188,14 @@
       "灰色の一日：{them}-{us} 🌫️"
     ]
   },
+  "hero": {
+    "slugger": "⭐ {name}：{hr}本塁打、{rbi}打点",
+    "contact": "⭐ {name}：{ab}打数{h}安打の固め打ち",
+    "starter": "⭐ {name}：{ip}回{k}奪三振の快投",
+    "closer": "⭐ {name}：9回を締めてセーブ、{k}奪三振",
+    "goatK": "💔 {name}、同点走者を置いて痛恨の三振",
+    "goatBlown": "💔 {name}、最後を締められず"
+  },
   "global": {
     "beat": "🌎 今日のマネージャーの{pct}%に勝利",
     "first": "🏁 今日最初のマネージャーだ！",

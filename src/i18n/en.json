@@ -188,6 +188,14 @@
       "Gray day: {them}-{us} 🌫️"
     ]
   },
+  "hero": {
+    "slugger": "⭐ {name}: {hr} HR, {rbi} RBI",
+    "contact": "⭐ {name}: {h}-for-{ab} at the plate",
+    "starter": "⭐ {name}: a {ip}-inning gem with {k} strikeouts",
+    "closer": "⭐ {name}: the save, {k} K in the 9th",
+    "goatK": "💔 {name} struck out with the tying run on",
+    "goatBlown": "💔 {name} couldn't close it out"
+  },
   "global": {
     "beat": "🌎 You beat {pct}% of today's managers",
     "first": "🏁 You're the first manager of the day!",

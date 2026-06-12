@@ -30,7 +30,7 @@ function startRun(data: GameData, mode: Mode): void {
 function runTournament(session: Session): void {
   const run = simulateRun(lineup(session), session.seed);
   // (lineup() returns the slot-keyed record; the engine gates pitching as its own category)
-  renderSim(app, run, session.data, () => {
+  renderSim(app, run, session.data, session.state.lineup, () => {
     renderResult(app, session, run, {
       onAgain: () => startRun(session.data, session.mode), // one more run, zero friction
       onHome: () => showTitle(session.data),

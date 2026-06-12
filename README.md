@@ -76,6 +76,25 @@ Local development: `npx wrangler d1 execute invicto-stats --local --config wrang
 --file=worker/schema.sql`, then `npx wrangler dev --config wrangler.dev.jsonc` (port 8787 —
 the Vite dev server proxies `/api` there).
 
+## Monetization (ads, disabled by default)
+
+`src/ui/ads.ts` holds a single tasteful AdSense integration: one responsive unit at the bottom
+of the title screen and one below the result poster — never during the draft or the sim reveal.
+It renders nothing (zero DOM, zero layout shift) until configured. To turn it on:
+
+1. Sign up at adsense.google.com with `invictobaseball.com` and wait for site approval
+   (typically a few days; the site needs to be live with traffic).
+2. Create two ad units (AdSense → Ads → By ad unit → Display, responsive) named e.g.
+   `invicto-title` and `invicto-result`.
+3. Put your publisher id (`ca-pub-…`) into `ADSENSE_CLIENT` and the two slot ids into
+   `AD_SLOTS` in `src/ui/ads.ts`, push, done.
+
+Two honest notes: (a) for EEA/UK visitors Google requires a consent message — enable Google's
+own CMP under AdSense → Privacy & messaging and it only appears for those regions; (b) revenue
+scales with traffic (game-site RPMs are roughly $1–5 per thousand pageviews), so this is a
+"when it's popular" lever, not a launch lever. A zero-compliance complement: a tip-jar link
+("Invítame un cafecito ☕") in the footer.
+
 ## Deploying (Cloudflare Pages)
 
 Static output, no server:

@@ -63,6 +63,22 @@ describe('simulateRun', () => {
       expect(run.wins).toBe(run.games.filter((g) => g.win).length);
       expect(run.losses).toBe(run.games.filter((g) => !g.win).length);
 
+      // Hero moments: every win stars someone from the lineup; goats only on losses.
+      for (const g of run.games) {
+        if (g.win) {
+          expect(g.hero).toBeTruthy();
+        }
+        if (g.hero) {
+          expect(['slugger', 'contact', 'starter', 'closer', 'goatK', 'goatBlown']).toContain(g.hero.kind);
+          if (g.hero.kind === 'starter') expect(g.hero.slot).toBe('SP');
+          if (g.hero.kind === 'closer' || g.hero.kind === 'goatBlown') expect(g.hero.slot).toBe('CL');
+          if (g.hero.kind.startsWith('goat')) expect(g.win).toBe(false);
+          if (!g.win) expect(g.hero.kind.startsWith('goat')).toBe(true);
+          expect(g.hero.n1).toBeGreaterThanOrEqual(0);
+          expect(g.hero.n2).toBeGreaterThanOrEqual(g.hero.kind === 'contact' ? g.hero.n1 : 0);
+        }
+      }
+
       // Scores are sane and consistent with the result.
       for (const g of run.games) {
         expect(g.teamScore).not.toBe(g.oppScore);

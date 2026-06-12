@@ -188,6 +188,14 @@
       "Día gris: {them}-{us} 🌫️"
     ]
   },
+  "hero": {
+    "slugger": "⭐ {name}: {hr} HR, {rbi} remolcadas",
+    "contact": "⭐ {name}: de {ab}-{h} con el madero",
+    "starter": "⭐ {name}: joya de {ip} entradas y {k} ponches",
+    "closer": "⭐ {name}: salvamento con {k} ponche(s) en la novena",
+    "goatK": "💔 {name} se ponchó con la del empate en base",
+    "goatBlown": "💔 {name} no pudo cerrar el juego"
+  },
   "global": {
     "beat": "🌎 Superaste al {pct}% de los mánagers de hoy",
     "first": "🏁 ¡Eres el primer mánager del día!",
