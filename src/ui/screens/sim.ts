@@ -53,7 +53,7 @@ export function renderSim(app: HTMLElement, run: RunResult, data: GameData, onDo
           'div.game-score',
           {},
           h('span' + (game.win ? '.w' : '.l'), {}, `${t('sim.you')} ${game.teamScore}`),
-          h('span', { style: 'color:var(--text-dim)' }, ' — '),
+          h('span', { style: 'color:var(--text-dim)' }, ' · '),
           h('span', {}, `${oppName} ${game.oppScore}`),
         ),
         h('div.game-flavor', {}, flavor(game.flavorKey, game.flavorVariant, { opp: oppName, us: game.teamScore, them: game.oppScore })),

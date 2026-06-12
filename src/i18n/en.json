@@ -5,7 +5,7 @@
     "dailyNum": "Daily Challenge #{n}",
     "free": "Free play",
     "hard": "Hard Mode 🔥",
-    "hardSub": "No ratings — pure memory",
+    "hardSub": "No ratings: pure memory",
     "howto": "How to play",
     "streak": "🔥 Streak: {n}",
     "playedToday": "You already played today's challenge: {record}. Practice runs won't count.",
@@ -15,7 +15,7 @@
     {
       "icon": "🎰",
       "title": "Draft your squad",
-      "body": "9 rounds, 9 positions. Each round rolls a random country and WBC edition — pick one hitter from that roster for your lineup. Each player can only be drafted once."
+      "body": "9 rounds, 9 positions. Each round rolls a random country and WBC edition. Pick one player from that roster for your lineup; each player can only be drafted once."
     },
     {
       "icon": "🔁",
@@ -25,7 +25,7 @@
     {
       "icon": "🏆",
       "title": "Run the table",
-      "body": "4 pool games, quarters, semis, the final. Win the tournament and you're CAMPEÓN 🏆. Win it all 7-0… that's INVICTO ⭐ — the perfect run."
+      "body": "4 pool games, quarters, semis, the final. Win the tournament and you're CAMPEÓN 🏆. Win it all 7-0… that's INVICTO ⭐, the perfect run."
     }
   ],
   "draft": {
@@ -35,7 +35,7 @@
     "rerollEdition": "🗓️ New edition",
     "pickSlot": "Where does {name} play?",
     "lineup": "Your lineup",
-    "noEligible": "Nobody on this roster fits your lineup — free roll 🎰",
+    "noEligible": "Nobody on this roster fits your lineup: free roll 🎰",
     "posGroups": { "C": "Catchers", "IF": "Infielders", "OF": "Outfielders", "DH": "Designated hitters", "P": "Pitchers" }
   },
   "sim": {
@@ -200,7 +200,7 @@
     "close": "Close"
   },
   "meta": {
-    "title": "Invicto — Can you run the table at the World Baseball Classic?",
+    "title": "Invicto: Can you run the table at the World Baseball Classic?",
     "description": "Draft a lineup from real World Baseball Classic rosters (2006–2026) and try to win it all 7-0. Free, multilingual, three minutes a run."
   },
   "countries": {
