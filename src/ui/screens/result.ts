@@ -134,7 +134,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
       },
       t('result.copy'),
     ),
-    h('button.btn', { onclick: cb.onAgain }, t('result.again')),
+    h('button.btn', { onclick: cb.onAgain }, session.mode === 'daily' ? t('result.practiceAgain') : t('result.again')),
   );
 
   const adBox = h('div.ad-box');
@@ -149,6 +149,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
       buttons,
       statsEl,
       !session.scored && session.mode === 'daily' ? h('div.result-meta', {}, t('result.practice')) : null,
+      session.mode === 'daily' ? h('div.result-meta', {}, t('result.dailyNote')) : null,
       adBox,
       h(
         'div.result-meta',

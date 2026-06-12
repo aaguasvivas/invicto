@@ -25,6 +25,8 @@ export function renderDraft(app: HTMLElement, session: Session, cb: DraftCallbac
   clear(app);
   const screen = h('div.draft-screen');
   app.append(screen);
+  // Same-rolls practice replay of the daily — say so before anyone thinks it's a bug.
+  if (session.mode === 'daily' && !session.scored) toast(t('draft.practiceNote'));
   drawRound(screen, session, cb, true);
 }
 

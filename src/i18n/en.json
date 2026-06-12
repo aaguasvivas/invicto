@@ -36,6 +36,7 @@
     "pickSlot": "Where does {name} play?",
     "lineup": "Your lineup",
     "noEligible": "Nobody on this roster fits your lineup: free roll 🎰",
+    "practiceNote": "Practice: same rolls as today's challenge 🎯",
     "posGroups": { "C": "Catchers", "IF": "Infielders", "OF": "Outfielders", "DH": "Designated hitters", "P": "Pitchers" }
   },
   "sim": {
@@ -61,6 +62,8 @@
     "copy": "📋 Copy card",
     "copied": "Copied! Paste it anywhere 🔥",
     "again": "⚾ Play again",
+    "practiceAgain": "🔁 Practice today's challenge again",
+    "dailyNote": "The Daily Challenge deals the same rolls to everyone. Want fresh teams? Try Free play ⚾",
     "home": "Back to title",
     "practice": "Practice run (not scored)",
     "eliminatedShare": "Out in {stage} {record}",
