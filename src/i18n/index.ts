@@ -42,6 +42,12 @@ function detectLang(): LanguageDef {
 
 let current: LanguageDef = detectLang();
 
+// Switcher cycle for this session: whatever language you start in, the other
+// major language (es/en, in REGISTRY order) is always the FIRST tap, then the
+// rest. A ja/ko "next" label on first sight reads as "there is no English or
+// Spanish here", so it never leads.
+const CYCLE: LanguageDef[] = [current, ...REGISTRY.filter((l) => l.code !== current.code)];
+
 export function getLang(): Lang {
   return current.code;
 }
@@ -59,17 +65,17 @@ export function setLang(code: Lang): void {
   applyMeta();
 }
 
-/** Advance to the next language in the registry (works for any count). */
+/** Advance to the next language in this session's cycle (works for any count). */
 export function cycleLang(): Lang {
-  const idx = REGISTRY.findIndex((l) => l.code === current.code);
-  setLang(REGISTRY[(idx + 1) % REGISTRY.length].code);
+  const idx = CYCLE.findIndex((l) => l.code === current.code);
+  setLang(CYCLE[(idx + 1) % CYCLE.length].code);
   return current.code;
 }
 
 /** Label for the language switcher: the language you would switch TO. */
 export function nextLangLabel(): string {
-  const idx = REGISTRY.findIndex((l) => l.code === current.code);
-  return REGISTRY[(idx + 1) % REGISTRY.length].label;
+  const idx = CYCLE.findIndex((l) => l.code === current.code);
+  return CYCLE[(idx + 1) % CYCLE.length].label;
 }
 
 function lookup(path: string): unknown {
