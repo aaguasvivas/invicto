@@ -46,6 +46,9 @@ for (const { code, ogLocale, meta } of LOCALES) {
   html = html.replace('<meta property="og:locale:alternate" content="en_US" />', `<meta property="og:locale:alternate" content="es_419" />`);
   html = html.replace(/(<meta property="og:url" content=")[^"]*(")/, `$1${ORIGIN}/${code}/$2`);
   html = html.replace(/(<link rel="canonical" href=")[^"]*(")/, `$1${ORIGIN}/${code}/$2`);
+  // Localized banner so the preview image matches the preview text.
+  html = html.replace(/(<meta property="og:image" content=")[^"]*(")/, `$1${ORIGIN}/og-${code}.png$2`);
+  html = html.replace(/(<meta name="twitter:image" content=")[^"]*(")/, `$1${ORIGIN}/og-${code}.png$2`);
   // Set the app language for first-time visitors (respect an existing choice).
   html = html.replace(
     '</head>',

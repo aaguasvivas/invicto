@@ -1,33 +1,46 @@
 <!doctype html>
 <!-- Dev-only OG image generator. Open via the Vite dev server:
      http://localhost:5173/scripts/generate-og.html
-     It draws public/og.png content with the SAME canvas code as the share poster
-     (src/ui/poster.ts) and shows a download link / exposes window.ogDataUrl. -->
+     Draws the four localized OG cards with the SAME canvas code as the share
+     poster (src/ui/poster.ts). window.postAll() sends each to the local
+     receiver on :8787, which writes public/og*.png. -->
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <title>OG generator</title>
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;700;800&display=swap"
-    />
-    <style>body { background: #0a1228; color: #eef2ff; font-family: Inter, sans-serif; padding: 20px; }</style>
+    <style>
+      @font-face { font-family: 'Anton'; font-style: normal; font-weight: 400; src: url('/fonts/anton-latin.woff2') format('woff2'); }
+      @font-face { font-family: 'Inter'; font-style: normal; font-weight: 100 900; src: url('/fonts/inter-latin.woff2') format('woff2'); }
+      body { background: #0a1228; color: #eef2ff; font-family: sans-serif; padding: 20px; }
+      canvas { max-width: 100%; display: block; margin-bottom: 12px; }
+    </style>
   </head>
   <body>
-    <canvas id="og" style="max-width: 100%"></canvas>
-    <p><a id="dl" download="og.png" style="color: #f5b942">Download og.png</a></p>
+    <p id="status">drawing…</p>
     <script type="module">
       import { drawOgPoster, ensurePosterFonts } from '/src/ui/poster.ts';
       await ensurePosterFonts();
-      const canvas = document.getElementById('og');
-      drawOgPoster(canvas, {
-        brand: 'INVICTO',
-        tagline: '¿Puedes quedar invicto?',
-        subline: 'Clásico Mundial de Béisbol · 2006–2026 · invictobaseball.com',
+      const VARIANTS = [
+        { name: 'og.png', tagline: '¿Puedes quedar invicto?', subline: 'Clásico Mundial de Béisbol · 2006–2026 · invictobaseball.com' },
+        { name: 'og-en.png', tagline: 'Can you run the table?', subline: 'World Baseball Classic · 2006–2026 · invictobaseball.com/en' },
+        { name: 'og-ja.png', tagline: '7戦全勝、君にできるか？', subline: 'WBC 2006–2026 · invictobaseball.com/ja' },
+        { name: 'og-ko.png', tagline: '7전 전승, 할 수 있겠어?', subline: 'WBC 2006–2026 · invictobaseball.com/ko' },
+      ];
+      const canvases = VARIANTS.map((v) => {
+        const canvas = document.createElement('canvas');
+        drawOgPoster(canvas, { brand: 'INVICTO', tagline: v.tagline, subline: v.subline });
+        document.body.append(canvas);
+        return { ...v, canvas };
       });
-      const url = canvas.toDataURL('image/png');
-      document.getElementById('dl').href = url;
-      window.ogDataUrl = url;
+      window.postAll = async () => {
+        const results = [];
+        for (const { name, canvas } of canvases) {
+          await fetch('http://localhost:8787/?name=' + name, { method: 'POST', mode: 'no-cors', body: canvas.toDataURL('image/png') });
+          results.push(name);
+        }
+        return results.join(', ');
+      };
+      document.getElementById('status').textContent = 'ready — call window.postAll()';
     </script>
   </body>
 </html>
