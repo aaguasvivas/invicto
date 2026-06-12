@@ -4,6 +4,7 @@
 import type { RunResult, Slot } from '../../engine/types';
 import { getLocale, t } from '../../i18n';
 import type { Session } from '../../game/session';
+import { evaluateBadges, recordBadges } from '../../game/badges';
 import { dailyNumber, saveBest, saveDailyResult, todayKey } from '../../game/state';
 import { percentileBeaten, rarestPick, submitResult, topSharePct } from '../../game/stats';
 import { setAccent } from '../accents';
@@ -32,6 +33,14 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
     if (session.mode === 'daily') saveDailyResult(stored);
     saveBest(session.mode, stored);
   }
+
+  // Badges: every finished run counts (practice included); only first-time earns pop.
+  const newBadges = recordBadges(evaluateBadges(session.state.lineup, run));
+  // The tier line already announces INVICTO/CAMPEÓN, so the share line leads with the rarer badges.
+  const badgeShareOrder = [...newBadges].sort(
+    (a, b) => Number(a === 'invicto' || a === 'campeon') - Number(b === 'invicto' || b === 'campeon'),
+  );
+  const badgeLine = newBadges.length > 0 ? `🏅 ${badgeShareOrder.slice(0, 2).map((id) => t(`badges.${id}.name`)).join(' · ')}` : null;
 
   const lineupRows = SLOT_ORDER.map((slot) => {
     const p = session.state.lineup[slot]!;
@@ -92,6 +101,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
   // Global daily stats: submit scored dailies, then enrich the screen + shares.
   let globalTopPct: number | null = null;
   const globalLine = () => (globalTopPct !== null ? t('global.top', { pct: globalTopPct }) : null);
+  const extraLines = () => [globalLine(), badgeLine].filter(Boolean).join('\n') || null;
   const posterForShare = (): PosterData =>
     globalTopPct !== null ? { ...posterData, footer: `${footerLine}  ·  ${t('global.top', { pct: globalTopPct })}` } : posterData;
   const statsEl = h('div.result-meta');
@@ -119,7 +129,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
       'button.btn.primary',
       {
         onclick: async () => {
-          const result = await sharePoster(posterForShare(), emojiCard(shareCtx, globalLine()));
+          const result = await sharePoster(posterForShare(), emojiCard(shareCtx, extraLines()));
           if (result === 'copied-image' || result === 'copied-text') toast(t('result.copied'));
         },
       },
@@ -129,7 +139,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
       'button.btn',
       {
         onclick: async () => {
-          if (await copyText(emojiCard(shareCtx, globalLine()))) toast(t('result.copied'));
+          if (await copyText(emojiCard(shareCtx, extraLines()))) toast(t('result.copied'));
         },
       },
       t('result.copy'),
@@ -140,12 +150,29 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
   const adBox = h('div.ad-box');
   mountAd(adBox, 'result');
 
+  const badgesEl =
+    newBadges.length > 0
+      ? h(
+          'div.badge-chips',
+          {},
+          ...newBadges.map((id, i) =>
+            h(
+              'div.badge-chip',
+              { style: `animation-delay:${0.25 + i * 0.15}s` },
+              h('div.badge-name', {}, `🏅 ${t(`badges.${id}.name`)}`),
+              h('div.badge-desc', {}, t(`badges.${id}.desc`)),
+            ),
+          ),
+        )
+      : null;
+
   app.append(
     h(
       'div.result-screen',
       {},
       h('div', { style: 'height:14px' }),
       posterEl,
+      badgesEl,
       buttons,
       statsEl,
       !session.scored && session.mode === 'daily' ? h('div.result-meta', {}, t('result.practice')) : null,

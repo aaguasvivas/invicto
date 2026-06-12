@@ -9,7 +9,8 @@
     "howto": "게임 방법",
     "streak": "🔥 연속 기록: {n}",
     "playedToday": "오늘의 챌린지는 이미 플레이했어요: {record}. 연습 플레이는 점수에 들어가지 않습니다.",
-    "best": "최고 기록: {record}"
+    "best": "최고 기록: {record}",
+    "badges": "🏅 {n}"
   },
   "howto": [
     {
@@ -211,6 +212,16 @@
     "title": "INVICTO",
     "url": "invictobaseball.com/ko/",
     "tiers": { "invicto": "7-0 ⭐ INVICTO", "campeon": "{record} 🏆 CAMPEÓN", "subcampeon": "준우승 {record} 🥈" }
+  },
+  "badges": {
+    "invicto": { "name": "INVICTO", "desc": "7전 전승. 완벽한 우승." },
+    "campeon": { "name": "CAMPEÓN", "desc": "클래식 트로피를 들어 올렸다." },
+    "matagigantes": { "name": "자이언트 킬러", "desc": "60 미만 선수 5명 이상으로 우승." },
+    "sin_estrellas": { "name": "별 없이 우승", "desc": "80 이상 선수 없이 정상에 올랐다." },
+    "una_sola_edicion": { "name": "한 시대의 팀", "desc": "12명 전원이 같은 대회 출신." },
+    "vuelta_al_mundo": { "name": "세계 일주", "desc": "한 라인업에 12개국." },
+    "seis_editiones": { "name": "클래식 20년사", "desc": "2006부터 2026까지 모든 대회에서 한 명 이상." },
+    "blanqueada_final": { "name": "결승 완봉승", "desc": "결승에서 상대를 무득점으로 막았다." }
   },
   "footer": {
     "disclaimer": "Invicto는 World Baseball Classic, WBCI, MLB, NPB 및 어떤 구단이나 선수 협회와도 제휴·승인·후원 관계가 없습니다. 선수 이름과 과거 성적은 사실에 대한 참고로만 사용됩니다.",

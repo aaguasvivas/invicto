@@ -9,7 +9,8 @@
     "howto": "How to play",
     "streak": "🔥 Streak: {n}",
     "playedToday": "You already played today's challenge: {record}. Practice runs won't count.",
-    "best": "Personal best: {record}"
+    "best": "Personal best: {record}",
+    "badges": "🏅 {n}"
   },
   "howto": [
     {
@@ -211,6 +212,16 @@
     "title": "INVICTO",
     "url": "invictobaseball.com/en/",
     "tiers": { "invicto": "7-0 ⭐ INVICTO", "campeon": "{record} 🏆 CAMPEÓN", "subcampeon": "Runner-up {record} 🥈" }
+  },
+  "badges": {
+    "invicto": { "name": "INVICTO", "desc": "7-0. The perfect run." },
+    "campeon": { "name": "CAMPEÓN", "desc": "You lifted the Classic trophy." },
+    "matagigantes": { "name": "Giant Slayer", "desc": "Champion with five or more players rated under 60." },
+    "sin_estrellas": { "name": "No Stars Needed", "desc": "Champion without a single 80+ player. All heart." },
+    "una_sola_edicion": { "name": "Single Vintage", "desc": "All 12 picks from the same edition." },
+    "vuelta_al_mundo": { "name": "Around the World", "desc": "12 different countries in one lineup." },
+    "seis_editiones": { "name": "Twenty Years of Classic", "desc": "At least one pick from every edition, 2006 to 2026." },
+    "blanqueada_final": { "name": "Golden Shutout", "desc": "Won the final without allowing a run." }
   },
   "footer": {
     "disclaimer": "Invicto is not affiliated with, endorsed by, or sponsored by the World Baseball Classic, WBCI, MLB, NPB, or any team or players' association. Player names and historical statistics are used as factual references.",

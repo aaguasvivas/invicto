@@ -428,6 +428,21 @@ h1, h2, h3 { margin: 0; }
 .result-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
 .result-meta { text-align: center; color: var(--text-dim); font-size: 13px; margin-top: 12px; }
 
+/* ---------- badges (first-time earns pop in under the poster) ---------- */
+.badge-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
+.badge-chip {
+  border: 1px solid var(--gold);
+  background: rgba(245, 185, 66, 0.1);
+  border-radius: 12px;
+  padding: 8px 14px;
+  text-align: center;
+  max-width: 100%;
+  animation: badge-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+.badge-name { color: var(--gold-2); font-weight: 800; font-size: 13px; letter-spacing: 0.04em; }
+.badge-desc { color: var(--text-dim); font-size: 11px; margin-top: 2px; line-height: 1.4; }
+@keyframes badge-pop { from { opacity: 0; transform: scale(0.6); } }
+
 /* ---------- ads (empty and invisible until enabled) ---------- */
 .ad-box { margin: 10px 0; }
 .ad-box:empty { margin: 0; }

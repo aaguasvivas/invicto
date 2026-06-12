@@ -9,7 +9,8 @@
     "howto": "¿Cómo se juega?",
     "streak": "🔥 Racha: {n}",
     "playedToday": "Ya jugaste el reto de hoy: {record}. Puedes practicar sin puntuar.",
-    "best": "Mejor marca: {record}"
+    "best": "Mejor marca: {record}",
+    "badges": "🏅 {n}"
   },
   "howto": [
     {
@@ -211,6 +212,16 @@
     "title": "INVICTO",
     "url": "invictobaseball.com",
     "tiers": { "invicto": "7-0 ⭐ INVICTO", "campeon": "{record} 🏆 CAMPEÓN", "subcampeon": "Subcampeón {record} 🥈" }
+  },
+  "badges": {
+    "invicto": { "name": "INVICTO", "desc": "7-0. La temporada perfecta." },
+    "campeon": { "name": "CAMPEÓN", "desc": "Levantaste la copa del Clásico." },
+    "matagigantes": { "name": "Mata-gigantes", "desc": "Campeón con cinco o más peloteros de menos de 60." },
+    "sin_estrellas": { "name": "Sin estrellas", "desc": "Campeón sin un solo pelotero de 80 o más. Puro corazón." },
+    "una_sola_edicion": { "name": "Cosecha única", "desc": "Los 12 picks de la misma edición." },
+    "vuelta_al_mundo": { "name": "La vuelta al mundo", "desc": "12 países distintos en un solo lineup." },
+    "seis_editiones": { "name": "Veinte años de Clásico", "desc": "Al menos un pick de cada edición, del 2006 al 2026." },
+    "blanqueada_final": { "name": "Blanqueada de oro", "desc": "Ganaste la final y el rival se fue en cero." }
   },
   "footer": {
     "disclaimer": "Invicto no está afiliado, avalado ni patrocinado por el World Baseball Classic, WBCI, MLB, NPB ni por ningún equipo o asociación de jugadores. Los nombres de peloteros y sus estadísticas históricas se usan como referencia factual.",

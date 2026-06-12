@@ -1,6 +1,7 @@
 // Title screen: daily challenge (primary), free play, hard mode, how-to, footer.
 
 import { cycleLang, howtoPanels, nextLangLabel, t } from '../../i18n';
+import { earnedBadgeCount } from '../../game/badges';
 import { currentStreak, dailyNumber, dailyResult, personalBest, setSound, soundOn, todayKey, type Mode } from '../../game/state';
 import { fetchToday } from '../../game/stats';
 import { setAccent } from '../accents';
@@ -61,6 +62,8 @@ export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
   const metaBits: string[] = [];
   if (played) metaBits.push(t('title.playedToday', { record: played.record }));
   if (streak > 0) metaBits.push(t('title.streak', { n: streak }));
+  const badgeCount = earnedBadgeCount();
+  if (badgeCount > 0) metaBits.push(t('title.badges', { n: badgeCount }));
   if (bestFree) metaBits.push(t('title.best', { record: bestFree.record }));
 
   const metaEl = h('div.menu-meta', {}, metaBits.join('  ·  '));
