@@ -190,7 +190,7 @@
   },
   "share": {
     "title": "INVICTO",
-    "url": "invictobaseball.com/ko",
+    "url": "invictobaseball.com/ko/",
     "tiers": { "invicto": "7-0 ⭐ INVICTO", "campeon": "{record} 🏆 CAMPEÓN", "subcampeon": "준우승 {record} 🥈" }
   },
   "footer": {
