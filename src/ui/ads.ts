@@ -3,7 +3,7 @@
 // Fully disabled until ADSENSE_CLIENT and the slot ids are filled in (see
 // README "Monetization") — until then this renders nothing at all.
 
-export const ADSENSE_CLIENT = ''; // e.g. 'ca-pub-1234567890123456'
+export const ADSENSE_CLIENT = 'ca-pub-4879291425090726';
 const AD_SLOTS: Record<'title' | 'result', string> = {
   title: '', // slot id from AdSense → Ads → By ad unit
   result: '',
