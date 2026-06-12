@@ -1,10 +1,20 @@
-// Cloudflare Workers config: serve the built site as static assets.
+// Cloudflare Workers config: static site + the global daily stats API.
 // The Git-connected build runs `npm run build` then `npx wrangler deploy`.
 {
-  "name": "invicto",
-  "compatibility_date": "2026-05-01",
-  "assets": {
-    "directory": "./dist",
-    "not_found_handling": "single-page-application"
-  }
+	"name": "invicto",
+	"main": "worker/index.ts",
+	"compatibility_date": "2026-05-01",
+	"assets": {
+		"directory": "./dist",
+		"not_found_handling": "single-page-application",
+		"binding": "ASSETS",
+		"run_worker_first": ["/api/*"]
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "invicto-stats",
+			"database_id": "367c9146-1322-4c16-a7d0-674b6bb11062"
+		}
+	]
 }
