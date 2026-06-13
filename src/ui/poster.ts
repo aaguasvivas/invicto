@@ -1,6 +1,8 @@
 // Canvas poster drawing — shared by the in-app share PNG (1080×1350) and the
 // static OG image generator (1200×630, scripts/generate-og.html).
 
+import { gamesStripLayout } from './posterLayout';
+
 export interface PosterData {
   brand: string; // "INVICTO"
   tagline: string;
@@ -61,16 +63,20 @@ export function drawSharePoster(canvas: HTMLCanvasElement, data: PosterData): vo
   bg(ctx, 1080, 1350);
   ctx.textAlign = 'center';
 
+  // Usable width with ~90px side margins; centered text is clamped to this so
+  // long localized strings (e.g. "Eliminado en cuartos") never run off-canvas.
+  const SAFE = 900;
+
   ctx.fillStyle = GOLD;
   ctx.font = '64px Anton, sans-serif';
-  ctx.fillText(data.brand + (data.hard ? ' 🔥' : ''), 540, 110);
+  ctx.fillText(data.brand + (data.hard ? ' 🔥' : ''), 540, 110, SAFE);
   ctx.fillStyle = DIM;
   ctx.font = '600 30px Inter, sans-serif';
-  ctx.fillText(data.tagline, 540, 158);
+  ctx.fillText(data.tagline, 540, 158, SAFE);
 
   ctx.fillStyle = tierColor(data.tier);
   ctx.font = '74px Anton, sans-serif';
-  ctx.fillText(data.tierLabel, 540, 280);
+  ctx.fillText(data.tierLabel, 540, 280, SAFE);
 
   if (data.tier === 'invicto') {
     ctx.shadowColor = GOLD;
@@ -78,13 +84,22 @@ export function drawSharePoster(canvas: HTMLCanvasElement, data: PosterData): vo
   }
   ctx.fillStyle = data.tier === 'invicto' ? GOLD : TEXT;
   ctx.font = '230px Anton, sans-serif';
-  ctx.fillText(data.record, 540, 510);
+  ctx.fillText(data.record, 540, 510, SAFE);
   ctx.shadowBlur = 0;
 
-  // games strip
-  ctx.font = '44px Inter, sans-serif';
-  const strip = data.games.map((g) => `${g.flag}${g.win ? '✅' : '❌'}`).join(' ');
-  ctx.fillText(strip, 540, 590);
+  // Games strip: lay each game at a computed cell center, and draw the flag and
+  // result mark as two separately-anchored glyphs (±0.5em from the cell center).
+  // measureText under-reports color-emoji width and the lie is platform-dependent,
+  // so neither the strip layout nor the pair spacing may depend on it — that is
+  // what spilled the old single centered string off the PNG edge. The two glyphs
+  // stay symmetric about the cell center regardless of how wide they render.
+  const strip = gamesStripLayout(data.games.length);
+  ctx.font = `${strip.fontSize}px Inter, sans-serif`;
+  const half = strip.fontSize * 0.5;
+  data.games.forEach((g, i) => {
+    ctx.fillText(g.flag, strip.centers[i] - half, 590);
+    ctx.fillText(g.win ? '✅' : '❌', strip.centers[i] + half, 590);
+  });
 
   // lineup (12 rows: 9 hitters + SP/RP/CL)
   ctx.textAlign = 'left';
@@ -99,7 +114,9 @@ export function drawSharePoster(canvas: HTMLCanvasElement, data: PosterData): vo
     ctx.fillText(row.flag, 195, y + 2);
     ctx.fillStyle = TEXT;
     ctx.font = '600 32px Inter, sans-serif';
-    ctx.fillText(row.name, 258, y);
+    // Name is left-aligned at 258, edition is right-aligned at 960 on the same
+    // baseline — clamp so a long name never collides with the edition.
+    ctx.fillText(row.name, 258, y, 645);
     ctx.fillStyle = DIM;
     ctx.font = '28px Inter, sans-serif';
     ctx.textAlign = 'right';
@@ -110,7 +127,7 @@ export function drawSharePoster(canvas: HTMLCanvasElement, data: PosterData): vo
   ctx.textAlign = 'center';
   ctx.fillStyle = DIM;
   ctx.font = '700 30px Inter, sans-serif';
-  ctx.fillText(data.footer, 540, 1295);
+  ctx.fillText(data.footer, 540, 1295, SAFE);
 }
 
 /** 1200×630 OG card (no lineup — headline treatment). */
@@ -128,13 +145,15 @@ export function drawOgPoster(canvas: HTMLCanvasElement, data: Pick<PosterData, '
   ctx.fillText(data.brand, 600, 280);
   ctx.shadowBlur = 0;
 
+  const OG_SAFE = 1020; // 1200 canvas, ~90px side margins
+
   ctx.fillStyle = TEXT;
   ctx.font = '600 54px Inter, sans-serif';
-  ctx.fillText(data.tagline, 600, 385);
+  ctx.fillText(data.tagline, 600, 385, OG_SAFE);
 
   ctx.fillStyle = DIM;
   ctx.font = '40px Inter, sans-serif';
-  ctx.fillText(data.subline, 600, 460);
+  ctx.fillText(data.subline, 600, 460, OG_SAFE);
 
   ctx.font = '54px Inter, sans-serif';
   ctx.fillText('🇻🇪 🇩🇴 🇵🇷 🇯🇵 🇺🇸 🇲🇽 🇨🇺 🇰🇷 🇳🇱 🇹🇼', 600, 555);
