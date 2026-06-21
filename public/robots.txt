@@ -1,2 +1,3 @@
 User-agent: *
 Allow: /
+Sitemap: https://invictobaseball.com/sitemap.xml

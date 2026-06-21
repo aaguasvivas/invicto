@@ -228,7 +228,12 @@
     "disclaimer": "Invicto no está afiliado, avalado ni patrocinado por el World Baseball Classic, WBCI, MLB, NPB ni por ningún equipo o asociación de jugadores. Los nombres de peloteros y sus estadísticas históricas se usan como referencia factual.",
     "about": "Acerca de",
     "aboutText": "Invicto es un homenaje al género de los juegos de «temporada perfecta» (82-0 de la NBA, 162-0 de MLB). Datos de rosters: Wikipedia. Estadísticas: SABR Lahman Baseball Database. Hecho con cariño para la afición del Caribe y de todo el mundo beisbolero.",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "howto": "Cómo se juega",
+    "faq": "Preguntas frecuentes",
+    "privacy": "Privacidad",
+    "terms": "Términos",
+    "contact": "Contacto"
   },
   "meta": {
     "title": "Invicto: ¿Puedes quedar invicto en el Clásico Mundial?",

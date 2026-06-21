@@ -228,7 +228,12 @@
     "disclaimer": "Invicto is not affiliated with, endorsed by, or sponsored by the World Baseball Classic, WBCI, MLB, NPB, or any team or players' association. Player names and historical statistics are used as factual references.",
     "about": "About",
     "aboutText": "Invicto is a tribute to the perfect-season game genre (the NBA's 82-0, MLB's 162-0). Roster data: Wikipedia. Stats: SABR Lahman Baseball Database. Made with love for Caribbean baseball fandom and the whole baseball world.",
-    "close": "Close"
+    "close": "Close",
+    "howto": "How to play",
+    "faq": "FAQ",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "contact": "Contact"
   },
   "meta": {
     "title": "Invicto: Can you run the table at the World Baseball Classic?",

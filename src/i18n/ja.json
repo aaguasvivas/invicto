@@ -228,7 +228,12 @@
     "disclaimer": "InvictoはWorld Baseball Classic、WBCI、MLB、NPB、およびいかなるチーム・選手会とも提携・承認・後援関係にありません。選手名と過去の成績は事実への言及として使用しています。",
     "about": "このゲームについて",
     "aboutText": "Invictoは「パーフェクトシーズン」系ゲーム（NBAの82-0、MLBの162-0）へのオマージュです。ロースターデータ: Wikipedia。成績データ: SABR Lahman Baseball Database。世界中の野球ファンに愛を込めて。",
-    "close": "閉じる"
+    "close": "閉じる",
+    "howto": "遊び方",
+    "faq": "よくある質問",
+    "privacy": "プライバシー",
+    "terms": "利用規約",
+    "contact": "お問い合わせ"
   },
   "meta": {
     "title": "Invicto｜WBCで全勝優勝できるか？",

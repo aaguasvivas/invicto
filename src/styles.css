@@ -144,6 +144,17 @@ h1, h2, h3 { margin: 0; }
 }
 .tip-link:active { background: var(--surface); }
 
+/* footer links to the static content + trust pages (Privacy/Terms/Contact etc.) */
+.site-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  justify-content: center;
+  margin-top: 12px;
+}
+.site-links a { color: #8093c7; font-size: 12px; text-decoration: none; }
+.site-links a:active { color: var(--text); }
+
 /* ---------- how to play ---------- */
 .howto-overlay {
   position: fixed;

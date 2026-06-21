@@ -7,6 +7,7 @@ import { fetchToday } from '../../game/stats';
 import { setAccent } from '../accents';
 import { mountAd } from '../ads';
 import { tipLink } from '../tip';
+import { siteLinks } from '../siteLinks';
 import { clear, h } from '../dom';
 
 export interface TitleCallbacks {
@@ -83,6 +84,7 @@ export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
     tipLink() ? h('div', { style: 'margin-bottom:10px' }, tipLink()) : null,
     h('div', {}, t('footer.disclaimer')),
     h('div', { style: 'margin-top:6px' }, h('a', { href: '#', onclick: (e: Event) => { e.preventDefault(); showAbout(); } }, t('footer.about'))),
+    siteLinks(),
   );
 
   app.append(
