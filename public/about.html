@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0a1228" />
+    <title>Acerca de Invicto y de dónde salen los datos · About</title>
+    <meta name="description" content="Qué es Invicto, en qué se inspira y cómo se calculan los ratings: rosters de Wikipedia, estadísticas de la SABR Lahman Baseball Database. Metodología en español e inglés." />
+    <link rel="canonical" href="https://invictobaseball.com/about.html" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚾</text></svg>" />
+    <link rel="stylesheet" href="/pages.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/">INVICTO</a>
+      <nav>
+        <a class="play" href="/">Jugar</a>
+        <a href="/how-to-play.html">Cómo se juega</a>
+        <a href="/about.html">Acerca de</a>
+        <a href="/faq.html">FAQ</a>
+      </nav>
+    </header>
+
+    <main class="page">
+      <h1>Acerca de Invicto</h1>
+      <p class="lead">Invicto es un homenaje al género de los juegos de "temporada perfecta" (el 82-0 de la NBA, el 162-0 de las Grandes Ligas) llevado al béisbol internacional. Está hecho con cariño para la afición del Caribe y de todo el mundo beisbolero.</p>
+
+      <h2>La idea</h2>
+      <p>La pregunta es simple: con peloteros reales del Clásico Mundial, ¿puedes armar un equipo y ganarlo todo sin perder un solo juego? Esa búsqueda de lo perfecto, lo invicto, es el corazón del juego. No hay cuentas, no hay descargas y una partida dura unos tres minutos.</p>
+
+      <h2>De dónde salen los peloteros</h2>
+      <p>Ningún jugador es inventado. Las plantillas vienen de las páginas de rosters del Clásico Mundial de Béisbol en Wikipedia, para las seis ediciones (2006, 2009, 2013, 2017, 2023 y 2026). Cada registro guarda su fuente. Si una página de roster no se puede leer, el proceso se detiene y lo reporta, en vez de rellenar con datos inventados.</p>
+
+      <h2>Cómo se calculan los ratings</h2>
+      <p>El rating del 1 al 99 sale de estadísticas reales, no de opiniones:</p>
+      <ul>
+        <li><strong>Peloteros con carrera en MLB:</strong> se usan sus temporadas cercanas a la edición, medidas contra el promedio de la liga de ese año (una aproximación de OPS+). Así, una gran temporada de 1980 y una de 2020 se comparan de forma justa. Se aplica un ajuste de fiabilidad para que un fogonazo de pocos turnos no rate como una temporada completa de estrella.</li>
+        <li><strong>Peloteros sin datos de MLB:</strong> se estiman por liga (NPB, KBO, CPBL, Serie Nacional cubana, ligas menores, etc.) con multiplicadores transparentes y un ajuste por edad.</li>
+        <li><strong>Estrellas extranjeras destacadas:</strong> una lista curada y citada eleva a figuras cuyo nivel real no se ve solo en los números disponibles (por ejemplo, grandes bates de la NPB o la KBO).</li>
+        <li><strong>Lanzadores:</strong> se ratean con la misma lógica sobre un compuesto de pitcheo, con descuentos por pocas entradas y por rol de relevo.</li>
+      </ul>
+      <p>Las estadísticas de Grandes Ligas vienen de la <strong>SABR Lahman Baseball Database</strong>, la continuación del Baseball Databank del Chadwick Bureau. Todo el azar del rateo está fijado por el identificador de cada pelotero, así que los números son siempre los mismos: reconstruir los datos da el mismo resultado.</p>
+      <p>Es importante decir lo que el juego <em>no</em> hace: no ajusta por estadios y se basa en temporadas individuales, así que alguna temporada caliente puede quedar rateada en su pico. Es una simplificación documentada, no un error.</p>
+
+      <h2>Sin logos, solo banderas</h2>
+      <p>Invicto usa banderas de países, nunca logos de equipos ni de ligas, y muestra los nombres y estadísticas de los peloteros únicamente como referencia factual. No está afiliado al Clásico Mundial, a la MLB, a la NPB ni a ninguna organización.</p>
+      <a class="cta" href="/">Jugar ahora</a>
+
+      <span class="lang-label">English</span>
+      <h2>About Invicto</h2>
+      <p>Invicto is a tribute to the "perfect season" game genre (the NBA's 82-0, MLB's 162-0) brought to international baseball: with real World Baseball Classic players, can you build a team and win it all without a single loss? It is free, no account, and a game takes about three minutes.</p>
+      <h3>Where the players come from</h3>
+      <p>No player is invented. Rosters come from the World Baseball Classic roster pages on Wikipedia for all six editions (2006, 2009, 2013, 2017, 2023, 2026); every record stores its source, and if a roster page cannot be parsed the build stops rather than guessing.</p>
+      <h3>How ratings are calculated</h3>
+      <p>The 1-99 rating is built from real statistics. For players with an MLB career, seasons near the edition are measured against that year's league average (an OPS+ approximation), with a reliability adjustment so small samples do not rate like full star seasons. Players without MLB data are estimated by league (NPB, KBO, CPBL, the Cuban National Series, the minors and others) with transparent multipliers, and a curated, cited list lifts notable foreign stars whose true level is not visible in the available numbers. Pitchers are rated with the same logic on a pitching composite. MLB statistics come from the <strong>SABR Lahman Baseball Database</strong> (the continuation of the Chadwick Bureau Baseball Databank). All rating randomness is seeded by each player's id, so the numbers are deterministic. The game does not apply park factors and uses single-season data, a documented simplification.</p>
+      <h3>Flags, not logos</h3>
+      <p>Invicto uses national flags, never team or league logos, and shows player names and statistics only as factual references. It is not affiliated with the World Baseball Classic, MLB, NPB or any organization.</p>
+      <a class="cta" href="/">Play now</a>
+    </main>
+
+    <footer class="site-footer">
+      <p class="disclaimer">Invicto no está afiliado, avalado ni patrocinado por el World Baseball Classic, WBCI, MLB, NPB ni por ningún equipo o asociación de jugadores. Los nombres de peloteros y sus estadísticas históricas se usan como referencia factual. / Invicto is not affiliated with, endorsed by, or sponsored by the World Baseball Classic, WBCI, MLB, NPB, or any team or players' association. Player names and historical statistics are used as factual references.</p>
+      <nav>
+        <a href="/">Jugar / Play</a>
+        <a href="/how-to-play.html">Cómo se juega</a>
+        <a href="/about.html">Acerca de</a>
+        <a href="/faq.html">FAQ</a>
+        <a href="/privacy.html">Privacidad</a>
+        <a href="/terms.html">Términos</a>
+        <a href="/contact.html">Contacto</a>
+      </nav>
+      <p>© 2026 Invicto · invictobaseball.com</p>
+    </footer>
+  </body>
+</html>

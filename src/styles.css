@@ -130,6 +130,20 @@ h1, h2, h3 { margin: 0; }
 .footer { color: #5e6b96; font-size: 12px; line-height: 1.5; text-align: center; padding: 22px 4px 18px; }
 .footer a { color: #8093c7; }
 
+/* tip jar: a calm, optional "buy me a coffee" — never pushy */
+.tip-link {
+  display: inline-block;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--gold-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 16px;
+  text-decoration: none;
+  min-height: 36px;
+}
+.tip-link:active { background: var(--surface); }
+
 /* ---------- how to play ---------- */
 .howto-overlay {
   position: fixed;

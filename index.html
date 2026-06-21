@@ -42,9 +42,66 @@
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
       }
     </script>
+    <style>
+      /* Scoped styles for the crawlable info section below the game. The game's
+         own CSS (injected by the bundle) governs #app and overrides the body
+         fallback, so this never affects gameplay UI. */
+      body { background: #0a1228; color: #eef2ff; }
+      .landing-info {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 30px 20px 52px;
+        border-top: 1px solid #2a3a6e;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        line-height: 1.6;
+      }
+      .landing-info h2 { font-size: 22px; color: #f5b942; margin: 0 0 8px; }
+      .landing-info h3 { font-size: 17px; color: #ffd87a; margin: 22px 0 6px; }
+      .landing-info p, .landing-info li { color: #cdd6f3; font-size: 15px; }
+      .landing-info a { color: #9fb0e0; }
+      .landing-links { display: flex; flex-wrap: wrap; gap: 16px; margin: 20px 0; font-weight: 600; }
+      .landing-disclaimer { color: #7e8cbb; font-size: 12.5px; line-height: 1.55; }
+    </style>
   </head>
   <body>
     <div id="app"></div>
+    <section class="landing-info" aria-label="Acerca de Invicto / About Invicto">
+      <h2>Invicto: el juego de la temporada perfecta del Clásico Mundial</h2>
+      <p>
+        Invicto es un juego de béisbol gratis para el navegador. Armas un lineup de 12 con peloteros
+        reales del Clásico Mundial de Béisbol (ediciones 2006, 2009, 2013, 2017, 2023 y 2026) a partir
+        de tiradas al azar de país y edición, y luego se simula un torneo de 7 juegos. Ganarlo todo 7-0
+        es quedar <strong>INVICTO</strong>; ganarlo con una derrota es ser <strong>CAMPEÓN</strong>.
+        Sin cuenta, sin descargas, en unos tres minutos.
+      </p>
+      <h3>Cómo funciona</h3>
+      <ul>
+        <li>Draft de 12: 9 bateadores más abridor, relevista y cerrador.</li>
+        <li>Dos cambios por partida: uno de país y uno de edición.</li>
+        <li>Reto del Día con las mismas tiradas para todos, más Juego libre y Modo Duro.</li>
+        <li>Ratings calculados con estadísticas reales; datos de Wikipedia y de la SABR Lahman Baseball Database.</li>
+      </ul>
+      <p>
+        Invicto is a free browser baseball game: draft a 12-player lineup from real World Baseball
+        Classic rosters (2006-2026) and try to win the tournament 7-0. Run the table for INVICTO, win it
+        with one loss for CAMPEÓN. Available in Spanish, English, Japanese and Korean.
+      </p>
+      <nav class="landing-links">
+        <a href="/how-to-play.html">Cómo se juega / How to play</a>
+        <a href="/about.html">Acerca de / About</a>
+        <a href="/faq.html">FAQ</a>
+        <a href="/privacy.html">Privacidad / Privacy</a>
+        <a href="/terms.html">Términos / Terms</a>
+        <a href="/contact.html">Contacto / Contact</a>
+      </nav>
+      <p class="landing-disclaimer">
+        Invicto no está afiliado, avalado ni patrocinado por el World Baseball Classic, WBCI, MLB, NPB
+        ni por ningún equipo o asociación de jugadores. Los nombres de peloteros y sus estadísticas
+        históricas se usan como referencia factual. / Invicto is not affiliated with, endorsed by, or
+        sponsored by the World Baseball Classic, WBCI, MLB, NPB, or any team or players' association.
+        Player names and historical statistics are used as factual references.
+      </p>
+    </section>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

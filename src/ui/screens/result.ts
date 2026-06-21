@@ -9,6 +9,7 @@ import { dailyNumber, saveBest, saveDailyResult, todayKey } from '../../game/sta
 import { percentileBeaten, rarestPick, submitResult, topSharePct } from '../../game/stats';
 import { setAccent } from '../accents';
 import { mountAd } from '../ads';
+import { tipLink } from '../tip';
 import { clear, h, toast } from '../dom';
 import { confetti } from '../confetti';
 import type { PosterData } from '../poster';
@@ -174,6 +175,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
       posterEl,
       badgesEl,
       buttons,
+      tipLink() ? h('div.result-meta', {}, tipLink()) : null,
       statsEl,
       !session.scored && session.mode === 'daily' ? h('div.result-meta', {}, t('result.practice')) : null,
       session.mode === 'daily' ? h('div.result-meta', {}, t('result.dailyNote')) : null,

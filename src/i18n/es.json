@@ -223,6 +223,7 @@
     "seis_editiones": { "name": "Veinte años de Clásico", "desc": "Al menos un pick de cada edición, del 2006 al 2026." },
     "blanqueada_final": { "name": "Blanqueada de oro", "desc": "Ganaste la final y el rival se fue en cero." }
   },
+  "tip": { "cta": "Invítame un cafecito ☕" },
   "footer": {
     "disclaimer": "Invicto no está afiliado, avalado ni patrocinado por el World Baseball Classic, WBCI, MLB, NPB ni por ningún equipo o asociación de jugadores. Los nombres de peloteros y sus estadísticas históricas se usan como referencia factual.",
     "about": "Acerca de",

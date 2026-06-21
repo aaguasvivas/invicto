@@ -223,6 +223,7 @@
     "seis_editiones": { "name": "Twenty Years of Classic", "desc": "At least one pick from every edition, 2006 to 2026." },
     "blanqueada_final": { "name": "Golden Shutout", "desc": "Won the final without allowing a run." }
   },
+  "tip": { "cta": "Buy me a coffee ☕" },
   "footer": {
     "disclaimer": "Invicto is not affiliated with, endorsed by, or sponsored by the World Baseball Classic, WBCI, MLB, NPB, or any team or players' association. Player names and historical statistics are used as factual references.",
     "about": "About",

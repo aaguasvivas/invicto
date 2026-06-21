@@ -223,6 +223,7 @@
     "seis_editiones": { "name": "클래식 20년사", "desc": "2006부터 2026까지 모든 대회에서 한 명 이상." },
     "blanqueada_final": { "name": "결승 완봉승", "desc": "결승에서 상대를 무득점으로 막았다." }
   },
+  "tip": { "cta": "커피 한 잔 후원하기 ☕" },
   "footer": {
     "disclaimer": "Invicto는 World Baseball Classic, WBCI, MLB, NPB 및 어떤 구단이나 선수 협회와도 제휴·승인·후원 관계가 없습니다. 선수 이름과 과거 성적은 사실에 대한 참고로만 사용됩니다.",
     "about": "소개",

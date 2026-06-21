@@ -223,6 +223,7 @@
     "seis_editiones": { "name": "クラシック20年史", "desc": "2006年から2026年まで、全大会から指名。" },
     "blanqueada_final": { "name": "決勝完封", "desc": "決勝で相手を無得点に抑えて優勝。" }
   },
+  "tip": { "cta": "コーヒーを一杯おごる ☕" },
   "footer": {
     "disclaimer": "InvictoはWorld Baseball Classic、WBCI、MLB、NPB、およびいかなるチーム・選手会とも提携・承認・後援関係にありません。選手名と過去の成績は事実への言及として使用しています。",
     "about": "このゲームについて",
