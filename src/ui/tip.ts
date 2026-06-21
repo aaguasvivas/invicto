@@ -7,7 +7,7 @@ import { t } from '../i18n';
 import { h } from './dom';
 
 // Paste your Ko-fi or Buy Me a Coffee URL here, e.g. 'https://ko-fi.com/invicto'.
-export const TIP_JAR_URL = '';
+export const TIP_JAR_URL = 'https://ko-fi.com/adelsonaguasvivas';
 
 /** A tasteful tip-jar link, or null when no tip URL is configured. */
 export function tipLink(): HTMLElement | null {
