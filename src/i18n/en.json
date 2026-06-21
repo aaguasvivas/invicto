@@ -16,7 +16,7 @@
     {
       "icon": "🎰",
       "title": "Draft your squad",
-      "body": "9 rounds, 9 positions. Each round rolls a random country and WBC edition. Pick one player from that roster for your lineup; each player can only be drafted once."
+      "body": "12 rounds, 12 positions. Each round rolls a random country and WBC edition. Pick one player from that roster for your lineup; each player can only be drafted once."
     },
     {
       "icon": "🔁",
@@ -30,7 +30,7 @@
     }
   ],
   "draft": {
-    "round": "Round {n} of 9",
+    "round": "Round {n} of 12",
     "search": "Search for a player…",
     "rerollCountry": "🔁 New country",
     "rerollEdition": "🗓️ New edition",

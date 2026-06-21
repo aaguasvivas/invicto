@@ -179,7 +179,7 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
       h(
         'button.lineup-toggle',
         { onclick: () => tray.classList.toggle('open') },
-        h('span', {}, `${t('draft.lineup')} (${9 - openSlots(session.state).length}/9)`),
+        h('span', {}, `${t('draft.lineup')} (${SLOT_ORDER.length - openSlots(session.state).length}/${SLOT_ORDER.length})`),
         h('span', {}, '▴'),
       ),
       grid,

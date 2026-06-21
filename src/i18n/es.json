@@ -16,7 +16,7 @@
     {
       "icon": "🎰",
       "title": "Arma tu equipo",
-      "body": "9 rondas, 9 posiciones. En cada ronda sale un país y una edición del Clásico al azar: elige un pelotero de ese roster para tu lineup. Cada quien juega una sola vez."
+      "body": "12 rondas, 12 posiciones. En cada ronda sale un país y una edición del Clásico al azar: elige un pelotero de ese roster para tu lineup. Cada quien juega una sola vez."
     },
     {
       "icon": "🔁",
@@ -30,7 +30,7 @@
     }
   ],
   "draft": {
-    "round": "Ronda {n} de 9",
+    "round": "Ronda {n} de 12",
     "search": "Busca un pelotero…",
     "rerollCountry": "🔁 Cambiar país",
     "rerollEdition": "🗓️ Cambiar edición",
