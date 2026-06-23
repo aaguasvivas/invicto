@@ -224,6 +224,10 @@
     "blanqueada_final": { "name": "결승 완봉승", "desc": "결승에서 상대를 무득점으로 막았다." }
   },
   "tip": { "cta": "커피 한 잔 후원하기 ☕" },
+  "landing": {
+    "heading": "Invicto: WBC 전승 우승에 도전하는 야구 게임",
+    "intro": "Invicto는 무료 브라우저 야구 게임입니다. WBC(2006-2026)의 실제 선수로 12명의 라인업을 짜고 7경기 토너먼트를 시뮬레이션합니다. 7전 전승이면 INVICTO, 한 번 져도 우승하면 CAMPEÓN. 능력치는 실제 기록(Wikipedia와 SABR Lahman Baseball Database)을 기반으로 합니다. 무료, 계정 불필요, 스페인어·영어·일본어·한국어 지원."
+  },
   "footer": {
     "disclaimer": "Invicto는 World Baseball Classic, WBCI, MLB, NPB 및 어떤 구단이나 선수 협회와도 제휴·승인·후원 관계가 없습니다. 선수 이름과 과거 성적은 사실에 대한 참고로만 사용됩니다.",
     "about": "소개",

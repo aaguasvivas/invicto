@@ -224,6 +224,10 @@
     "blanqueada_final": { "name": "Golden Shutout", "desc": "Won the final without allowing a run." }
   },
   "tip": { "cta": "Buy me a coffee ☕" },
+  "landing": {
+    "heading": "Invicto: the World Baseball Classic perfect-season game",
+    "intro": "Invicto is a free browser baseball game. Draft a 12-player lineup from real World Baseball Classic rosters (2006-2026) and simulate a 7-game tournament: win it all 7-0 for INVICTO, or win with one loss for CAMPEÓN. Ratings come from real statistics (Wikipedia and the SABR Lahman Baseball Database). Free, no account, in Spanish, English, Japanese and Korean."
+  },
   "footer": {
     "disclaimer": "Invicto is not affiliated with, endorsed by, or sponsored by the World Baseball Classic, WBCI, MLB, NPB, or any team or players' association. Player names and historical statistics are used as factual references.",
     "about": "About",

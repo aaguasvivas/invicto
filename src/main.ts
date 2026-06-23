@@ -10,6 +10,7 @@ import { renderTitle } from './ui/screens/title';
 import { renderDraft } from './ui/screens/draft';
 import { renderSim } from './ui/screens/sim';
 import { renderResult } from './ui/screens/result';
+import { renderLandingInfo } from './ui/landing';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
@@ -18,6 +19,9 @@ function showTitle(data: GameData): void {
     onRerender: () => showTitle(data),
     onStart: (mode: Mode) => startRun(data, mode),
   });
+  // Localize the below-the-fold info section to match the current language
+  // (runs on boot, on return-to-title, and after a language switch).
+  renderLandingInfo();
 }
 
 function startRun(data: GameData, mode: Mode): void {
