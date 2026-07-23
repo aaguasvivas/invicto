@@ -14,7 +14,15 @@ import { renderLandingInfo } from './ui/landing';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
+/** Fresh screens start at the top; a stale scroll position kills the reveal. */
+function resetScroll(): void {
+  window.scrollTo(0, 0);
+}
+
 function showTitle(data: GameData): void {
+  resetScroll();
+  // The crawlable info section belongs to the landing/title view only.
+  document.body.classList.remove('in-game');
   renderTitle(app, {
     onRerender: () => showTitle(data),
     onStart: (mode: Mode) => startRun(data, mode),
@@ -25,6 +33,8 @@ function showTitle(data: GameData): void {
 }
 
 function startRun(data: GameData, mode: Mode): void {
+  resetScroll();
+  document.body.classList.add('in-game');
   // Daily scores only the first attempt of the day; replays are practice.
   const scored = mode === 'daily' ? !dailyResult() : true;
   const session = newSession(data, mode, scored);
@@ -32,9 +42,11 @@ function startRun(data: GameData, mode: Mode): void {
 }
 
 function runTournament(session: Session): void {
+  resetScroll();
   const run = simulateRun(lineup(session), session.seed);
   // (lineup() returns the slot-keyed record; the engine gates pitching as its own category)
   renderSim(app, run, session.data, session.state.lineup, () => {
+    resetScroll();
     renderResult(app, session, run, {
       onAgain: () => startRun(session.data, session.mode), // one more run, zero friction
       onHome: () => showTitle(session.data),

@@ -38,6 +38,15 @@
 
 * { box-sizing: border-box; }
 
+/* Every screen eases in instead of hard-cutting; one-shot and quick, so it
+   never gets in the way of taps. */
+.title-screen, .draft-screen, .sim-screen, .result-screen {
+  animation: screen-in 0.22s ease;
+}
+@keyframes screen-in {
+  from { opacity: 0; transform: translateY(6px); }
+}
+
 html, body {
   margin: 0;
   padding: 0;
@@ -100,6 +109,14 @@ h1, h2, h3 { margin: 0; }
   color: var(--gold);
   text-shadow: 0 0 36px rgba(245, 185, 66, 0.35);
   letter-spacing: 0.04em;
+}
+/* Stadium lights breathe behind the wordmark; static for reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .logo { animation: logo-glow 3.6s ease-in-out infinite; }
+}
+@keyframes logo-glow {
+  0%, 100% { text-shadow: 0 0 36px rgba(245, 185, 66, 0.35); }
+  50% { text-shadow: 0 0 52px rgba(245, 185, 66, 0.55); }
 }
 .tagline { color: var(--text-dim); font-size: 16px; margin-top: 10px; }
 .flag-strip { font-size: 17px; letter-spacing: 4px; margin-top: 14px; opacity: 0.9; }

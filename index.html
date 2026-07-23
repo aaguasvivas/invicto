@@ -55,6 +55,9 @@
         font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
         line-height: 1.6;
       }
+      /* Landing text belongs to the title view; never show it under a live
+         draft, sim or result (the app toggles this class). */
+      body.in-game .landing-info { display: none; }
       .landing-info h2 { font-size: 22px; color: #f5b942; margin: 0 0 8px; }
       .landing-info h3 { font-size: 17px; color: #ffd87a; margin: 22px 0 6px; }
       .landing-info p, .landing-info li { color: #cdd6f3; font-size: 15px; }
