@@ -93,6 +93,7 @@ a { color: var(--gold-2); }
   border-radius: 12px;
   padding: 12px 22px;
 }
+.page .table-wrap { overflow-x: auto; }
 .page table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 15px; }
 .page th, .page td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
 .page th { color: var(--gold-2); }

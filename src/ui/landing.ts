@@ -9,6 +9,7 @@ import { clear, h } from './dom';
 
 const LINKS: [string, string][] = [
   ['/how-to-play.html', 'footer.howto'],
+  ['/rosters/', 'footer.rosters'],
   ['/about.html', 'footer.about'],
   ['/faq.html', 'footer.faq'],
   ['/privacy.html', 'footer.privacy'],
