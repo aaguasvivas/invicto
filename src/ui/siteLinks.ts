@@ -5,18 +5,23 @@
 // static pages. Links use .html so they resolve in dev too (production serves
 // them at clean URLs via a transparent redirect).
 
-import { t } from '../i18n';
+import { getLang, t } from '../i18n';
 import { h } from './dom';
 
-const LINKS: [string, string][] = [
-  ['/how-to-play.html', 'footer.howto'],
-  ['/rosters/', 'footer.rosters'],
-  ['/faq.html', 'footer.faq'],
-  ['/privacy.html', 'footer.privacy'],
-  ['/terms.html', 'footer.terms'],
-  ['/contact.html', 'footer.contact'],
-];
+/** The rosters reference exists as ES and EN trees; Spanish players get the
+    Spanish tree, everyone else (en/ja/ko) the English one. */
+export function rostersHref(): string {
+  return getLang() === 'es' ? '/rosters/' : '/en/rosters/';
+}
 
 export function siteLinks(): HTMLElement {
-  return h('nav.site-links', {}, ...LINKS.map(([href, key]) => h('a', { href }, t(key))));
+  const links: [string, string][] = [
+    ['/how-to-play.html', 'footer.howto'],
+    [rostersHref(), 'footer.rosters'],
+    ['/faq.html', 'footer.faq'],
+    ['/privacy.html', 'footer.privacy'],
+    ['/terms.html', 'footer.terms'],
+    ['/contact.html', 'footer.contact'],
+  ];
+  return h('nav.site-links', {}, ...links.map(([href, key]) => h('a', { href }, t(key))));
 }
