@@ -11,6 +11,7 @@ import { setAccent } from '../accents';
 import { mountAd } from '../ads';
 import { tipLink } from '../tip';
 import { siteLinks } from '../siteLinks';
+import { IS_PORTAL } from '../../portal';
 import { clear, h, toast } from '../dom';
 import { confetti } from '../confetti';
 import type { PosterData } from '../poster';
@@ -107,7 +108,8 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
   const posterForShare = (): PosterData =>
     globalTopPct !== null ? { ...posterData, footer: `${footerLine}  ·  ${t('global.top', { pct: globalTopPct })}` } : posterData;
   const statsEl = h('div.result-meta');
-  if (session.mode === 'daily' && session.scored) {
+  // Portal builds have no stats backend (see title.ts).
+  if (session.mode === 'daily' && session.scored && !IS_PORTAL) {
     const picks = SLOT_ORDER.map((slot) => session.state.lineup[slot]!.id);
     void submitResult({ day: todayKey(), wins: run.wins, losses: run.losses, outcome: run.outcome, picks }).then((today) => {
       if (!today) return;

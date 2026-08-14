@@ -1,6 +1,7 @@
 // Title screen: daily challenge (primary), free play, hard mode, how-to, footer.
 
 import { cycleLang, howtoPanels, nextLangLabel, t } from '../../i18n';
+import { IS_PORTAL } from '../../portal';
 import { earnedBadgeCount } from '../../game/badges';
 import { currentStreak, dailyNumber, dailyResult, personalBest, setSound, soundOn, todayKey, type Mode } from '../../game/state';
 import { fetchToday } from '../../game/stats';
@@ -69,11 +70,15 @@ export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
   if (bestFree) metaBits.push(t('title.best', { record: bestFree.record }));
 
   const metaEl = h('div.menu-meta', {}, metaBits.join('  ·  '));
-  void fetchToday(todayKey()).then((today) => {
-    if (!today || today.total < 1) return;
-    metaBits.push(t('global.counts', { total: today.total, invictos: today.invictos }));
-    metaEl.textContent = metaBits.join('  ·  ');
-  });
+  // Portal builds have no stats backend; skip the call so portal QA sees no
+  // failed requests (the site build keeps its global daily numbers).
+  if (!IS_PORTAL) {
+    void fetchToday(todayKey()).then((today) => {
+      if (!today || today.total < 1) return;
+      metaBits.push(t('global.counts', { total: today.total, invictos: today.invictos }));
+      metaEl.textContent = metaBits.join('  ·  ');
+    });
+  }
 
   const adBox = h('div.ad-box');
   mountAd(adBox, 'title');
