@@ -46,7 +46,10 @@ export function portalLoadingStop(): void {
   }
 }
 
+let gameplayActive = false;
+
 export function portalGameplayStart(): void {
+  gameplayActive = true;
   try {
     sdk()?.game.gameplayStart();
   } catch {
@@ -54,7 +57,11 @@ export function portalGameplayStart(): void {
   }
 }
 
+/** Only meaningful after a start; the title screen at boot must not emit a
+    stop-with-no-start (their QA detector reads that as a broken integration). */
 export function portalGameplayStop(): void {
+  if (!gameplayActive) return;
+  gameplayActive = false;
   try {
     sdk()?.game.gameplayStop();
   } catch {
