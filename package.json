@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && tsc -p worker --noEmit && vite build && tsx scripts/postbuild-locales.ts",
+    "build:crazygames": "tsc --noEmit && vite build --config vite.portal.config.ts",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",

@@ -6,6 +6,7 @@
 // them at clean URLs via a transparent redirect).
 
 import { getLang, t } from '../i18n';
+import { IS_PORTAL } from '../portal';
 import { h } from './dom';
 
 /** The rosters reference exists as ES and EN trees; Spanish players get the
@@ -14,7 +15,9 @@ export function rostersHref(): string {
   return getLang() === 'es' ? '/rosters/' : '/en/rosters/';
 }
 
-export function siteLinks(): HTMLElement {
+export function siteLinks(): HTMLElement | null {
+  // Portal builds ship only the game; the website's pages do not exist there.
+  if (IS_PORTAL) return null;
   const links: [string, string][] = [
     ['/how-to-play.html', 'footer.howto'],
     [rostersHref(), 'footer.rosters'],

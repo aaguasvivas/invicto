@@ -1,4 +1,4 @@
-// Invicto — boot + screen routing.
+// Invicto boot + screen routing.
 
 import './styles.css';
 import { applyMeta, getLang } from './i18n';
@@ -11,6 +11,9 @@ import { renderDraft } from './ui/screens/draft';
 import { renderSim } from './ui/screens/sim';
 import { renderResult } from './ui/screens/result';
 import { renderLandingInfo } from './ui/landing';
+import {
+  portalGameplayStart, portalGameplayStop, portalHappytime, portalInit, portalLoadingStart, portalLoadingStop,
+} from './portal';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
@@ -21,6 +24,7 @@ function resetScroll(): void {
 
 function showTitle(data: GameData): void {
   resetScroll();
+  portalGameplayStop();
   // The crawlable info section belongs to the landing/title view only.
   document.body.classList.remove('in-game');
   renderTitle(app, {
@@ -34,6 +38,7 @@ function showTitle(data: GameData): void {
 
 function startRun(data: GameData, mode: Mode): void {
   resetScroll();
+  portalGameplayStart();
   document.body.classList.add('in-game');
   // Daily scores only the first attempt of the day; replays are practice.
   const scored = mode === 'daily' ? !dailyResult() : true;
@@ -47,6 +52,8 @@ function runTournament(session: Session): void {
   // (lineup() returns the slot-keyed record; the engine gates pitching as its own category)
   renderSim(app, run, session.data, session.state.lineup, () => {
     resetScroll();
+    portalGameplayStop();
+    if (run.outcome === 'invicto') portalHappytime();
     renderResult(app, session, run, {
       onAgain: () => startRun(session.data, session.mode), // one more run, zero friction
       onHome: () => showTitle(session.data),
@@ -57,7 +64,10 @@ function runTournament(session: Session): void {
 async function boot(): Promise<void> {
   document.documentElement.lang = getLang();
   applyMeta();
+  await portalInit();
+  portalLoadingStart();
   const data = await loadData();
+  portalLoadingStop();
   showTitle(data);
 }
 
