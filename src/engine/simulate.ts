@@ -18,7 +18,7 @@ export const POOL_TIERS = {
   power: { base: 78, spread: 3 },
 } as const;
 
-// Identity pools for opponent flags (flavor only — strength comes from the tier).
+// Identity pools for opponent flags (flavor only; strength comes from the tier).
 const MINNOW_COUNTRIES = ['CHN', 'CZE', 'GBR', 'NCA', 'BRA', 'RSA', 'ESP', 'ISR'];
 const MID_COUNTRIES = ['CAN', 'ITA', 'AUS', 'PAN', 'COL'];
 
@@ -120,7 +120,7 @@ function playGame(team: number, stage: Stage, opponent: Opponent, seed: string, 
   // Scores: margin grows with the (signed) strength gap in the winner's favor.
   const winnerGap = win ? Math.max(0, gap) : Math.max(0, -gap);
   const margin = Math.min(18, 1 + Math.floor(rng() * 3) + Math.round(winnerGap / 4));
-  const loserScore = Math.floor(rng() * 5 + rng() * 2); // 0 ≈ 5% — shutouts stay special
+  const loserScore = Math.floor(rng() * 5 + rng() * 2); // 0 ≈ 5%, shutouts stay special
   const winnerScore = loserScore + margin;
   const mercy = margin >= 10;
   const walkOff = margin === 1 && rng() < 0.3;
@@ -129,7 +129,7 @@ function playGame(team: number, stage: Stage, opponent: Opponent, seed: string, 
   const flavorKind = mercy ? 'mercy' : walkOff ? 'walkoff' : shutout ? 'shutout' : margin >= 6 ? 'blowout' : margin <= 2 ? 'close' : 'normal';
 
   const flavorVariant = Math.floor(rng() * 8);
-  // hero draws come last — see heroMoment()
+  // hero draws come last, see heroMoment()
   const hero = heroMoment(lineup, win, margin, shutout, walkOff, rng);
 
   return {

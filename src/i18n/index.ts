@@ -2,7 +2,7 @@
 // one REGISTRY entry (see README "Adding a language"). Spanish is the default
 // for any es-* browser; the choice persists once the user picks.
 //
-// Brand nouns (INVICTO, CAMPEÓN) are deliberately NOT translated — they are the
+// Brand nouns (INVICTO, CAMPEÓN) are deliberately NOT translated: they are the
 // game's tier names in every language, like a trophy engraving.
 
 import es from './es.json';

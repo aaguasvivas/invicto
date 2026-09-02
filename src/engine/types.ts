@@ -18,7 +18,7 @@ export interface EnginePlayer {
   speed: number;
   defense: number;
   clutch: number;
-  /** display only — current club at the time of the edition */
+  /** display only: current club at the time of the edition */
   club?: string | null;
 }
 

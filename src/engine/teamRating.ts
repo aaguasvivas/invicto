@@ -38,7 +38,7 @@ export function categoryMeans(lineup: EnginePlayer[]): Record<(typeof HITTER_CAT
   return out;
 }
 
-/** Generalized power mean with exponent p < 0 — approaches min() as p → −∞. */
+/** Generalized power mean with exponent p < 0; approaches min() as p → −∞. */
 export function softMin(values: number[], weights: number[], p: number = SOFTMIN_P): number {
   let sum = 0;
   for (let i = 0; i < values.length; i++) {

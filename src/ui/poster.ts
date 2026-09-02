@@ -1,4 +1,4 @@
-// Canvas poster drawing — shared by the in-app share PNG (1080×1350) and the
+// Canvas poster drawing, shared by the in-app share PNG (1080×1350) and the
 // static OG image generator (1200×630, scripts/generate-og.html).
 
 import { gamesStripLayout } from './posterLayout';
@@ -90,7 +90,7 @@ export function drawSharePoster(canvas: HTMLCanvasElement, data: PosterData): vo
   // Games strip: lay each game at a computed cell center, and draw the flag and
   // result mark as two separately-anchored glyphs (±0.5em from the cell center).
   // measureText under-reports color-emoji width and the lie is platform-dependent,
-  // so neither the strip layout nor the pair spacing may depend on it — that is
+  // so neither the strip layout nor the pair spacing may depend on it: that is
   // what spilled the old single centered string off the PNG edge. The two glyphs
   // stay symmetric about the cell center regardless of how wide they render.
   const strip = gamesStripLayout(data.games.length);
@@ -115,7 +115,7 @@ export function drawSharePoster(canvas: HTMLCanvasElement, data: PosterData): vo
     ctx.fillStyle = TEXT;
     ctx.font = '600 32px Inter, sans-serif';
     // Name is left-aligned at 258, edition is right-aligned at 960 on the same
-    // baseline — clamp so a long name never collides with the edition.
+    // baseline, so clamp so a long name never collides with the edition.
     ctx.fillText(row.name, 258, y, 645);
     ctx.fillStyle = DIM;
     ctx.font = '28px Inter, sans-serif';
@@ -130,7 +130,7 @@ export function drawSharePoster(canvas: HTMLCanvasElement, data: PosterData): vo
   ctx.fillText(data.footer, 540, 1295, SAFE);
 }
 
-/** 1200×630 OG card (no lineup — headline treatment). */
+/** 1200×630 OG card (no lineup, headline treatment). */
 export function drawOgPoster(canvas: HTMLCanvasElement, data: Pick<PosterData, 'brand' | 'tagline'> & { subline: string }): void {
   canvas.width = 1200;
   canvas.height = 630;

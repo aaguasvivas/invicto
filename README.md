@@ -2,9 +2,12 @@
 
 **¿Puedes quedar invicto?** / **Can you run the table?**
 
-A free, mobile-first browser game: draft a 9-man lineup from random (country, edition) rolls
-across all six World Baseball Classic editions (2006–2026), then sim the tournament. Win it all
-with a pool-play loss and you're **CAMPEÓN 🏆**. Go 7-0 and you're **INVICTO ⭐**.
+A free, mobile-first browser game: draft a full lineup in 12 rounds (9 hitters plus SP, RP and CL)
+from random (country, edition) rolls across all six World Baseball Classic editions (2006 to 2026),
+then sim the tournament. Win it all with a pool-play loss and you're **CAMPEÓN 🏆**. Go 7-0 and
+you're **INVICTO ⭐**.
+
+Live at [invictobaseball.com](https://invictobaseball.com) in Spanish, English, Japanese and Korean.
 
 Not affiliated with, endorsed by, or sponsored by the World Baseball Classic, WBCI, MLB, NPB,
 or any team or players' association. Player names and historical statistics are used as factual
@@ -14,13 +17,43 @@ references.
 
 ```sh
 npm install
-npm run dev        # Vite dev server
-npm test           # engine unit tests (vitest)
-npm run build      # type-check + production build to dist/
+npm run dev               # Vite dev server (proxies /api to wrangler dev on 8787)
+npm test                  # vitest: engine, Monte Carlo band, i18n parity, badges, resume, poster layout
+npm run build             # type-check app + worker, production build to dist/
+npm run build:crazygames  # portal build (relative paths, no stats API) to dist-crazygames/
 ```
 
 Stack: Vite + TypeScript, no framework, hand-written CSS. All game data is static JSON in
 `public/data/`.
+
+## Screens and local state
+
+Title → draft → sim reveal → result poster (`src/main.ts` routes them). The title renders
+before the roster JSON has loaded; the data is awaited only when a run starts, and a failed
+load shows a retry card instead of a blank screen.
+
+Everything the game remembers lives in `localStorage`:
+
+| Key | Holds |
+| --- | --- |
+| `invicto.lang`, `invicto.sound` | settings |
+| `invicto.daily.<YYYY-MM-DD>` | the scored result for that day's Reto del Día (one per day) |
+| `invicto.streak`, `invicto.lastDaily` | daily streak bookkeeping (calendar-day math, DST-safe) |
+| `invicto.best.<mode>` | personal best per mode |
+| `invicto.badges` | earned badge ids (`src/game/badges.ts`) |
+| `invicto.run` | autosave of an unfinished run, written after every pick and reroll; cleared when the run ends, and a daily snapshot expires with its day |
+
+The resume snapshot stores player ids, not player objects, and is rebuilt against the current
+data on load (`src/game/resume.ts`); a snapshot that no longer matches is dropped silently.
+
+## Content pages
+
+Beyond the game, `public/` holds crawlable static pages: how to play, FAQ, about, privacy,
+terms, contact, per-country roster reference pages (`public/rosters/`) and articles. Spanish is
+the source; English mirrors live under `public/en/`, and the in-game links pick the right tree
+for the current language (Japanese and Korean fall back to English). `sitemap.xml` lists every
+page with hreflang pairs. The roster pages are generated from `public/data/players.json` (the
+generator is not in the repo yet).
 
 ## Rebuilding the data
 
@@ -29,7 +62,7 @@ npm run build-data
 ```
 
 Wikipedia roster pages are fetched (and cached in `data-cache/wikipedia/`) automatically. The
-Lahman/Chadwick databank CSVs must be present in `data-cache/databank/` — download the
+Lahman/Chadwick databank CSVs must be present in `data-cache/databank/`: download the
 comma-delimited version from https://sabr.org/lahman-database/ (files: `People.csv`,
 `Batting.csv`, `Fielding.csv`, `Appearances.csv`, `Teams.csv`).
 
@@ -39,26 +72,28 @@ prints a summary table and rating histogram. See [DATA.md](DATA.md) for the full
 ## Languages
 
 Ships with Spanish (the source language), English, Japanese, and Korean. The brand nouns
-(INVICTO, CAMPEÓN) stay untranslated everywhere — they're the tier names. To add another
+(INVICTO, CAMPEÓN) stay untranslated everywhere; they are the tier names. To add another
 language:
 
 1. Copy `src/i18n/es.json` to `src/i18n/<code>.json` and translate it **natively** (the same
-   bar as the Spanish: real baseball register, never machine-translated — including all 80
+   bar as the Spanish: real baseball register, never machine-translated, including all 80
    flavor lines and the 23 country names).
 2. Register it in `src/i18n/index.ts`:
    `{ code: 'xx', label: '<native name>', table: xx, locale: 'xx' }`.
 
-The title-screen switcher cycles through every registered language, browser detection works via
-`navigator.languages`, dates format through the `locale` tag, and `src/i18n/i18n.test.ts` fails
-the build if any table drifts from the Spanish key tree, drops below 8 flavor variants per
-outcome type, or misses a country name.
+The title-screen switcher cycles through every registered language (the other major language,
+Spanish or English, is always the first tap), browser detection works via `navigator.languages`,
+dates format through the `locale` tag, and `src/i18n/i18n.test.ts` fails the build if any table
+drifts from the Spanish key tree, drops below 8 flavor variants per outcome type, or misses a
+country name. No em dashes in any user-visible string, in any language.
 
 ## Global daily stats (D1)
 
 Anonymous daily aggregates ("you beat X% of today's managers", INVICTO counts, pick rarity)
 served by two routes on the same Worker (`worker/index.ts`): `POST /api/result` and
-`GET /api/today`. No accounts, no cookies, no IPs — a random client UUID dedupes resubmits.
-The client fails silently if the API is unreachable; the game never depends on it.
+`GET /api/today`. No accounts, no cookies, no IPs; a random client UUID dedupes resubmits.
+The client fails silently if the API is unreachable; the game never depends on it. The portal
+build compiles these calls out entirely (`IS_PORTAL` in `src/portal.ts`).
 
 One-time setup (needs Node ≥ 20 for wrangler):
 
@@ -73,55 +108,53 @@ Then put the `database_id` into `wrangler.jsonc` (`d1_databases[0].database_id`,
 `wrangler.dev.jsonc`) and push.
 
 Local development: `npx wrangler d1 execute invicto-stats --local --config wrangler.dev.jsonc
---file=worker/schema.sql`, then `npx wrangler dev --config wrangler.dev.jsonc` (port 8787 —
-the Vite dev server proxies `/api` there).
+--file=worker/schema.sql`, then `npx wrangler dev --config wrangler.dev.jsonc` (port 8787; the
+Vite dev server proxies `/api` there).
 
-## Monetization (ads, disabled by default)
+## Monetization
 
-`src/ui/ads.ts` holds a single tasteful AdSense integration: one responsive unit at the bottom
-of the title screen and one below the result poster — never during the draft or the sim reveal.
-It renders nothing (zero DOM, zero layout shift) until configured. To turn it on:
+- **Tip jar (live):** a Ko-fi link on the title and result screens (`src/ui/tip.ts`). Hidden in
+  the portal build.
+- **AdSense (dormant):** `src/ui/ads.ts` holds one responsive unit at the bottom of the title
+  screen and one below the result poster, never during the draft or the sim reveal. It renders
+  nothing (zero DOM, zero layout shift) until `ADSENSE_CLIENT` and `AD_SLOTS` are filled in.
+  Site approval is parked until the site has real traffic; for EEA/UK visitors Google's own CMP
+  (AdSense → Privacy & messaging) covers the consent message.
+- **CrazyGames (portal build):** `npm run build:crazygames` writes a self-contained
+  `dist-crazygames/` with relative asset paths and the CrazyGames SDK wired through
+  `src/portal.ts` (loading, gameplay start/stop, happytime). Upload the folder's contents
+  unzipped.
 
-1. Sign up at adsense.google.com with `invictobaseball.com` and wait for site approval
-   (typically a few days; the site needs to be live with traffic).
-2. Create two ad units (AdSense → Ads → By ad unit → Display, responsive) named e.g.
-   `invicto-title` and `invicto-result`.
-3. Put your publisher id (`ca-pub-…`) into `ADSENSE_CLIENT` and the two slot ids into
-   `AD_SLOTS` in `src/ui/ads.ts`, push, done.
+## Deploying (Cloudflare Workers)
 
-Two honest notes: (a) for EEA/UK visitors Google requires a consent message — enable Google's
-own CMP under AdSense → Privacy & messaging and it only appears for those regions; (b) revenue
-scales with traffic (game-site RPMs are roughly $1–5 per thousand pageviews), so this is a
-"when it's popular" lever, not a launch lever. A zero-compliance complement: a tip-jar link
-("Invítame un cafecito ☕") in the footer.
-
-## Deploying (Cloudflare Pages)
-
-Static output, no server:
+The site is a Worker (`worker/index.ts`, config in `wrangler.jsonc`) serving `dist/` as static
+assets with clean URLs. Pushing to `main` deploys through Cloudflare Workers Builds; by hand:
 
 ```sh
 npm run build
-npx wrangler pages deploy dist
+npx wrangler deploy
 ```
 
-(Or point a Cloudflare Pages project at this repo: build command `npm run build`, output `dist`.
-Vercel works identically.)
+Confirm a deploy landed by comparing the bundle hash in `dist/index.html` with the one served at
+https://invictobaseball.com (the edge cache can lag a minute; add `?cb=<anything>`).
 
 ## Tuning
 
 The win-curve and rarity constants live in:
 
-- `scripts/lib/ratings.ts` — rating anchors (`ANCHORS`, `REL_ANCHORS`), league multipliers,
+- `scripts/lib/ratings.ts`: rating anchors (`ANCHORS`, `REL_ANCHORS`), league multipliers,
   defense baselines.
-- `src/engine/teamRating.ts` — the soft-min gating exponent (`SOFTMIN_P`) and the calibration
+- `src/engine/teamRating.ts`: the soft-min gating exponent (`SOFTMIN_P`) and the calibration
   line (`CAL_A`, `CAL_B`).
-- `src/engine/simulate.ts` — opponent tier strengths, knockout ratings (78/84/90), logistic
+- `src/engine/simulate.ts`: opponent tier strengths, knockout ratings (78/84/90), logistic
   scale, per-game noise.
 
 The Monte Carlo test (`src/engine/montecarlo.test.ts`) pins the band: a top-percentile lineup
-goes 7-0 about 2–5% of the time, a casual lineup's median finish is 4–6 wins, and one terrible
-category caps the ceiling. Retune there if you touch any constant. Two diagnostic scripts print
-where the calibration actually landed:
+goes 7-0 about 2 to 5% of the time, a casual lineup's median finish is 4 to 6 wins, and one
+terrible category caps the ceiling. Retune there if you touch any constant. Seeded determinism
+is a contract: new random draws go after the existing ones (or on a new `rngFor` path) so a
+daily seed keeps dealing the same rolls. Two diagnostic scripts print where the calibration
+actually landed:
 
 ```sh
 npx tsx scripts/calibration-report.ts   # synthetic lineups + global-best lineup
