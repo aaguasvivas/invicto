@@ -57,7 +57,7 @@ describe('isEligible', () => {
     expect(isEligible(['SP', 'RP'], 'CL')).toBe(false);
   });
 
-  test('RP accepts any pitcher — the DH of the mound', () => {
+  test('RP accepts any pitcher, the DH of the mound', () => {
     expect(isEligible(['SP', 'RP'], 'RP')).toBe(true);
     expect(isEligible(['RP', 'CL'], 'RP')).toBe(true);
     expect(isEligible(['SP'], 'RP')).toBe(true);
