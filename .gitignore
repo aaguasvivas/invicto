@@ -4,3 +4,4 @@ dist-crazygames/
 data-cache/
 *.log
 .DS_Store
+.wrangler/
