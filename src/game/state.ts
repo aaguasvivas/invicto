@@ -1,5 +1,9 @@
 // localStorage persistence: daily attempts, streak, personal bests, settings.
 // Daily challenge number is days since launch (#1 = launch day), local time.
+//
+// All date math is calendar arithmetic on local day keys ("YYYY-MM-DD"), never
+// "now minus 24 hours": DST days are 23 or 25 hours long, and a run that starts
+// at 23:58 must still count for the day it was dealt.
 
 import type { Outcome } from '../engine/types';
 
@@ -14,9 +18,24 @@ export interface StoredResult {
   outcome: Outcome;
 }
 
-export function todayKey(): string {
-  const d = new Date();
+export function formatDayKey(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+export function todayKey(): string {
+  return formatDayKey(new Date());
+}
+
+/** The calendar day before a day key (local, DST-safe). */
+export function previousDayKey(dayKey: string): string {
+  const [y, m, d] = dayKey.split('-').map(Number);
+  return formatDayKey(new Date(y, m - 1, d - 1));
+}
+
+/** Milliseconds until the next local midnight, i.e. the next daily challenge. */
+export function msUntilNextDay(now: Date = new Date()): number {
+  const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  return next.getTime() - now.getTime();
 }
 
 export function dailyNumber(dateKey = todayKey()): number {
@@ -37,26 +56,25 @@ export function dailyResult(dateKey = todayKey()): StoredResult | null {
   return read<StoredResult>(`invicto.daily.${dateKey}`);
 }
 
-export function saveDailyResult(result: StoredResult): void {
-  const today = todayKey();
-  if (dailyResult(today)) return; // one scored attempt per day
-  localStorage.setItem(`invicto.daily.${today}`, JSON.stringify(result));
+/**
+ * Record the scored attempt for the day the run was dealt (not the day the
+ * result screen happens to render). One scored attempt per day.
+ */
+export function saveDailyResult(result: StoredResult, day = todayKey()): void {
+  if (dailyResult(day)) return;
+  localStorage.setItem(`invicto.daily.${day}`, JSON.stringify(result));
 
   const last = localStorage.getItem('invicto.lastDaily');
-  const yesterday = new Date(Date.now() - 86400000);
-  const yKey = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
-  const streak = last === yKey ? currentStreak() + 1 : 1;
+  const streak = last === previousDayKey(day) ? currentStreak(day) + 1 : 1;
   localStorage.setItem('invicto.streak', String(streak));
-  localStorage.setItem('invicto.lastDaily', today);
+  localStorage.setItem('invicto.lastDaily', day);
 }
 
-export function currentStreak(): number {
+/** Streak as of a given day: alive if the last daily was that day or the day before. */
+export function currentStreak(today = todayKey()): number {
   const last = localStorage.getItem('invicto.lastDaily');
   if (!last) return 0;
-  const today = todayKey();
-  const yesterday = new Date(Date.now() - 86400000);
-  const yKey = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
-  if (last !== today && last !== yKey) return 0; // streak broken
+  if (last !== today && last !== previousDayKey(today)) return 0; // streak broken
   return Number(localStorage.getItem('invicto.streak') ?? '0');
 }
 

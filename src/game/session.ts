@@ -14,6 +14,9 @@ export interface Session {
   mode: Mode;
   seed: string;
   scored: boolean;
+  /** local day the run was dealt: results and streaks are keyed to it, not to
+      whenever the result screen renders (a run can cross midnight) */
+  day: string;
   data: GameData;
   state: DraftState;
   roll: Roll;
@@ -23,14 +26,16 @@ export interface Session {
 }
 
 export function newSession(data: GameData, mode: Mode, scored: boolean): Session {
+  const day = todayKey();
   const seed =
     mode === 'daily'
-      ? `daily-${todayKey()}`
+      ? `daily-${day}`
       : `${mode}-${Date.now().toString(36)}-${Math.floor(Math.random() * 1e9).toString(36)}`;
   const session: Session = {
     mode,
     seed,
     scored,
+    day,
     data,
     state: newDraft(),
     roll: rollBase(seed, 0, data.editionTeams),
