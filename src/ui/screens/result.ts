@@ -1,11 +1,12 @@
 // Result poster screen: the screenshot moment. Saves scored results, fires
 // confetti, and offers share / copy / play-again.
 
-import type { RunResult, Slot } from '../../engine/types';
+import { SLOTS } from '../../engine/positions';
+import type { RunResult } from '../../engine/types';
 import { getLocale, t } from '../../i18n';
 import type { Session } from '../../game/session';
 import { evaluateBadges, recordBadges } from '../../game/badges';
-import { dailyNumber, saveBest, saveDailyResult, todayKey } from '../../game/state';
+import { dailyNumber, saveBest, saveDailyResult } from '../../game/state';
 import { percentileBeaten, rarestPick, submitResult, topSharePct } from '../../game/stats';
 import { setAccent } from '../accents';
 import { mountAd } from '../ads';
@@ -16,8 +17,6 @@ import { clear, h, toast } from '../dom';
 import { confetti } from '../confetti';
 import type { PosterData } from '../poster';
 import { emojiCard, copyText, sharePoster, type ShareContext } from '../share';
-
-const SLOT_ORDER: Slot[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH', 'SP', 'RP', 'CL'];
 
 export interface ResultCallbacks {
   onAgain: () => void;
@@ -33,7 +32,9 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
 
   if (session.scored) {
     const stored = { record, wins: run.wins, losses: run.losses, outcome: run.outcome };
-    if (session.mode === 'daily') saveDailyResult(stored);
+    // Keyed to the day the run was dealt, so a run that crosses midnight still
+    // counts for its own daily (and never blocks the next one).
+    if (session.mode === 'daily') saveDailyResult(stored, session.day);
     saveBest(session.mode, stored);
   }
 
@@ -45,7 +46,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
   );
   const badgeLine = newBadges.length > 0 ? `🏅 ${badgeShareOrder.slice(0, 2).map((id) => t(`badges.${id}.name`)).join(' · ')}` : null;
 
-  const lineupRows = SLOT_ORDER.map((slot) => {
+  const lineupRows = SLOTS.map((slot) => {
     const p = session.state.lineup[slot]!;
     return { slot, flag: session.data.countries.get(p.country)!.flag, name: p.name, edition: p.edition };
   });
@@ -110,8 +111,8 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
   const statsEl = h('div.result-meta');
   // Portal builds have no stats backend (see title.ts).
   if (session.mode === 'daily' && session.scored && !IS_PORTAL) {
-    const picks = SLOT_ORDER.map((slot) => session.state.lineup[slot]!.id);
-    void submitResult({ day: todayKey(), wins: run.wins, losses: run.losses, outcome: run.outcome, picks }).then((today) => {
+    const picks = SLOTS.map((slot) => session.state.lineup[slot]!.id);
+    void submitResult({ day: session.day, wins: run.wins, losses: run.losses, outcome: run.outcome, picks }).then((today) => {
       if (!today) return;
       globalTopPct = topSharePct(run.wins, today.distribution);
       const pct = percentileBeaten(run.wins, today.distribution);
@@ -135,6 +136,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
         onclick: async () => {
           const result = await sharePoster(posterForShare(), emojiCard(shareCtx, extraLines()));
           if (result === 'copied-image' || result === 'copied-text') toast(t('result.copied'));
+          else if (result === 'failed') toast(t('result.shareFailed'));
         },
       },
       t('result.share'),
@@ -144,6 +146,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
       {
         onclick: async () => {
           if (await copyText(emojiCard(shareCtx, extraLines()))) toast(t('result.copied'));
+          else toast(t('result.shareFailed'));
         },
       },
       t('result.copy'),

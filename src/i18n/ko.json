@@ -10,7 +10,11 @@
     "streak": "🔥 연속 기록: {n}",
     "playedToday": "오늘의 챌린지는 이미 플레이했어요: {record}. 연습 플레이는 점수에 들어가지 않습니다.",
     "best": "최고 기록: {record}",
-    "badges": "🏅 {n}"
+    "bestHard": "하드 모드 최고 기록: {record}",
+    "badges": "🏅 {n}",
+    "dailyPractice": "🔁 오늘의 챌린지 연습하기",
+    "nextDaily": "⏳ 다음 챌린지까지 {h}시간 {m}분",
+    "resume": "▶️ 이어서 하기"
   },
   "howto": [
     {
@@ -38,6 +42,7 @@
     "lineup": "내 라인업",
     "noEligible": "이 로스터엔 넣을 수 있는 선수가 없어요: 무료로 다시 뽑기 🎰",
     "practiceNote": "연습 플레이: 오늘의 챌린지와 같은 조합 🎯",
+    "noResults": "\"{q}\" 검색 결과가 없어요",
     "posGroups": { "C": "포수", "IF": "내야수", "OF": "외야수", "DH": "지명타자", "P": "투수" }
   },
   "sim": {
@@ -63,6 +68,7 @@
     "share": "📤 공유하기",
     "copy": "📋 결과 복사",
     "copied": "복사 완료! 아무 데나 붙여넣으세요 🔥",
+    "shareFailed": "공유하지 못했어요. 결과 복사를 이용해 주세요.",
     "again": "⚾ 한 판 더",
     "practiceAgain": "🔁 오늘의 챌린지 다시 연습",
     "dailyNote": "오늘의 챌린지는 모두에게 같은 조합이 나와요. 새로운 팀을 원하면 자유 플레이로 ⚾",
@@ -224,6 +230,11 @@
     "blanqueada_final": { "name": "결승 완봉승", "desc": "결승에서 상대를 무득점으로 막았다." }
   },
   "tip": { "cta": "커피 한 잔 후원하기 ☕" },
+  "boot": {
+    "loading": "로스터 불러오는 중…",
+    "error": "로스터를 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.",
+    "retry": "다시 시도"
+  },
   "landing": {
     "heading": "Invicto: WBC 전승 우승에 도전하는 야구 게임",
     "intro": "Invicto는 무료 브라우저 야구 게임입니다. WBC(2006-2026)의 실제 선수로 12명의 라인업을 짜고 7경기 토너먼트를 시뮬레이션합니다. 7전 전승이면 INVICTO, 한 번 져도 우승하면 CAMPEÓN. 능력치는 실제 기록(Wikipedia와 SABR Lahman Baseball Database)을 기반으로 합니다. 무료, 계정 불필요, 스페인어·영어·일본어·한국어 지원."

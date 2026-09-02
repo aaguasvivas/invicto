@@ -10,7 +10,11 @@
     "streak": "🔥 Streak: {n}",
     "playedToday": "You already played today's challenge: {record}. Practice runs won't count.",
     "best": "Personal best: {record}",
-    "badges": "🏅 {n}"
+    "bestHard": "Hard Mode best: {record}",
+    "badges": "🏅 {n}",
+    "dailyPractice": "🔁 Practice today's challenge",
+    "nextDaily": "⏳ Next challenge in {h}h {m}m",
+    "resume": "▶️ Resume run"
   },
   "howto": [
     {
@@ -38,6 +42,7 @@
     "lineup": "Your lineup",
     "noEligible": "Nobody on this roster fits your lineup: free roll 🎰",
     "practiceNote": "Practice: same rolls as today's challenge 🎯",
+    "noResults": "No results for \"{q}\"",
     "posGroups": { "C": "Catchers", "IF": "Infielders", "OF": "Outfielders", "DH": "Designated hitters", "P": "Pitchers" }
   },
   "sim": {
@@ -63,6 +68,7 @@
     "share": "📤 Share",
     "copy": "📋 Copy card",
     "copied": "Copied! Paste it anywhere 🔥",
+    "shareFailed": "Couldn't share. Try Copy card instead.",
     "again": "⚾ Play again",
     "practiceAgain": "🔁 Practice today's challenge again",
     "dailyNote": "The Daily Challenge deals the same rolls to everyone. Want fresh teams? Try Free play ⚾",
@@ -224,6 +230,11 @@
     "blanqueada_final": { "name": "Golden Shutout", "desc": "Won the final without allowing a run." }
   },
   "tip": { "cta": "Buy me a coffee ☕" },
+  "boot": {
+    "loading": "Loading rosters…",
+    "error": "Couldn't load the rosters. Check your connection and try again.",
+    "retry": "Retry"
+  },
   "landing": {
     "heading": "Invicto: the World Baseball Classic perfect-season game",
     "intro": "Invicto is a free browser baseball game. Draft a 12-player lineup from real World Baseball Classic rosters (2006-2026) and simulate a 7-game tournament: win it all 7-0 for INVICTO, or win with one loss for CAMPEÓN. Ratings come from real statistics (Wikipedia and the SABR Lahman Baseball Database). Free, no account, in Spanish, English, Japanese and Korean."

@@ -10,7 +10,11 @@
     "streak": "🔥 Racha: {n}",
     "playedToday": "Ya jugaste el reto de hoy: {record}. Puedes practicar sin puntuar.",
     "best": "Mejor marca: {record}",
-    "badges": "🏅 {n}"
+    "bestHard": "Mejor marca en Modo Duro: {record}",
+    "badges": "🏅 {n}",
+    "dailyPractice": "🔁 Practicar el reto de hoy",
+    "nextDaily": "⏳ Próximo reto en {h} h {m} min",
+    "resume": "▶️ Continuar partida"
   },
   "howto": [
     {
@@ -38,6 +42,7 @@
     "lineup": "Tu lineup",
     "noEligible": "Nadie de este roster entra en tu lineup: tirada gratis 🎰",
     "practiceNote": "Práctica: mismas tiradas del reto de hoy 🎯",
+    "noResults": "Sin resultados para «{q}»",
     "posGroups": { "C": "Receptores", "IF": "Infielders", "OF": "Jardineros", "DH": "Bateadores designados", "P": "Lanzadores" }
   },
   "sim": {
@@ -63,6 +68,7 @@
     "share": "📤 Compartir",
     "copy": "📋 Copiar tarjeta",
     "copied": "¡Copiado! Pégalo donde quieras 🔥",
+    "shareFailed": "No se pudo compartir. Prueba con Copiar tarjeta.",
     "again": "⚾ Jugar otra vez",
     "practiceAgain": "🔁 Practicar el reto otra vez",
     "dailyNote": "El Reto del Día usa las mismas tiradas para todo el mundo. ¿Quieres equipos nuevos? Prueba el Juego libre ⚾",
@@ -224,6 +230,11 @@
     "blanqueada_final": { "name": "Blanqueada de oro", "desc": "Ganaste la final y el rival se fue en cero." }
   },
   "tip": { "cta": "Invítame un cafecito ☕" },
+  "boot": {
+    "loading": "Cargando rosters…",
+    "error": "No se pudieron cargar los rosters. Revisa tu conexión e inténtalo de nuevo.",
+    "retry": "Reintentar"
+  },
   "landing": {
     "heading": "Invicto: la temporada perfecta del Clásico Mundial de Béisbol",
     "intro": "Invicto es un juego de béisbol gratis para el navegador. Armas un lineup de 12 con peloteros reales del Clásico Mundial de Béisbol (2006-2026) y se simula un torneo de 7 juegos: ganarlo todo 7-0 es quedar INVICTO; ganarlo con una derrota es ser CAMPEÓN. Los ratings salen de estadísticas reales (Wikipedia y la SABR Lahman Baseball Database). Gratis, sin cuenta, en español, inglés, japonés y coreano."

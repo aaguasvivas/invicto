@@ -27,6 +27,9 @@
     <meta name="twitter:image" content="https://invictobaseball.com/og.png" />
     <link rel="preload" href="/fonts/anton-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <!-- Start the roster download while the JS bundle is still loading. -->
+    <link rel="preload" href="/data/players.json" as="fetch" crossorigin />
+    <link rel="preload" href="/data/editions.json" as="fetch" crossorigin />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚾</text></svg>" />
     <script type="application/ld+json">
       {

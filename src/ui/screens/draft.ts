@@ -1,7 +1,7 @@
 // Draft screen: roll reveal with slot-machine spin, searchable roster grouped by
 // position, reroll buttons, pinned lineup tray. Ratings hidden in hard mode.
 
-import { eligibleSlots } from '../../engine/positions';
+import { eligibleSlots, SLOTS } from '../../engine/positions';
 import { openSlots, POWERS } from '../../engine/draft';
 import type { EnginePlayer, Slot } from '../../engine/types';
 import { countryName, t } from '../../i18n';
@@ -13,19 +13,20 @@ import {
 } from '../../game/session';
 import { clear, h, toast } from '../dom';
 
-const SLOT_ORDER: Slot[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH', 'SP', 'RP', 'CL'];
 const PITCHER_POS: Slot[] = ['SP', 'RP', 'CL'];
 const SPIN_MS = 700;
 
 export interface DraftCallbacks {
   onDone: () => void;
+  /** Fires after every pick or reroll, so an interrupted run can be resumed. */
+  onChange?: () => void;
 }
 
 export function renderDraft(app: HTMLElement, session: Session, cb: DraftCallbacks): void {
   clear(app);
   const screen = h('div.draft-screen');
   app.append(screen);
-  // Same-rolls practice replay of the daily — say so before anyone thinks it's a bug.
+  // Same-rolls practice replay of the daily: say so before anyone thinks it's a bug.
   if (session.mode === 'daily' && !session.scored) toast(t('draft.practiceNote'));
   drawRound(screen, session, cb, true);
 }
@@ -55,7 +56,7 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
         'button.reroll-btn',
         {
           disabled: !canRerollCountry(session),
-          onclick: () => { rerollCountry(session); drawRound(screen, session, cb, true); },
+          onclick: () => { rerollCountry(session); cb.onChange?.(); drawRound(screen, session, cb, true); },
         },
         `${t('draft.rerollCountry')} ${canRerollCountry(session) ? '×1' : '×0'}`,
       ),
@@ -63,7 +64,7 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
         'button.reroll-btn',
         {
           disabled: !canRerollEdition(session),
-          onclick: () => { rerollEdition(session); drawRound(screen, session, cb, true); },
+          onclick: () => { rerollEdition(session); cb.onChange?.(); drawRound(screen, session, cb, true); },
         },
         `${t('draft.rerollEdition')} ${!session.state.editionRerollUsed ? '×1' : '×0'}`,
       ),
@@ -93,14 +94,17 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
       { key: 'P', test: () => true }, // pure pitchers
     ];
     const seen = new Set<string>();
+    let shown = 0;
     for (const group of groups) {
       const members = players.filter((p) => !seen.has(p.id) && group.test(p));
       members.forEach((p) => seen.add(p.id));
       if (members.length === 0) continue;
+      shown += members.length;
       members.sort(session.mode === 'hard' ? (a, b) => a.name.localeCompare(b.name) : (a, b) => b.rating - a.rating);
       rosterEl.append(h('div.pos-group-label', {}, t(`draft.posGroups.${group.key}`)));
       for (const p of members) rosterEl.append(playerRow(p, open));
     }
+    if (shown === 0 && q) rosterEl.append(h('div.roster-empty', {}, t('draft.noResults', { q: search.value.trim() })));
   };
 
   const playerRow = (p: EnginePlayer, open: Slot[]): HTMLElement => {
@@ -129,8 +133,12 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
 
   const confirmPick = (p: EnginePlayer, slot: Slot) => {
     pick(session, p, slot);
-    if (draftDone(session)) cb.onDone();
-    else drawRound(screen, session, cb, true);
+    if (draftDone(session)) {
+      cb.onDone();
+    } else {
+      cb.onChange?.();
+      drawRound(screen, session, cb, true);
+    }
   };
 
   const showSlotSheet = (p: EnginePlayer, slots: Slot[]) => {
@@ -154,7 +162,7 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
     const grid = h(
       'div.lineup-grid',
       {},
-      ...SLOT_ORDER.map((slot) => {
+      ...SLOTS.map((slot) => {
         const who = session.state.lineup[slot];
         const flag = who ? session.data.countries.get(who.country)!.flag : '·';
         return h('div.lineup-cell' + (who ? '.filled' : ''), {}, h('span.slot', {}, slot), h('span.who', {}, flag));
@@ -163,7 +171,7 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
     const list = h(
       'div.lineup-list',
       {},
-      ...SLOT_ORDER.filter((s) => session.state.lineup[s]).map((slot) => {
+      ...SLOTS.filter((s) => session.state.lineup[s]).map((slot) => {
         const who = session.state.lineup[slot]!;
         return h(
           'div.lineup-line',
@@ -179,7 +187,7 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
       h(
         'button.lineup-toggle',
         { onclick: () => tray.classList.toggle('open') },
-        h('span', {}, `${t('draft.lineup')} (${SLOT_ORDER.length - openSlots(session.state).length}/${SLOT_ORDER.length})`),
+        h('span', {}, `${t('draft.lineup')} (${SLOTS.length - openSlots(session.state).length}/${SLOTS.length})`),
         h('span', {}, '▴'),
       ),
       grid,

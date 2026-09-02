@@ -5,6 +5,20 @@ import { soundOn } from '../game/state';
 
 let ctx: AudioContext | null = null;
 
+/**
+ * Create and resume the AudioContext from inside a user gesture. iOS keeps a
+ * context suspended unless it was unlocked by a tap; the roars fire from timers,
+ * so the sound toggle itself has to do the unlocking.
+ */
+export function unlockAudio(): void {
+  try {
+    ctx = ctx ?? new AudioContext();
+    if (ctx.state === 'suspended') void ctx.resume();
+  } catch {
+    // audio is best-effort
+  }
+}
+
 /** Haptic tick(s); silent no-op where the Vibration API is unavailable. */
 export function vibrate(pattern: number | number[]): void {
   try {

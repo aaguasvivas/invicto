@@ -1,6 +1,6 @@
-/* Invicto — dark navy field, stadium-light gold, flag-color accents per roll. */
+/* Invicto: dark navy field, stadium-light gold, flag-color accents per roll. */
 
-/* Self-hosted fonts (latin subsets) — no third-party round trip on first paint.
+/* Self-hosted fonts (latin subsets), no third-party round trip on first paint.
    CJK text falls back to system fonts by design. */
 @font-face {
   font-family: 'Anton';
@@ -147,7 +147,7 @@ h1, h2, h3 { margin: 0; }
 .footer { color: #5e6b96; font-size: 12px; line-height: 1.5; text-align: center; padding: 22px 4px 18px; }
 .footer a { color: #8093c7; }
 
-/* tip jar: a calm, optional "buy me a coffee" — never pushy */
+/* tip jar: a calm, optional "buy me a coffee", never pushy */
 .tip-link {
   display: inline-block;
   font-size: 13.5px;
@@ -260,6 +260,7 @@ h1, h2, h3 { margin: 0; }
 .search-box:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 
 .roster { flex: 1; overflow-y: auto; min-height: 0; padding-bottom: 8px; }
+.roster-empty { text-align: center; color: var(--text-dim); font-size: 14px; padding: 28px 8px; }
 .pos-group-label {
   color: var(--text-dim);
   font-size: 11px;
