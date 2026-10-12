@@ -1,6 +1,7 @@
 // Tiny i18n with a language registry: adding a language is one JSON file plus
 // one REGISTRY entry (see README "Adding a language"). Spanish is the default
-// for any es-* browser; the choice persists once the user picks.
+// for any es-* browser; the choice persists once the user picks. The /en/,
+// /ja/ and /ko/ entry pages hint their language for that page view only.
 //
 // Brand nouns (INVICTO, CAMPEÓN) are deliberately NOT translated: they are the
 // game's tier names in every language, like a trophy engraving.
@@ -29,10 +30,16 @@ export const REGISTRY: LanguageDef[] = [
 
 export type Lang = string;
 
+declare global {
+  /** The language of a locale entry page, set by its inline script (scripts/lib/localizeHtml.ts). */
+  var __INVICTO_LANG: string | undefined;
+}
+
+/** An explicit choice first (only setLang stores one), then the page's hint, then the browser. */
 function detectLang(): LanguageDef {
-  const stored = storage.get('invicto.lang');
-  const fromStore = REGISTRY.find((l) => l.code === stored);
-  if (fromStore) return fromStore;
+  const byCode = (code: string | null | undefined) => REGISTRY.find((l) => l.code === code);
+  const preset = byCode(storage.get('invicto.lang')) ?? byCode(globalThis.__INVICTO_LANG);
+  if (preset) return preset;
   for (const pref of navigator.languages ?? [navigator.language]) {
     const base = pref?.toLowerCase().split('-')[0];
     const match = REGISTRY.find((l) => l.code === base);

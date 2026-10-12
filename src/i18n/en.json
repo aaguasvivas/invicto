@@ -272,7 +272,8 @@
   },
   "meta": {
     "title": "Invicto: Can you run the table at the World Baseball Classic?",
-    "description": "Draft a lineup from real World Baseball Classic rosters (2006–2026) and try to win it all 7-0. Free, multilingual, three minutes a run."
+    "description": "Draft a lineup from real World Baseball Classic rosters (2006–2026) and try to win it all 7-0. Free, multilingual, three minutes a run.",
+    "imageAlt": "INVICTO in gold letters on a navy background, with the question “Can you run the table?” and the flags of ten World Baseball Classic countries."
   },
   "countries": {
     "AUS": "Australia",

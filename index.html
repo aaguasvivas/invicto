@@ -5,40 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0a1228" />
     <meta name="google-adsense-account" content="ca-pub-4879291425090726" />
+    <!-- The build writes /en/, /ja/ and /ko/ from this page: scripts/lib/localizeHtml.ts
+         rewrites the language-specific tags and the landing section below, and the
+         build fails if one of them stops matching. -->
     <title>Invicto: ¿Puedes quedar invicto en el Clásico Mundial?</title>
-    <meta
-      name="description"
-      content="Arma tu lineup con rosters reales del Clásico Mundial de Béisbol (2006–2026) y trata de ganar el torneo 7-0. Gratis y en 3 minutos."
-    />
+    <meta name="description" content="Arma tu lineup con rosters reales del Clásico Mundial de Béisbol (2006–2026) y trata de ganar el torneo 7-0. Gratis y en 3 minutos." />
+    <link rel="canonical" href="https://invictobaseball.com/" />
+    <link rel="alternate" hreflang="es" href="https://invictobaseball.com/" />
+    <link rel="alternate" hreflang="en" href="https://invictobaseball.com/en/" />
+    <link rel="alternate" hreflang="ja" href="https://invictobaseball.com/ja/" />
+    <link rel="alternate" hreflang="ko" href="https://invictobaseball.com/ko/" />
+    <link rel="alternate" hreflang="x-default" href="https://invictobaseball.com/" />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Invicto" />
     <meta property="og:locale" content="es_419" />
     <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:locale:alternate" content="ja_JP" />
+    <meta property="og:locale:alternate" content="ko_KR" />
     <meta property="og:title" content="Invicto: ¿Puedes quedar invicto en el Clásico Mundial?" />
-    <meta
-      property="og:description"
-      content="Arma tu lineup con rosters reales del Clásico Mundial de Béisbol (2006–2026) y trata de ganar el torneo 7-0."
-    />
-    <meta property="og:image" content="https://invictobaseball.com/og.png" />
+    <meta property="og:description" content="Arma tu lineup con rosters reales del Clásico Mundial de Béisbol (2006–2026) y trata de ganar el torneo 7-0." />
     <meta property="og:url" content="https://invictobaseball.com/" />
-    <link rel="canonical" href="https://invictobaseball.com/" />
+    <meta property="og:image" content="https://invictobaseball.com/og.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="INVICTO en letras doradas sobre fondo azul marino, con la pregunta «¿Puedes quedar invicto?» y las banderas de diez países del Clásico Mundial de Béisbol." />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Invicto: ¿Puedes quedar invicto?" />
     <meta name="twitter:description" content="Rosters reales del Clásico Mundial 2006–2026. Arma tu lineup. Gana 7-0." />
-    <meta name="twitter:image" content="https://invictobaseball.com/og.png" />
+    <meta name="twitter:image" content="https://invictobaseball.com/og.jpg" />
+    <meta name="twitter:image:alt" content="INVICTO en letras doradas sobre fondo azul marino, con la pregunta «¿Puedes quedar invicto?» y las banderas de diez países del Clásico Mundial de Béisbol." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-48.png" sizes="48x48" type="image/png" />
+    <link rel="icon" href="/icon-192.png" sizes="192x192" type="image/png" />
+    <link rel="icon" href="/icon-512.png" sizes="512x512" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="preload" href="/fonts/anton-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
-    <!-- Start the roster download while the JS bundle is still loading. -->
-    <link rel="preload" href="/data/players.json" as="fetch" crossorigin />
-    <link rel="preload" href="/data/editions.json" as="fetch" crossorigin />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚾</text></svg>" />
+    <!-- Start the roster download at once, at low priority so it leaves the
+         early bandwidth to the JS bundle, the CSS and the fonts. -->
+    <link rel="preload" href="/data/players.json" as="fetch" crossorigin fetchpriority="low" />
+    <link rel="preload" href="/data/editions.json" as="fetch" crossorigin fetchpriority="low" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "VideoGame",
         "name": "Invicto",
         "url": "https://invictobaseball.com/",
-        "description": "Draft a lineup from real World Baseball Classic rosters (2006–2026) and try to win the tournament 7-0.",
-        "inLanguage": ["es", "en"],
+        "image": "https://invictobaseball.com/og.jpg",
+        "description": "Arma tu lineup con rosters reales del Clásico Mundial de Béisbol (2006–2026) y trata de ganar el torneo 7-0. Gratis y en 3 minutos.",
+        "inLanguage": ["es", "en", "ja", "ko"],
         "genre": "Sports game",
         "gamePlatform": "Web browser",
         "applicationCategory": "Game",
@@ -66,7 +82,7 @@
       .landing-info p, .landing-info li { color: #cdd6f3; font-size: 15px; }
       .landing-info a { color: #9fb0e0; }
       .landing-links { display: flex; flex-wrap: wrap; gap: 16px; margin: 20px 0; font-weight: 600; }
-      .landing-disclaimer { color: #7e8cbb; font-size: 12.5px; line-height: 1.55; }
+      .landing-info .landing-disclaimer { color: #7e8cbb; font-size: 12.5px; line-height: 1.55; }
     </style>
   </head>
   <body>

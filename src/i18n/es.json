@@ -272,7 +272,8 @@
   },
   "meta": {
     "title": "Invicto: ¿Puedes quedar invicto en el Clásico Mundial?",
-    "description": "Arma tu lineup con rosters reales del Clásico Mundial de Béisbol (2006–2026) y trata de ganar el torneo 7-0. Gratis, en español y en 3 minutos."
+    "description": "Arma tu lineup con rosters reales del Clásico Mundial de Béisbol (2006–2026) y trata de ganar el torneo 7-0. Gratis, en español y en 3 minutos.",
+    "imageAlt": "INVICTO en letras doradas sobre fondo azul marino, con la pregunta «¿Puedes quedar invicto?» y las banderas de diez países del Clásico Mundial de Béisbol."
   },
   "countries": {
     "AUS": "Australia",

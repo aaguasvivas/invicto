@@ -3,7 +3,8 @@
      http://localhost:5173/scripts/generate-og.html
      Draws the four localized OG cards with the SAME canvas code as the share
      poster (src/ui/poster.ts). window.postAll() sends each to the local
-     receiver on :8787, which writes public/og*.png. -->
+     receiver on :8787, which writes public/og*.jpg. JPEG at quality 0.82 keeps
+     each card small: some chat apps drop preview images over about 300 KB. -->
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -21,10 +22,10 @@
       import { drawOgPoster, ensurePosterFonts } from '/src/ui/poster.ts';
       await ensurePosterFonts();
       const VARIANTS = [
-        { name: 'og.png', tagline: '¿Puedes quedar invicto?', subline: 'Clásico Mundial de Béisbol · 2006–2026 · invictobaseball.com' },
-        { name: 'og-en.png', tagline: 'Can you run the table?', subline: 'World Baseball Classic · 2006–2026 · invictobaseball.com/en' },
-        { name: 'og-ja.png', tagline: '7戦全勝、君にできるか？', subline: 'WBC 2006–2026 · invictobaseball.com/ja' },
-        { name: 'og-ko.png', tagline: '7전 전승, 할 수 있겠어?', subline: 'WBC 2006–2026 · invictobaseball.com/ko' },
+        { name: 'og.jpg', tagline: '¿Puedes quedar invicto?', subline: 'Clásico Mundial de Béisbol · 2006–2026 · invictobaseball.com' },
+        { name: 'og-en.jpg', tagline: 'Can you run the table?', subline: 'World Baseball Classic · 2006–2026 · invictobaseball.com/en' },
+        { name: 'og-ja.jpg', tagline: '7戦全勝、君にできるか？', subline: 'WBC 2006–2026 · invictobaseball.com/ja' },
+        { name: 'og-ko.jpg', tagline: '7전 전승, 할 수 있겠어?', subline: 'WBC 2006–2026 · invictobaseball.com/ko' },
       ];
       const canvases = VARIANTS.map((v) => {
         const canvas = document.createElement('canvas');
@@ -35,12 +36,12 @@
       window.postAll = async () => {
         const results = [];
         for (const { name, canvas } of canvases) {
-          await fetch('http://localhost:8787/?name=' + name, { method: 'POST', mode: 'no-cors', body: canvas.toDataURL('image/png') });
+          await fetch('http://localhost:8787/?name=' + name, { method: 'POST', mode: 'no-cors', body: canvas.toDataURL('image/jpeg', 0.82) });
           results.push(name);
         }
         return results.join(', ');
       };
-      document.getElementById('status').textContent = 'ready — call window.postAll()';
+      document.getElementById('status').textContent = 'ready: call window.postAll()';
     </script>
   </body>
 </html>
