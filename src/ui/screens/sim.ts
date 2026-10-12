@@ -2,7 +2,7 @@
 // with the stakes (after a short guard, a tap anywhere skips everything, even
 // mid-beat). A 6-0 team gets a gold pre-reveal beat before the final: THE moment.
 
-import type { GameResult, HeroMoment, LineupSlots, RunResult, Stage } from '../../engine/types';
+import type { GameResult, LineupSlots, RunResult, Stage } from '../../engine/types';
 import { countryName, flavor, t } from '../../i18n';
 import type { GameData } from '../../game/data';
 import { setAccent } from '../accents';
@@ -15,16 +15,26 @@ const FINAL_BEAT_MS = 1800;
 const SF_BEAT_MS = 400;
 /** Taps this soon after the screen appears are the draft's last pick landing twice, not a skip. */
 const SKIP_GUARD_MS = 400;
+/** The mercy rule (a 10-run lead) ends a game after the 7th. */
+const MERCY_INNINGS = 7;
 
-function heroLine(hero: HeroMoment, lineup: LineupSlots): string | null {
-  const player = lineup[hero.slot];
-  if (!player) return null;
+/**
+ * The star line under a game card. Two corrections happen here, at display
+ * time, so the seeded engine's draws never change: a closer in a walk-off win
+ * pitched a scoreless 9th and got the win, not a save, and a mercy game has no
+ * 8th inning for a starter to pitch.
+ */
+export function heroLine(game: GameResult, lineup: LineupSlots): string | null {
+  const hero = game.hero;
+  const player = hero && lineup[hero.slot];
+  if (!hero || !player) return null;
   const params: Record<string, string | number> = { name: player.name };
   if (hero.kind === 'slugger') Object.assign(params, { hr: hero.n1, rbi: hero.n2 });
   if (hero.kind === 'contact') Object.assign(params, { h: hero.n1, ab: hero.n2 });
-  if (hero.kind === 'starter') Object.assign(params, { ip: hero.n1, k: hero.n2 });
+  if (hero.kind === 'starter') Object.assign(params, { ip: game.mercy ? Math.min(hero.n1, MERCY_INNINGS) : hero.n1, k: hero.n2 });
   if (hero.kind === 'closer') Object.assign(params, { k: hero.n1 });
-  return t(`hero.${hero.kind}`, params);
+  const key = hero.kind === 'closer' && game.walkOff ? 'closerWin' : hero.kind;
+  return t(`hero.${key}`, params);
 }
 
 export function renderSim(app: HTMLElement, run: RunResult, data: GameData, lineup: LineupSlots, onDone: () => void): void {
@@ -69,6 +79,7 @@ export function renderSim(app: HTMLElement, run: RunResult, data: GameData, line
     const card = cards.get(game.stage)!;
     const country = data.countries.get(game.opponent.country)!;
     const oppName = countryName(country);
+    const star = heroLine(game, lineup);
     clear(card);
     card.classList.remove('pending');
     card.classList.add(game.win ? 'win' : 'loss', 'reveal');
@@ -85,7 +96,7 @@ export function renderSim(app: HTMLElement, run: RunResult, data: GameData, line
           h('span', {}, `${oppName} ${game.oppScore}`),
         ),
         h('div.game-flavor', {}, flavor(game.flavorKey, game.flavorVariant, { opp: oppName, us: game.teamScore, them: game.oppScore })),
-        game.hero && heroLine(game.hero, lineup) ? h('div.game-flavor.hero', {}, heroLine(game.hero, lineup)) : null,
+        star ? h('div.game-flavor.hero', {}, star) : null,
       ),
       h('span.game-result-badge', {}, game.win ? '✅' : '❌'),
     );

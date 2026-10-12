@@ -15,16 +15,22 @@ export function rostersHref(): string {
   return getLang() === 'es' ? '/rosters/' : '/en/rosters/';
 }
 
+/** The info pages are bilingual, Spanish first; everyone else (en/ja/ko)
+    jumps to the English half, which carries id="en". */
+export function infoPageHref(path: string): string {
+  return getLang() === 'es' ? path : `${path}#en`;
+}
+
 export function siteLinks(): HTMLElement | null {
   // Portal builds ship only the game; the website's pages do not exist there.
   if (IS_PORTAL) return null;
   const links: [string, string][] = [
-    ['/how-to-play.html', 'footer.howto'],
+    [infoPageHref('/how-to-play.html'), 'footer.howto'],
     [rostersHref(), 'footer.rosters'],
-    ['/faq.html', 'footer.faq'],
-    ['/privacy.html', 'footer.privacy'],
-    ['/terms.html', 'footer.terms'],
-    ['/contact.html', 'footer.contact'],
+    [infoPageHref('/faq.html'), 'footer.faq'],
+    [infoPageHref('/privacy.html'), 'footer.privacy'],
+    [infoPageHref('/terms.html'), 'footer.terms'],
+    [infoPageHref('/contact.html'), 'footer.contact'],
   ];
   return h('nav.site-links', {}, ...links.map(([href, key]) => h('a', { href }, t(key))));
 }

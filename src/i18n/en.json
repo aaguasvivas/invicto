@@ -64,7 +64,7 @@
   },
   "sim": {
     "title": "Play ball!",
-    "skip": "Tap to skip ahead",
+    "skip": "Tap or click to skip",
     "stages": { "pool": "Pool play", "qf": "Quarterfinal", "sf": "Semifinal", "final": "THE FINAL" },
     "you": "Your Team",
     "beatFinal": "FOR THE PERFECT RUN…"
@@ -83,9 +83,9 @@
     "eliminated-pool": "Out in pool play",
     "eliminated-poolSub": "Didn't even make the quarters… back to the drawing board.",
     "share": "📤 Share",
-    "copy": "📋 Copy card",
+    "copy": "📋 Copy result",
     "copied": "Copied! Paste it anywhere 🔥",
-    "shareFailed": "Couldn't share. Try Copy card instead.",
+    "shareFailed": "Couldn't share. Try Copy result instead.",
     "again": "⚾ Play again",
     "practiceAgain": "🔁 Practice today's challenge again",
     "dailyNote": "The Daily Challenge deals the same rolls to everyone. Want fresh teams? Try Free play ⚾",
@@ -107,7 +107,7 @@
     ],
     "win-shutout": [
       "SHUTOUT! {us}-{them}, not a single run allowed 🧼",
-      "Blanked them: {us}-{them} 🥛",
+      "Blanked them: {us}-{them} 🧊",
       "Zeroes all night: {us}-{them} 🔒",
       "The staff painted corners: {us}-{them} 🎨",
       "{opp} left empty-handed: {us}-{them} 0️⃣",
@@ -117,10 +117,10 @@
     ],
     "loss-shutout": [
       "Shut out: {them}-{us}… not even one run 😶",
-      "Blanked: {them}-{us} 🥛",
+      "Blanked: {them}-{us} 🧊",
       "The bats never woke up: {them}-{us} 😴",
       "{them}-{us}. Zero on the board, zero excuses 0️⃣",
-      "Completely handcuffed: {them}-{us} 🎨",
+      "Completely handcuffed: {them}-{us} ⛓️",
       "Their pitching tied us in knots: {them}-{us} 🪢",
       "No answers at the plate: {them}-{us} 🤐",
       "{them}-{us}. A night of strikeouts and sighs 😮‍💨"
@@ -149,9 +149,9 @@
       "Ugly but it counts: {us}-{them} 😮‍💨",
       "Pure heart: {us}-{them} ❤️‍🔥",
       "A real pitchers' duel: {us}-{them} 🥶",
-      "Won {us}-{them} with our soul on the line 🙏",
+      "Left it all on the field: {us}-{them} 🙏",
       "Tight one, but the bullpen held: {us}-{them} 💪",
-      "{us}-{them}. Cardiac, but it's three outs 🫣",
+      "{us}-{them}. Cardiac finish, but a win is a win 🫣",
       "By the skin of our teeth: {us}-{them} 🤏",
       "Defense slammed the door: {us}-{them} 🧤"
     ],
@@ -160,7 +160,7 @@
       "Good baseball, moving on: {us}-{them} 👏",
       "Won it the right way: {us}-{them} 🫡",
       "Controlled it wire to wire: {us}-{them} 🎯",
-      "{us}-{them}. Pure craft 🛠️",
+      "{us}-{them}. Workmanlike 🛠️",
       "Timely hitting: {us}-{them} 📈",
       "Another day at the office: {us}-{them} 💼",
       "{opp} put up a fight, not enough: {us}-{them} ⚖️"
@@ -201,7 +201,7 @@
       "Pitchers' duel… and we lost it: {them}-{us} 🥶",
       "Slipped away by one: {them}-{us} 😣",
       "So close, so far: {them}-{us} 🪫",
-      "{them}-{us}. Missed chances get punished ⚠️",
+      "{them}-{us}. Stranded runners cost us ⚠️",
       "One error and goodbye: {them}-{us} 💔",
       "Struck out with the winning run on: {them}-{us} 😖"
     ],
@@ -212,22 +212,23 @@
       "{them}-{us}. On to the next one 🔄",
       "Missing a spark: {them}-{us} 🕯️",
       "Bullpen couldn't hold it: {them}-{us} 🧯",
-      "{them}-{us}. Baseball always gives a rematch 🌅",
+      "{them}-{us}. There's always tomorrow 🌅",
       "Gray day: {them}-{us} 🌫️"
     ]
   },
   "hero": {
     "slugger": "⭐ {name}: {hr} HR, {rbi} RBI",
     "contact": "⭐ {name}: {h}-for-{ab} at the plate",
-    "starter": "⭐ {name}: a {ip}-inning gem with {k} strikeouts",
+    "starter": "⭐ {name}: {ip} scoreless innings, {k} strikeouts",
     "closer": "⭐ {name}: the save, {k} K in the 9th",
+    "closerWin": "⭐ {name}: a scoreless 9th with {k} K, and the win",
     "goatK": "💔 {name} struck out with the tying run on",
     "goatBlown": "💔 {name} couldn't close it out"
   },
   "global": {
     "beat": "🌎 You beat {pct}% of today's managers",
     "first": "🏁 You're the first manager of the day!",
-    "counts": "Today: {total} managers · {invictos} INVICTO",
+    "counts": "Managers today: {total} · INVICTO: {invictos}",
     "rarest": "💎 Your rarest pick: {name} (only {pct}% chose him)",
     "top": "Top {pct}% today"
   },
@@ -259,7 +260,7 @@
   "footer": {
     "disclaimer": "Invicto is not affiliated with, endorsed by, or sponsored by the World Baseball Classic, WBCI, MLB, NPB, or any team or players' association. Player names and historical statistics are used as factual references.",
     "about": "About",
-    "aboutText": "Invicto is a tribute to the perfect-season game genre (the NBA's 82-0, MLB's 162-0). Roster data: Wikipedia. Stats: SABR Lahman Baseball Database. Made with love for Caribbean baseball fandom and the whole baseball world.",
+    "aboutText": "Invicto is a tribute to perfect-season draft games. Roster data: Wikipedia. Stats: SABR Lahman Baseball Database. Made with love for Caribbean baseball fandom and the whole baseball world.",
     "howto": "How to play",
     "rosters": "Rosters",
     "faq": "FAQ",

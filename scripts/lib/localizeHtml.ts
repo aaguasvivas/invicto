@@ -27,15 +27,16 @@ const PAGES: Record<Locale, { ogLocale: string; table: Table }> = {
   ko: { ogLocale: 'ko_KR', table: ko },
 };
 
-/** The landing section's links as the game renders them for every language but Spanish (src/ui/landing.ts). */
+/** The landing section's links as the game renders them for every language but Spanish (src/ui/landing.ts):
+    the bilingual info pages open on their English half (#en), the rosters on the English tree. */
 const LANDING_LINKS: [href: string, label: keyof Table['footer']][] = [
-  ['/how-to-play.html', 'howto'],
+  ['/how-to-play.html#en', 'howto'],
   ['/en/rosters/', 'rosters'],
-  ['/about.html', 'about'],
-  ['/faq.html', 'faq'],
-  ['/privacy.html', 'privacy'],
-  ['/terms.html', 'terms'],
-  ['/contact.html', 'contact'],
+  ['/about.html#en', 'about'],
+  ['/faq.html#en', 'faq'],
+  ['/privacy.html#en', 'privacy'],
+  ['/terms.html#en', 'terms'],
+  ['/contact.html#en', 'contact'],
 ];
 
 /** Text for an element or a double-quoted attribute. */

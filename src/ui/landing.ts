@@ -5,20 +5,20 @@
 // language while the static fallback keeps the page non-empty without JS.
 
 import { t } from '../i18n';
-import { rostersHref } from './siteLinks';
+import { infoPageHref, rostersHref } from './siteLinks';
 import { clear, h } from './dom';
 
 export function renderLandingInfo(): void {
   const el = document.querySelector<HTMLElement>('.landing-info');
   if (!el) return;
   const links: [string, string][] = [
-    ['/how-to-play.html', 'footer.howto'],
+    [infoPageHref('/how-to-play.html'), 'footer.howto'],
     [rostersHref(), 'footer.rosters'],
-    ['/about.html', 'footer.about'],
-    ['/faq.html', 'footer.faq'],
-    ['/privacy.html', 'footer.privacy'],
-    ['/terms.html', 'footer.terms'],
-    ['/contact.html', 'footer.contact'],
+    [infoPageHref('/about.html'), 'footer.about'],
+    [infoPageHref('/faq.html'), 'footer.faq'],
+    [infoPageHref('/privacy.html'), 'footer.privacy'],
+    [infoPageHref('/terms.html'), 'footer.terms'],
+    [infoPageHref('/contact.html'), 'footer.contact'],
   ];
   clear(el);
   el.append(

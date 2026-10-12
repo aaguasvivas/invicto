@@ -64,9 +64,9 @@
   },
   "sim": {
     "title": "¡A jugar el Clásico!",
-    "skip": "Toca para adelantar",
+    "skip": "Toca o haz clic para adelantar",
     "stages": { "pool": "Fase de grupos", "qf": "Cuartos de final", "sf": "Semifinal", "final": "LA FINAL" },
-    "you": "Tu Equipo",
+    "you": "Tu equipo",
     "beatFinal": "POR EL INVICTO…"
   },
   "result": {
@@ -83,9 +83,9 @@
     "eliminated-pool": "Eliminado en grupos",
     "eliminated-poolSub": "Ni a los cuartos… toca rearmar el lineup.",
     "share": "📤 Compartir",
-    "copy": "📋 Copiar tarjeta",
+    "copy": "📋 Copiar resultado",
     "copied": "¡Copiado! Pégalo donde quieras 🔥",
-    "shareFailed": "No se pudo compartir. Prueba con Copiar tarjeta.",
+    "shareFailed": "No se pudo compartir. Prueba con Copiar resultado.",
     "again": "⚾ Jugar otra vez",
     "practiceAgain": "🔁 Practicar el reto otra vez",
     "dailyNote": "El Reto del Día usa las mismas tiradas para todo el mundo. ¿Quieres equipos nuevos? Prueba el Juego libre ⚾",
@@ -99,7 +99,7 @@
       "¡Nocaut técnico! {us}-{them} y a la ducha 💀",
       "Paliza histórica: {us}-{them}. {opp} pidió la hora 🥊",
       "¡{us}-{them}! Eso fue una clínica de bateo 🔥",
-      "Knockout en el 7mo. {opp} no quería estar ahí 💀",
+      "Nocaut en el 7mo. {opp} no quería estar ahí 💀",
       "Le pasamos por encima: {us}-{them} 🚂",
       "{us}-{them}. Hasta el bullpen bateó hoy 😤",
       "Se acabó temprano: {us}-{them} y todos pa' la casa 🧹",
@@ -109,7 +109,7 @@
       "¡BLANQUEADA! {us}-{them} y el rival en cero 🧼",
       "Lechada completa: {us}-{them} 🥛",
       "Ni una carrerita les dimos: {us}-{them} 🔒",
-      "El picheo pintó las esquinas: {us}-{them} 🎨",
+      "El pitcheo pintó las esquinas: {us}-{them} 🎨",
       "{opp} se fue en blanco: {us}-{them} 0️⃣",
       "Dominio absoluto desde la loma: {us}-{them} ⛰️",
       "Blanqueada de lujo: {us}-{them} ✨",
@@ -133,7 +133,7 @@
       "{opp} nunca encontró el ritmo: {us}-{them} 🎺",
       "Jonrón va, jonrón viene: {us}-{them} 💣",
       "Dominio total: {us}-{them} 🦾",
-      "El picheo de {opp} salió en llamas: {us}-{them} 🔥"
+      "El pitcheo de {opp} salió en llamas: {us}-{them} 🔥"
     ],
     "win-walkoff": [
       "¡LO DEJAMOS EN EL TERRENO! {us}-{them} 💥",
@@ -141,7 +141,7 @@
       "¡Hit de oro! {us}-{them} y el estadio explotó 🎆",
       "Se acabó con el madero: {us}-{them} en la última 🧨",
       "¡Épico! La del triunfo en el 9no: {us}-{them} 🫀",
-      "Dejados en el terreno: {us}-{them} 🥳",
+      "¡Fiesta en el dugout! {us}-{them} 🥳",
       "La novena fue nuestra: {us}-{them} ⚡",
       "Final de película: {us}-{them} 🎬"
     ],
@@ -151,7 +151,7 @@
       "Juegazo de pitcheo: {us}-{them} 🥶",
       "Ganamos {us}-{them} con el alma en la mano 🙏",
       "Apretado, pero el bullpen aguantó: {us}-{them} 💪",
-      "{us}-{them}. Cardíaco, pero son tres outs 🫣",
+      "{us}-{them}. De infarto, pero ganado 🫣",
       "Por la mínima: {us}-{them} 🤏",
       "La defensa cerró el candado: {us}-{them} 🧤"
     ],
@@ -168,7 +168,7 @@
     "loss-mercy": [
       "Nos noquearon: {them}-{us}… ni mires el boxscore 💀",
       "Paliza dolorosa: {them}-{us}. A olvidarla rápido 🙈",
-      "{them}-{us}. El picheo nunca apareció 😵",
+      "{them}-{us}. El pitcheo nunca apareció 😵",
       "Nocaut en contra: {them}-{us}. Duele 💔",
       "Nos pasaron por arriba: {them}-{us} 🚜",
       "Noche de pesadilla: {them}-{us} 😱",
@@ -217,17 +217,18 @@
     ]
   },
   "hero": {
-    "slugger": "⭐ {name}: {hr} HR, {rbi} remolcadas",
+    "slugger": "⭐ {name}: {hr} HR, {rbi} CI",
     "contact": "⭐ {name}: de {ab}-{h} con el madero",
     "starter": "⭐ {name}: joya de {ip} entradas y {k} ponches",
-    "closer": "⭐ {name}: salvamento con {k} ponche(s) en la novena",
+    "closer": "⭐ {name}: salvamento con {k} K en la novena",
+    "closerWin": "⭐ {name}: colgó el cero en la novena con {k} K y se llevó el triunfo",
     "goatK": "💔 {name} se ponchó con la del empate en base",
     "goatBlown": "💔 {name} no pudo cerrar el juego"
   },
   "global": {
     "beat": "🌎 Superaste al {pct}% de los mánagers de hoy",
     "first": "🏁 ¡Eres el primer mánager del día!",
-    "counts": "Hoy: {total} mánagers · {invictos} INVICTO",
+    "counts": "Mánagers hoy: {total} · INVICTO: {invictos}",
     "rarest": "💎 Tu pick más raro: {name} (solo el {pct}% lo eligió)",
     "top": "Top {pct}% de hoy"
   },
@@ -259,7 +260,7 @@
   "footer": {
     "disclaimer": "Invicto no está afiliado, avalado ni patrocinado por el World Baseball Classic, WBCI, MLB, NPB ni por ningún equipo o asociación de jugadores. Los nombres de peloteros y sus estadísticas históricas se usan como referencia factual.",
     "about": "Acerca de",
-    "aboutText": "Invicto es un homenaje al género de los juegos de «temporada perfecta» (82-0 de la NBA, 162-0 de MLB). Datos de rosters: Wikipedia. Estadísticas: SABR Lahman Baseball Database. Hecho con cariño para la afición del Caribe y de todo el mundo beisbolero.",
+    "aboutText": "Invicto es un homenaje a los juegos de temporada perfecta. Datos de rosters: Wikipedia. Estadísticas: SABR Lahman Baseball Database. Hecho con cariño para la afición del Caribe y de todo el mundo beisbolero.",
     "howto": "Cómo se juega",
     "rosters": "Rosters",
     "faq": "Preguntas frecuentes",
