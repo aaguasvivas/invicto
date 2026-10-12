@@ -9,14 +9,20 @@
     "hard": "하드 모드 🔥",
     "hardSub": "능력치 없이 순수 기억력으로",
     "howto": "게임 방법",
-    "streak": "🔥 연속 기록: {n}",
-    "playedToday": "오늘의 챌린지는 이미 플레이했어요: {record}. 연습 플레이는 점수에 들어가지 않습니다.",
-    "best": "최고 기록: {record}",
+    "streak": "연속 플레이: {n}일",
+    "streakRisk": "🔥 {n}일 연속 플레이 중! 오늘도 이어가세요.",
+    "best": "자유 플레이 최고 기록: {record}",
     "bestHard": "하드 모드 최고 기록: {record}",
-    "badges": "🏅 {n}",
-    "dailyPractice": "🔁 오늘의 챌린지 연습하기",
-    "nextDaily": "⏳ 다음 챌린지까지 {h}시간 {m}분",
-    "resume": "▶️ 이어서 하기"
+    "badges": "🏅 배지: {n}/{total}",
+    "doneEyebrow": "챌린지 #{n}",
+    "donePending": "결과는 토너먼트에서 확인하세요.",
+    "nextDailyLive": "다음 챌린지까지 {time}",
+    "stats": "📊 통계",
+    "practice": "🔁 연습",
+    "depth": "실존 선수 {players}명 · {countries}개국 · 클래식 {editions}개 대회",
+    "resume": "▶️ 이어서 하기",
+    "watch": "▶️ 토너먼트 보기",
+    "lineupSet": "라인업 완성"
   },
   "howto": {
     "next": "다음",
@@ -91,6 +97,7 @@
     "dailyNote": "오늘의 챌린지는 모두에게 같은 조합이 나와요. 새로운 팀을 원하면 자유 플레이로 ⚾",
     "home": "처음으로",
     "practice": "연습 플레이 (점수 미반영)",
+    "scoredAttempt": "오늘의 공식 기록: {record}",
     "eliminatedShare": "{stage} 탈락 {record}",
     "stageShort": { "pool": "조별리그", "qf": "8강", "sf": "4강", "final": "결승" }
   },
@@ -234,6 +241,7 @@
   },
   "share": {
     "title": "INVICTO",
+    "practice": "(연습)",
     "tiers": { "invicto": "7-0 ⭐ INVICTO", "campeon": "{record} 🏆 CAMPEÓN", "subcampeon": "준우승 {record} 🥈" }
   },
   "badges": {
@@ -269,6 +277,10 @@
   },
   "dialog": {
     "close": "닫기"
+  },
+  "a11y": {
+    "stats": "내 통계",
+    "sound": "사운드"
   },
   "meta": {
     "title": "Invicto: WBC 전승 우승에 도전!",

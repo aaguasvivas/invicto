@@ -26,6 +26,8 @@ const TEAMS: EditionTeams = Object.fromEntries(
 
 let store: Map<string, string>;
 let apiCalls: string[];
+/** Canned answers by API path; any other /api call fails as if offline. */
+let api: Record<string, unknown>;
 let page: FakeDom;
 
 beforeEach(() => {
@@ -33,10 +35,13 @@ beforeEach(() => {
   vi.setSystemTime(new Date(2026, 9, 11, 12, 0));
   store = new Map();
   apiCalls = [];
+  api = {};
   vi.stubGlobal('fetch', async (url: string, init?: { method?: string }) => {
     const file = Object.keys(DATA).find((name) => url.endsWith(`/data/${name}`));
     if (file) return { ok: true, json: async () => DATA[file] };
-    apiCalls.push(`${init?.method ?? 'GET'} ${url.split('?')[0]}`);
+    const path = url.split('?')[0];
+    apiCalls.push(`${init?.method ?? 'GET'} ${path}`);
+    if (path in api) return { ok: true, headers: { get: () => 'application/json' }, json: async () => api[path] };
     throw new TypeError('offline (test stub)');
   });
 });
@@ -150,19 +155,32 @@ describe('daily challenge', () => {
     draft(12);
     const committed = dailyResult('2026-10-11');
     expect(committed).not.toBeNull(); // committed when the lineup is complete, before the reveal
+    const unlocked = Object.keys(JSON.parse(store.get('invicto.badges') ?? '{}'));
+    expect(unlocked.length).toBeGreaterThan(0); // this lineup earns badges, so the replay has some to show
     await vi.advanceTimersByTimeAsync(2600); // a few cards have flipped
 
     await load(); // the phone reloads the tab
-    expect(page.app.textContent).toContain(en.title.dailyPractice); // no fresh scored attempt on offer
-    await tap(en.title.resume);
+    // The day is committed, but its reveal is still to watch: nothing on the title gives the record away.
+    const resume = find('button', en.title.watch);
+    expect(resume.classList.contains('primary')).toBe(true);
+    expect(resume.textContent).toContain(en.title.lineupSet);
+    expect(resume.textContent).not.toContain(en.draft.round.replace('{n}', '12'));
+    const card = page.app.querySelector('.daily-done')!;
+    expect(card.textContent).toContain(en.title.donePending);
+    expect(card.textContent).not.toContain(committed.record);
+    expect(card.querySelectorAll('button')).toHaveLength(0); // a practice run now would throw the reveal away
+    expect(page.app.querySelector('.meta-chips')).toBeNull();
+    await tap(en.title.watch);
     await skipSim();
     expect(page.app.querySelector('.poster-record')!.textContent).toBe(committed.record);
+    // Recorded at the commit, so no longer new, but this is the reveal they belong to.
+    expect(page.app.querySelectorAll('.badge-chip')).toHaveLength(unlocked.length);
     expect(page.app.textContent).not.toContain(en.result.practice);
     expect(posts()).toBe(1);
     expect(store.has('invicto.run')).toBe(false);
 
     await goHome();
-    await tap(en.title.dailyPractice);
+    await tap(en.title.practice);
     expect(page.body.querySelector('.toast')?.textContent).toBe(en.draft.practiceNote);
     expect(page.body.querySelector('.toast')?.getAttribute('role')).toBe('status'); // read out, never in the way
     draft(12);
@@ -190,7 +208,7 @@ describe('daily challenge', () => {
     expect(dailyResult('2026-10-12')).toBeNull();
 
     await goHome();
-    expect(page.app.textContent).toContain(en.title.streak.replace('{n}', '6'));
+    expect(page.app.querySelector('.streak-risk')!.textContent).toBe(en.title.streakRisk.replace('{n}', '6'));
     expect(page.app.textContent).toContain(`⭐ ${en.title.dailyNum.replace('{n}', String(dailyNumber('2026-10-12')))}`);
   });
 });
@@ -385,7 +403,7 @@ describe('result screen', () => {
     ['en', en, 'invictobaseball.com/en/'],
     ['ja', ja, 'invictobaseball.com/ja/'],
     ['ko', ko, 'invictobaseball.com/ko/'],
-  ])('in %s the copied card ends with the site in that language, and the poster footer starts with it', async (lang, table, url) => {
+  ])('in %s the copied card ends with the site in that language, and the poster footer starts with it, no trailing slash', async (lang, table, url) => {
     const copied: string[] = [];
     await load('none', [lang]);
     Object.assign(navigator, { clipboard: { writeText: async (text: string) => void copied.push(text) } });
@@ -395,7 +413,7 @@ describe('result screen', () => {
     await tap(table.result.copy);
     expect(copied).toHaveLength(1);
     expect(copied[0].split('\n').at(-1)).toBe(url);
-    expect(page.app.querySelector('.poster-foot')!.textContent.startsWith(`${url}  ·  `)).toBe(true);
+    expect(page.app.querySelector('.poster-foot')!.textContent.startsWith(`${url.replace(/\/$/, '')}  ·  `)).toBe(true);
   });
 });
 
@@ -563,9 +581,271 @@ describe('title buttons', () => {
     draft(12);
     await skipSim();
     await goHome();
-    expect(find('button', en.title.dailyPractice).querySelector('span.sub')).toBeNull();
+    expect(page.app.querySelector('.daily-done')).not.toBeNull();
     expect(page.app.textContent).not.toContain(en.title.dailySub);
     expect(find('button', en.title.free).querySelector('span.sub')!.textContent).toBe(en.title.freeSub);
+  });
+});
+
+describe('the daily card on the title', () => {
+  /** A scored daily already in storage, as finish.ts writes it. */
+  function played(day: string, record = '5-2', streak = 3): void {
+    const [wins, losses] = record.split('-').map(Number);
+    store.set(`invicto.daily.${day}`, JSON.stringify({ record, wins, losses, outcome: 'subcampeon' }));
+    store.set('invicto.lastDaily', day);
+    store.set('invicto.streak', String(streak));
+  }
+  const countdown = () => page.app.querySelector('.countdown')!.textContent;
+  const at = (time: string) => en.title.nextDailyLive.replace('{time}', time);
+
+  test('once today is played, a card with the record, the streak and a live countdown replaces the daily button', async () => {
+    vi.setSystemTime(new Date(2026, 9, 11, 21, 30, 0));
+    played('2026-10-11');
+    await load();
+    const card = page.app.querySelector('.daily-done')!;
+    expect(card.querySelector('.eyebrow')!.textContent).toBe(en.title.doneEyebrow.replace('{n}', String(dailyNumber('2026-10-11'))));
+    expect(card.querySelector('.day-record')!.textContent).toContain('5-2');
+    const streak = card.querySelector('.streak-chip')!;
+    expect(streak.textContent).toBe('🔥 3');
+    expect(streak.getAttribute('aria-label')).toBe(en.title.streak.replace('{n}', '3'));
+    expect(countdown()).toBe(at('02:30:00'));
+    expect(page.app.textContent).not.toContain(DAILY);
+    expect(page.app.querySelector('.streak-risk')).toBeNull();
+    expect(find('button', en.title.free).classList.contains('primary')).toBe(true);
+    expect(find('button', en.title.practice).classList.contains('chip-btn')).toBe(true);
+
+    await vi.advanceTimersByTimeAsync(2000); // ticking, from the clock
+    expect(countdown()).toBe(at('02:29:58'));
+  });
+
+  test('a run to resume still outranks the card and Free play', async () => {
+    played('2026-10-11');
+    await load();
+    await tap(en.title.free);
+    draft(3);
+    await load();
+    expect(page.app.querySelectorAll('button.primary').map((b) => b.textContent)).toEqual([expect.stringContaining(en.title.resume)]);
+    expect(page.app.querySelector('.daily-done')).not.toBeNull();
+  });
+
+  test('at midnight the title deals the new challenge by itself', async () => {
+    vi.setSystemTime(new Date(2026, 9, 11, 23, 59, 58));
+    played('2026-10-11');
+    await load();
+    expect(countdown()).toBe(at('00:00:02'));
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(page.app.querySelector('.daily-done')).toBeNull();
+    expect(find('button', DAILY).textContent).toContain(`#${dailyNumber('2026-10-12')}`);
+    expect(page.app.querySelector('.streak-risk')!.textContent).toBe(en.title.streakRisk.replace('{n}', '3'));
+  });
+
+  test('one countdown runs at a time, however often the title redraws, and none once it is gone', async () => {
+    const active = new Set<unknown>();
+    const { setInterval: setReal, clearInterval: clearReal } = globalThis;
+    vi.stubGlobal('setInterval', (fn: () => void, ms: number) => {
+      const id = setReal(fn, ms);
+      active.add(id);
+      return id;
+    });
+    vi.stubGlobal('clearInterval', (id: Parameters<typeof clearInterval>[0]) => {
+      active.delete(id);
+      clearReal(id);
+    });
+    played('2026-10-11');
+    await load();
+    expect(active.size).toBe(1);
+    for (let i = 0; i < 3; i++) {
+      await tap('🌐'); // the language switch draws the title again
+      expect(active.size).toBe(1);
+    }
+
+    await tap(ko.title.free); // three taps from English: Korean
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(active.size).toBe(0);
+    draft(12);
+    await skipSim();
+    expect(active.size).toBe(0); // free play has no daily panel
+    find('a', ko.result.home).click();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(active.size).toBe(1);
+  });
+
+  test('a streak alive from yesterday asks to play today; a broken one says nothing', async () => {
+    store.set('invicto.lastDaily', '2026-10-10');
+    store.set('invicto.streak', '4');
+    await load();
+    expect(page.app.querySelector('.streak-risk')!.textContent).toBe(en.title.streakRisk.replace('{n}', '4'));
+    expect(find('button', DAILY).classList.contains('primary')).toBe(true);
+
+    store.set('invicto.lastDaily', '2026-10-09');
+    await load();
+    expect(page.app.querySelector('.streak-risk')).toBeNull();
+  });
+
+  test("a returning player's numbers are chips, and a fresh profile has none", async () => {
+    await load();
+    expect(page.app.querySelector('.meta-chips')).toBeNull();
+
+    store.set('invicto.best.free', JSON.stringify({ record: '6-1', wins: 6, losses: 1, outcome: 'campeon' }));
+    store.set('invicto.best.hard', JSON.stringify({ record: '5-2', wins: 5, losses: 2, outcome: 'subcampeon' }));
+    store.set('invicto.badges', JSON.stringify({ invicto: '2026-10-01T12:00:00.000Z', campeon: '2026-10-01T12:00:00.000Z' }));
+    await load();
+    const chips = page.app.querySelector('.meta-chips')!.querySelectorAll('.meta-chip').map((c) => c.textContent);
+    expect(chips).toEqual([
+      en.title.best.replace('{record}', '6-1'),
+      en.title.bestHard.replace('{record}', '5-2'),
+      en.title.badges.replace('{n}', '2').replace('{total}', '8'),
+    ]);
+  });
+
+  test('the header carries no second wordmark, and the sound chip says what it is and whether it is on', async () => {
+    await load();
+    expect(page.app.querySelector('.brand')).toBeNull();
+    const sound = find('button', '🔇');
+    expect(sound.getAttribute('aria-label')).toBe(en.a11y.sound);
+    expect(sound.getAttribute('aria-pressed')).toBe('false');
+    sound.click();
+    expect(sound.getAttribute('aria-pressed')).toBe('true');
+    // The 📊 chip ships with the Stats dialog; until then the title shows no dead control.
+    expect(page.app.querySelectorAll('button').filter((b) => b.textContent.includes('📊'))).toEqual([]);
+  });
+});
+
+describe('honest numbers', () => {
+  const depthLine = () =>
+    en.title.depth
+      .replace('{players}', new Intl.NumberFormat('en').format(new Set(PLAYERS.map((p) => p.personKey)).size))
+      .replace('{countries}', '23')
+      .replace('{editions}', '6');
+  const counts = (total: number, invictos: number) => en.global.counts.replace('{total}', String(total)).replace('{invictos}', String(invictos));
+  const meta = () => page.app.querySelector('.menu-meta')!.textContent;
+
+  test('the title shows the day\'s crowd only from 25 runs; below that, what the game holds', async () => {
+    await load(); // offline
+    expect(meta()).toBe(depthLine());
+
+    api['/api/today'] = { total: 24, invictos: 0, distribution: { 3: 24 } };
+    await load();
+    expect(meta()).toBe(depthLine());
+
+    api['/api/today'] = { total: 25, invictos: 1, distribution: { 3: 24, 7: 1 } };
+    await load();
+    expect(meta()).toBe(counts(25, 1));
+  });
+
+  /** Play today's daily with the server answering `stats` (built from the committed run's wins). */
+  async function scoredDaily(stats: (wins: number) => unknown): Promise<string[]> {
+    const copied: string[] = [];
+    await load();
+    Object.assign(navigator, { clipboard: { writeText: async (text: string) => void copied.push(text) } });
+    await tap(DAILY);
+    draft(12);
+    api['/api/result'] = stats(JSON.parse(store.get('invicto.daily.2026-10-11')!).wins);
+    await skipSim();
+    await vi.advanceTimersByTimeAsync(0);
+    await tap(en.result.copy);
+    return copied;
+  }
+  const lines = () => page.app.querySelector('.global-lines')!.children.map((c) => c.textContent);
+
+  test('the first run of the day is told so, with no percent', async () => {
+    const [card] = await scoredDaily((wins) => ({ total: 1, invictos: 0, distribution: { [wins]: 1 }, yourPicks: [] }));
+    expect(lines()).toEqual([en.global.first]);
+    expect(card).not.toContain('%');
+    expect(page.app.querySelector('.poster-foot')!.textContent).not.toContain('%');
+  });
+
+  test('under 25 runs the result counts the crowd and shows no percent', async () => {
+    const [card] = await scoredDaily((wins) => ({ total: 24, invictos: 0, distribution: { [wins]: 24 }, yourPicks: [{ id: 'x', n: 1 }] }));
+    expect(lines()).toEqual([counts(24, 0)]);
+    expect(card).not.toContain('%');
+  });
+
+  test('from 25 runs the result ranks the run against the others, and a top half run shares its Top line', async () => {
+    let wins = -1;
+    const [card] = await scoredDaily((w) => {
+      wins = w;
+      return { total: 30, invictos: 0, distribution: { [w - 1]: 29, [w]: 1 }, yourPicks: [] };
+    });
+    expect(wins).toBeGreaterThan(0); // the 2026-10-11 test daily wins games, so 29 runs can sit below it
+    expect(lines()).toEqual([en.global.beat.replace('{pct}', '100'), counts(30, 0)]);
+    expect(card).toContain(en.global.top.replace('{pct}', '3'));
+  });
+});
+
+describe('the daily panel on the result', () => {
+  test('a scored daily shows the streak it grew, the countdown and a Free play button', async () => {
+    store.set('invicto.lastDaily', '2026-10-10');
+    store.set('invicto.streak', '4');
+    await load();
+    await tap(DAILY);
+    draft(12);
+    await skipSim();
+    const panel = page.app.querySelector('.daily-panel')!;
+    expect(panel.querySelector('.eyebrow')!.textContent).toBe(en.title.doneEyebrow.replace('{n}', String(dailyNumber('2026-10-11'))));
+    const streak = panel.querySelector('.streak-chip')!;
+    expect(streak.textContent).toBe('🔥 5');
+    expect(streak.classList.contains('pop')).toBe(true);
+    expect(panel.querySelector('.countdown')!.textContent).toMatch(/^Next challenge in \d\d:\d\d:\d\d$/);
+    expect(find('button', en.result.practiceAgain)).toBeDefined();
+
+    await tap(en.title.free);
+    expect(page.app.querySelector('.draft-screen')).not.toBeNull();
+    expect(page.body.querySelector('.toast')?.textContent).not.toBe(en.draft.practiceNote);
+  });
+
+  test('a practice replay shows the scored attempt instead of a streak, and its card and poster say practice', async () => {
+    const copied: string[] = [];
+    await load();
+    await tap(DAILY);
+    draft(12);
+    await skipSim();
+    const scored = JSON.parse(store.get('invicto.daily.2026-10-11')!).record;
+    await tap(en.result.practiceAgain);
+    Object.assign(navigator, { clipboard: { writeText: async (text: string) => void copied.push(text) } });
+    draft(12);
+    await skipSim();
+
+    const panel = page.app.querySelector('.daily-panel')!;
+    expect(panel.querySelector('.streak-chip')).toBeNull();
+    expect(panel.textContent).toContain(en.result.practice);
+    expect(panel.textContent).toContain(en.result.scoredAttempt.replace('{record}', scored));
+    await tap(en.result.copy);
+    expect(copied[0].split('\n')[0]).toBe(`INVICTO #${dailyNumber('2026-10-11')} ${en.share.practice} ⚾`);
+    expect(page.app.querySelector('.poster-foot')!.textContent.endsWith(`#${dailyNumber('2026-10-11')} ${en.share.practice}`)).toBe(true);
+  });
+
+  test('a daily dealt before midnight and finished after keeps its number and date, and the next button deals the new day', async () => {
+    const copied: string[] = [];
+    vi.setSystemTime(new Date(2026, 9, 10, 23, 59));
+    await load();
+    Object.assign(navigator, { clipboard: { writeText: async (text: string) => void copied.push(text) } });
+    await tap(DAILY);
+    draft(12);
+    vi.setSystemTime(new Date(2026, 9, 11, 0, 5));
+    await skipSim();
+
+    expect(page.app.querySelector('.poster-foot')!.textContent).toBe('invictobaseball.com/en  ·  Oct 10, 2026  ·  #122');
+    await tap(en.result.copy);
+    expect(copied[0].split('\n')[0]).toBe('INVICTO #122 ⚾');
+    expect(page.app.textContent).not.toContain(en.result.practiceAgain);
+    await tap(`⭐ ${en.title.dailyNum.replace('{n}', '123')}`);
+    expect(page.app.querySelector('.draft-screen')).not.toBeNull();
+    expect(page.body.querySelector('.toast')?.textContent).not.toBe(en.draft.practiceNote); // a scored run
+  });
+
+  test('at midnight the result keeps its screen and offers the new challenge', async () => {
+    vi.setSystemTime(new Date(2026, 9, 11, 23, 59, 50));
+    await load();
+    await tap(DAILY);
+    draft(12);
+    await skipSim();
+    expect(find('button', en.result.practiceAgain)).toBeDefined();
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(page.app.querySelector('.result-screen')).not.toBeNull();
+    expect(page.app.querySelector('.daily-panel .countdown')).toBeNull();
+    expect(page.app.textContent).not.toContain(en.result.practiceAgain);
+    expect(find('button', `⭐ ${en.title.dailyNum.replace('{n}', String(dailyNumber('2026-10-12')))}`)).toBeDefined();
   });
 });
 

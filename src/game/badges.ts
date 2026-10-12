@@ -54,6 +54,15 @@ export function earnedBadgeCount(): number {
   return Object.keys(earnedBadges()).length;
 }
 
+/** Of these badges, the ones first earned at or after a moment (epoch ms). */
+export function badgesEarnedSince(ids: BadgeId[], since: number): BadgeId[] {
+  const store = earnedBadges();
+  return ids.filter((id) => {
+    const at = store[id];
+    return at !== undefined && Date.parse(at) >= since;
+  });
+}
+
 /** Persist this run's badges; returns only the ones earned for the first time. */
 export function recordBadges(ids: BadgeId[]): BadgeId[] {
   const store = earnedBadges();

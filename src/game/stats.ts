@@ -14,33 +14,51 @@ export interface TodayStats {
   yourPicks?: { id: string; n: number }[];
 }
 
-/** Percent of today's other runs you beat (strictly fewer wins). Null until ≥2 runs. */
+/**
+ * The fewest runs a day needs before the game shows any crowd number (a
+ * percent, "Top X%", the day's counts). Below it, "You beat 50%" would mean
+ * one other player.
+ */
+export const MIN_PUBLIC_SAMPLE = 25;
+
+/** Today's runs in all, below a win count and level with it (yours included). */
+function tally(wins: number, distribution: Record<string, number>): { total: number; below: number; equal: number } {
+  const out = { total: 0, below: 0, equal: 0 };
+  for (const [w, count] of Object.entries(distribution)) {
+    out.total += count;
+    if (Number(w) < wins) out.below += count;
+    else if (Number(w) === wins) out.equal += count;
+  }
+  return out;
+}
+
+/**
+ * Percent of today's other runs you beat: fewer wins count whole, the same
+ * wins count half. Your own run is in the distribution and is taken out.
+ * Null below the sample floor.
+ */
 export function percentileBeaten(wins: number, distribution: Record<string, number>): number | null {
-  let total = 0;
-  let below = 0;
-  for (const [w, count] of Object.entries(distribution)) {
-    total += count;
-    if (Number(w) < wins) below += count;
-  }
-  if (total < 2) return null;
-  return Math.round((below / total) * 100);
+  const { total, below, equal } = tally(wins, distribution);
+  if (total < MIN_PUBLIC_SAMPLE) return null;
+  const tiedOthers = Math.max(0, equal - 1);
+  return Math.round(((below + tiedOthers / 2) / (total - 1)) * 100);
 }
 
-/** "Top X%": share of runs at-or-above yours, floored at 1%. */
-export function topSharePct(wins: number, distribution: Record<string, number>): number {
-  let total = 0;
-  let atOrAbove = 0;
-  for (const [w, count] of Object.entries(distribution)) {
-    total += count;
-    if (Number(w) >= wins) atOrAbove += count;
-  }
-  if (total < 1) return 100;
-  return Math.max(1, Math.round((atOrAbove / total) * 100));
+/**
+ * The "Top X%" a share card may carry: the share of runs at or above yours,
+ * floored at 1%. Null below the sample floor and above 50%, where the line
+ * brags about nothing.
+ */
+export function topSharePct(wins: number, distribution: Record<string, number>): number | null {
+  const { total, below } = tally(wins, distribution);
+  if (total < MIN_PUBLIC_SAMPLE) return null;
+  const pct = Math.max(1, Math.round(((total - below) / total) * 100));
+  return pct <= 50 ? pct : null;
 }
 
-/** Your least-picked player today. Null until the day has a real sample. */
+/** Your least-picked player today. Null below the sample floor. */
 export function rarestPick(picks: { id: string; n: number }[], total: number): { id: string; pct: number } | null {
-  if (total < 10 || picks.length === 0) return null;
+  if (total < MIN_PUBLIC_SAMPLE || picks.length === 0) return null;
   const rarest = picks.reduce((a, b) => (b.n < a.n ? b : a));
   return { id: rarest.id, pct: Math.max(1, Math.round((rarest.n / total) * 100)) };
 }

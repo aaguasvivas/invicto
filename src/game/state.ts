@@ -40,6 +40,16 @@ export function msUntilNextDay(now: Date = new Date()): number {
   return next.getTime() - now.getTime();
 }
 
+/**
+ * A countdown as hh:mm:ss. A part second rounds up, so the clock reads
+ * 00:00:01 until midnight, and a 25-hour fall-back day starts at 25:00:00.
+ */
+export function formatCountdown(ms: number): string {
+  const total = Math.ceil(ms / 1000);
+  const two = (n: number) => String(n).padStart(2, '0');
+  return `${two(Math.floor(total / 3600))}:${two(Math.floor((total % 3600) / 60))}:${two(total % 60)}`;
+}
+
 export function dailyNumber(dateKey = todayKey()): number {
   const ms = new Date(`${dateKey}T12:00:00`).getTime() - new Date(`${DAILY_EPOCH}T12:00:00`).getTime();
   return Math.max(1, Math.round(ms / 86400000) + 1);

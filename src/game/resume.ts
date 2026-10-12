@@ -4,6 +4,7 @@
 // restoring changes nothing about the seeded stream: the next pick rolls
 // exactly what it would have rolled.
 
+import { SLOTS } from '../engine/positions';
 import type { EnginePlayer, Roll, Slot } from '../engine/types';
 import type { GameData } from './data';
 import type { Session } from './session';
@@ -84,6 +85,14 @@ export function restoreSession(snap: RunSnapshot, data: GameData): Session | nul
     redrawAttempt: snap.redrawAttempt,
     autoRedrew: false,
   };
+}
+
+/**
+ * All 12 picks are in. The run was committed the moment the lineup filled
+ * (game/finish.ts), so what is left to resume is the reveal of a known result.
+ */
+export function lineupComplete(snap: RunSnapshot): boolean {
+  return Object.keys(snap.lineup).length === SLOTS.length;
 }
 
 /** How long after its last save a daily dealt yesterday can still be resumed. */

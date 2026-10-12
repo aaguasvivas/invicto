@@ -1,7 +1,6 @@
 // Emoji card + Web Share API with PNG poster (clipboard fallbacks).
 
-import { getLang, t } from '../i18n';
-import type { RunResult } from '../engine/types';
+import { getLang, getLocale, t } from '../i18n';
 import { IS_PORTAL } from '../portal';
 import { drawSharePoster, ensurePosterFonts, type PosterData } from './poster';
 
@@ -17,16 +16,43 @@ export function siteUrl(): string | null {
   return lang === 'es' ? 'invictobaseball.com' : `invictobaseball.com/${lang}/`;
 }
 
+/**
+ * The poster footer: the site (shown without the trailing slash the share
+ * link keeps), the date of the day the run was dealt, and the challenge
+ * number, marked when the run was practice. The date is the dealt day at
+ * noon, the convention of dailyNumber, so a run finished after midnight keeps
+ * its own day.
+ */
+export function posterFooter(day: string, dailyNum: number | null, practice: boolean): string {
+  const date = new Intl.DateTimeFormat(getLocale(), { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(`${day}T12:00:00`));
+  const challenge = dailyNum ? `#${dailyNum}${practice ? ` ${t('share.practice')}` : ''}` : null;
+  return [siteUrl()?.replace(/\/$/, ''), date, challenge].filter(Boolean).join('  ·  ');
+}
+
 export interface ShareContext {
-  run: RunResult;
+  /** The challenge number of the day the run was dealt; null outside the daily. */
   dailyNum: number | null;
+  /** A replay of a daily already scored: marked, and never shows a streak. */
+  practice: boolean;
   hard: boolean;
+  /** The daily streak this run kept going; shown from 2. */
+  streak: number;
   tierLine: string; // localized: "7-0 ⭐ INVICTO" or "Eliminado en semis 5-1"
   gameFlags: { flag: string; win: boolean }[];
 }
 
 export function emojiCard(ctx: ShareContext, extraLine?: string | null): string {
-  const header = `${t('share.title')}${ctx.dailyNum ? ` #${ctx.dailyNum}` : ''}${ctx.hard ? ' 🔥' : ''} ⚾`;
+  const header = [
+    t('share.title'),
+    ctx.dailyNum ? `#${ctx.dailyNum}` : null,
+    ctx.practice ? t('share.practice') : null,
+    !ctx.practice && ctx.streak >= 2 ? `🔥${ctx.streak}` : null,
+    // A bare 🔥 tells a group chat nothing; the mode's name does.
+    ctx.hard ? `· ${t('title.hard')}` : null,
+    '⚾',
+  ]
+    .filter(Boolean)
+    .join(' ');
   const pool = ctx.gameFlags.slice(0, 4).map((g) => `${g.flag}${g.win ? '✅' : '❌'}`).join(' ');
   const ko = ctx.gameFlags.slice(4).map((g) => `${g.flag}${g.win ? '✅' : '❌'}`).join(' ');
   const games = ko ? `${pool} | ${ko}` : pool;

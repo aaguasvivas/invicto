@@ -125,3 +125,25 @@ describe('recordRun: the streak', () => {
     expect(currentStreak('2026-10-12')).toBe(3);
   });
 });
+
+describe('recordRun: the replay of a committed run (a reload during the reveal)', () => {
+  test('still pops the badges the commit unlocked', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 9, 11, 12, 0, 0));
+    const savedAt = Date.now(); // the snapshot of the 12th pick, just before the commit
+    expect(recordRun(session(), qf)).toContain('una_sola_edicion');
+
+    vi.setSystemTime(new Date(2026, 9, 11, 12, 0, 20)); // the phone reloads mid-reveal and resumes
+    expect(recordRun(session(), qf, savedAt)).toContain('una_sola_edicion');
+  });
+
+  test('leaves out a badge an earlier run had unlocked', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 9, 10, 12, 0));
+    recordRun(session({ mode: 'free', seed: 'free-abc' }), qf); // una_sola_edicion, the day before
+    vi.setSystemTime(new Date(2026, 9, 11, 12, 0));
+    const savedAt = Date.now();
+    expect(recordRun(session(), qf)).toEqual([]);
+    expect(recordRun(session(), qf, savedAt)).toEqual([]);
+  });
+});

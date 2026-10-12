@@ -9,14 +9,20 @@
     "hard": "Hard Mode 🔥",
     "hardSub": "No ratings: pure memory",
     "howto": "How to play",
-    "streak": "🔥 Streak: {n}",
-    "playedToday": "You already played today's challenge: {record}. Practice runs won't count.",
-    "best": "Personal best: {record}",
+    "streak": "Daily streak: {n}",
+    "streakRisk": "🔥 {n}-day streak. Play today to keep it.",
+    "best": "Free play best: {record}",
     "bestHard": "Hard Mode best: {record}",
-    "badges": "🏅 {n}",
-    "dailyPractice": "🔁 Practice today's challenge",
-    "nextDaily": "⏳ Next challenge in {h}h {m}m",
-    "resume": "▶️ Resume run"
+    "badges": "🏅 Badges: {n}/{total}",
+    "doneEyebrow": "Challenge #{n}",
+    "donePending": "Your result is waiting in the tournament.",
+    "nextDailyLive": "Next challenge in {time}",
+    "stats": "📊 Stats",
+    "practice": "🔁 Practice",
+    "depth": "{players} real players · {countries} countries · {editions} Classics",
+    "resume": "▶️ Resume run",
+    "watch": "▶️ Watch your tournament",
+    "lineupSet": "Lineup complete"
   },
   "howto": {
     "next": "Next",
@@ -91,6 +97,7 @@
     "dailyNote": "The Daily Challenge deals the same rolls to everyone. Want fresh teams? Try Free play ⚾",
     "home": "Back to title",
     "practice": "Practice run (not scored)",
+    "scoredAttempt": "Your scored attempt today: {record}",
     "eliminatedShare": "Out in {stage} {record}",
     "stageShort": { "pool": "pool play", "qf": "the quarters", "sf": "the semis", "final": "the final" }
   },
@@ -234,6 +241,7 @@
   },
   "share": {
     "title": "INVICTO",
+    "practice": "(practice)",
     "tiers": { "invicto": "7-0 ⭐ INVICTO", "campeon": "{record} 🏆 CAMPEÓN", "subcampeon": "Runner-up {record} 🥈" }
   },
   "badges": {
@@ -269,6 +277,10 @@
   },
   "dialog": {
     "close": "Close"
+  },
+  "a11y": {
+    "stats": "Your stats",
+    "sound": "Sound"
   },
   "meta": {
     "title": "Invicto: Can you run the table at the World Baseball Classic?",

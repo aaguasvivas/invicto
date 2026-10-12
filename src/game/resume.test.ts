@@ -8,7 +8,7 @@ import { applyPick, openSlots } from '../engine/draft';
 import { lineupWithMeans, makePlayer } from '../engine/test-helpers';
 import type { EnginePlayer } from '../engine/types';
 import type { GameData } from './data';
-import { restoreSession, snapshotSession, snapshotUsable, type RunSnapshot } from './resume';
+import { lineupComplete, restoreSession, snapshotSession, snapshotUsable, type RunSnapshot } from './resume';
 import type { Session } from './session';
 
 const p1 = makePlayer({ id: '2023-ven-perez', positions: ['C'], country: 'VEN', edition: 2023 });
@@ -145,5 +145,14 @@ describe('snapshotUsable', () => {
     const hard = snapshotSession({ ...midDraft(), mode: 'hard', seed: 'hard-abc', scored: true });
     expect(snapshotUsable(free, '2026-07-01', free.savedAt + 400 * HOUR)).toBe(true);
     expect(snapshotUsable(hard, '2026-07-01', hard.savedAt + 400 * HOUR)).toBe(true);
+  });
+});
+
+describe('lineupComplete', () => {
+  test('is true once all 12 slots are filled: that run was committed and only its reveal is left', () => {
+    expect(lineupComplete(snapshotSession(midDraft()))).toBe(false);
+    const full = midDraft();
+    full.state = { ...full.state, lineup: lineupWithMeans(70, 70, 70, 70, 70, 70), round: 12 };
+    expect(lineupComplete(snapshotSession(full))).toBe(true);
   });
 });

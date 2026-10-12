@@ -94,15 +94,14 @@ h1, h2, h3 { margin: 0; }
 
 .display { font-family: var(--display); letter-spacing: 0.02em; }
 
-/* ---------- header ---------- */
+/* ---------- header: chips only (the wordmark is the hero below it) ---------- */
 .hdr {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 14px 0 6px;
   gap: 8px;
 }
-.hdr .brand { font-family: var(--display); font-size: 22px; color: var(--gold); letter-spacing: 0.06em; }
 .hdr-btns { display: flex; gap: 6px; }
 .chip-btn {
   font-size: 13px;
@@ -137,9 +136,12 @@ h1, h2, h3 { margin: 0; }
 .tagline { color: var(--text-dim); font-size: 16px; margin-top: 10px; }
 .flag-strip { font-size: 17px; letter-spacing: 4px; margin-top: 14px; opacity: 0.9; }
 .menu { display: flex; flex-direction: column; gap: 12px; margin-top: auto; }
-/* Short phones (375x667): with a run to resume, the menu still ends above the fold. */
+/* Short phones (375x667): with a run to resume and today's card, the menu still ends above the fold. */
 @media (max-height: 700px) {
-  .logo-block { margin: 5vh 0 4vh; }
+  .logo-block { margin: 4vh 0 3vh; }
+  .menu { gap: 10px; }
+  .menu > .btn { padding-block: 13px; }
+  .day-card.daily-done { gap: 8px; padding-block: 12px; }
 }
 .btn {
   display: flex;
@@ -162,7 +164,63 @@ h1, h2, h3 { margin: 0; }
   box-shadow: 0 6px 24px rgba(245, 185, 66, 0.3);
 }
 .btn .sub { display: block; font-size: 12px; font-weight: 600; opacity: 0.75; text-wrap: balance; }
-.menu-meta { text-align: center; color: var(--text-dim); font-size: 13px; margin-top: 14px; min-height: 18px; }
+.menu-meta { text-align: center; color: var(--text-dim); font-size: 13px; line-height: 1.4; margin-top: 14px; min-height: 18px; text-wrap: balance; }
+
+/* the streak is alive and today is unplayed */
+.streak-risk { margin: 14px 0 0; text-align: center; font-size: 13px; font-weight: 600; color: var(--gold-2); text-wrap: balance; }
+
+/* a returning player's numbers: one chip each, so a record never splits at its hyphen */
+.meta-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 14px; }
+.meta-chip {
+  white-space: nowrap;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-dim);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+/* ---------- the day card: today's challenge once played (title), the daily panel (result) ---------- */
+.day-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.day-card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.eyebrow { color: var(--text-dim); font-size: 12px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+.eyebrow:lang(ja), .eyebrow:lang(ko) { letter-spacing: 0.04em; }
+.day-record { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; margin-top: 2px; }
+.day-record .display { font-size: 28px; line-height: 1.1; white-space: nowrap; }
+.day-record.won .display { color: var(--gold); }
+.day-tier { color: var(--text-dim); font-size: 13px; font-weight: 700; }
+.day-line { color: var(--text-dim); font-size: 13px; line-height: 1.45; }
+.daily-done .day-line { margin-top: 4px; }
+.day-line b { color: var(--text); font-weight: 800; white-space: nowrap; }
+.countdown { color: var(--text-dim); font-size: 14px; font-weight: 600; }
+.countdown b { color: var(--text); font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+.day-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.day-actions .chip-btn { min-height: 44px; padding: 8px 16px; font-size: 14px; color: var(--text); }
+.streak-chip {
+  flex: none;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--gold-2);
+  background: rgba(245, 185, 66, 0.12);
+  border: 1px solid rgba(245, 185, 66, 0.45);
+  border-radius: 999px;
+  padding: 5px 12px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .streak-chip.pop { animation: badge-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s backwards; }
+}
+.daily-panel { margin-top: 16px; }
 
 .footer { color: #5e6b96; font-size: 12px; line-height: 1.5; text-align: center; padding: 22px 4px 18px; }
 .footer a { color: #8093c7; }
@@ -560,7 +618,7 @@ html:has(dialog[open]) { overflow: hidden; }
 .poster-line .slot { width: 26px; flex: none; color: var(--text-dim); font-size: 11px; font-weight: 800; }
 .poster-line .ed { margin-left: auto; color: var(--text-dim); font-size: 12px; }
 .poster-games { display: flex; justify-content: center; gap: 5px; font-size: 15px; margin-top: 14px; flex-wrap: wrap; }
-.poster-foot { color: #5e6b96; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; margin-top: 12px; text-transform: uppercase; }
+.poster-foot { color: #5e6b96; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; margin-top: 12px; text-transform: uppercase; text-wrap: balance; }
 .result-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
 .result-meta { text-align: center; color: var(--text-dim); font-size: 13px; margin-top: 12px; }
 

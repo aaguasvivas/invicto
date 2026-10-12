@@ -9,14 +9,20 @@
     "hard": "ハードモード 🔥",
     "hardSub": "能力値なし、記憶力で勝負",
     "howto": "遊び方",
-    "streak": "🔥 連続記録: {n}",
-    "playedToday": "今日のチャレンジはプレイ済み: {record}。練習プレイはスコアに入りません。",
-    "best": "自己ベスト: {record}",
+    "streak": "連続プレイ: {n}日",
+    "streakRisk": "🔥 {n}日連続プレイ中。今日も遊んで記録をつなごう。",
+    "best": "フリープレイ自己ベスト: {record}",
     "bestHard": "ハードモード自己ベスト: {record}",
-    "badges": "🏅 {n}",
-    "dailyPractice": "🔁 今日のチャレンジを練習",
-    "nextDaily": "⏳ 次のチャレンジまで {h}時間{m}分",
-    "resume": "▶️ 続きからプレイ"
+    "badges": "🏅 バッジ: {n}/{total}",
+    "doneEyebrow": "チャレンジ #{n}",
+    "donePending": "結果はトーナメントを見てのお楽しみ。",
+    "nextDailyLive": "次のチャレンジまで {time}",
+    "stats": "📊 成績",
+    "practice": "🔁 練習",
+    "depth": "実在の選手{players}人 · {countries}の国と地域 · クラシック{editions}大会",
+    "resume": "▶️ 続きからプレイ",
+    "watch": "▶️ トーナメントを観戦",
+    "lineupSet": "ラインナップ完成"
   },
   "howto": {
     "next": "次へ",
@@ -91,6 +97,7 @@
     "dailyNote": "今日のチャレンジは全員同じ出目。新しいチームで遊ぶならフリープレイへ ⚾",
     "home": "タイトルへ戻る",
     "practice": "練習プレイ（スコア対象外）",
+    "scoredAttempt": "今日の本番の記録: {record}",
     "eliminatedShare": "{stage}敗退 {record}",
     "stageShort": { "pool": "1次ラウンド", "qf": "準々決勝", "sf": "準決勝", "final": "決勝" }
   },
@@ -234,6 +241,7 @@
   },
   "share": {
     "title": "INVICTO",
+    "practice": "(練習)",
     "tiers": { "invicto": "7-0 ⭐ INVICTO", "campeon": "{record} 🏆 CAMPEÓN", "subcampeon": "準優勝 {record} 🥈" }
   },
   "badges": {
@@ -269,6 +277,10 @@
   },
   "dialog": {
     "close": "閉じる"
+  },
+  "a11y": {
+    "stats": "自分の成績",
+    "sound": "サウンド"
   },
   "meta": {
     "title": "Invicto｜WBCで全勝優勝できるか？",

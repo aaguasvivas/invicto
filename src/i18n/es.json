@@ -9,14 +9,20 @@
     "hard": "Modo Duro 🔥",
     "hardSub": "Sin números: pura memoria",
     "howto": "¿Cómo se juega?",
-    "streak": "🔥 Racha: {n}",
-    "playedToday": "Ya jugaste el reto de hoy: {record}. Puedes practicar sin puntuar.",
-    "best": "Mejor marca: {record}",
+    "streak": "Racha diaria: {n}",
+    "streakRisk": "🔥 Racha de {n}. Juega hoy para no perderla.",
+    "best": "Mejor marca en Juego libre: {record}",
     "bestHard": "Mejor marca en Modo Duro: {record}",
-    "badges": "🏅 {n}",
-    "dailyPractice": "🔁 Practicar el reto de hoy",
-    "nextDaily": "⏳ Próximo reto en {h} h {m} min",
-    "resume": "▶️ Continuar partida"
+    "badges": "🏅 Insignias: {n}/{total}",
+    "doneEyebrow": "Reto #{n}",
+    "donePending": "Tu resultado te espera en el torneo.",
+    "nextDailyLive": "Próximo reto en {time}",
+    "stats": "📊 Estadísticas",
+    "practice": "🔁 Practicar",
+    "depth": "{players} jugadores reales · {countries} países · {editions} Clásicos",
+    "resume": "▶️ Continuar partida",
+    "watch": "▶️ Ver tu torneo",
+    "lineupSet": "Lineup completo"
   },
   "howto": {
     "next": "Siguiente",
@@ -91,6 +97,7 @@
     "dailyNote": "El Reto del Día usa las mismas tiradas para todo el mundo. ¿Quieres equipos nuevos? Prueba el Juego libre ⚾",
     "home": "Volver al inicio",
     "practice": "Partida de práctica (no puntúa)",
+    "scoredAttempt": "Tu intento de hoy: {record}",
     "eliminatedShare": "Eliminado en {stage} {record}",
     "stageShort": { "pool": "grupos", "qf": "cuartos", "sf": "semis", "final": "la final" }
   },
@@ -234,6 +241,7 @@
   },
   "share": {
     "title": "INVICTO",
+    "practice": "(práctica)",
     "tiers": { "invicto": "7-0 ⭐ INVICTO", "campeon": "{record} 🏆 CAMPEÓN", "subcampeon": "Subcampeón {record} 🥈" }
   },
   "badges": {
@@ -269,6 +277,10 @@
   },
   "dialog": {
     "close": "Cerrar"
+  },
+  "a11y": {
+    "stats": "Tus estadísticas",
+    "sound": "Sonido"
   },
   "meta": {
     "title": "Invicto: ¿Puedes quedar invicto en el Clásico Mundial?",

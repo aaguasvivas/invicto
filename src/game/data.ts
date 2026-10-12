@@ -51,3 +51,9 @@ export async function loadData(): Promise<GameData> {
 export function roster(data: GameData, edition: number, country: string): EnginePlayer[] {
   return data.byTeam.get(`${edition}-${country}`) ?? [];
 }
+
+/** What the rosters hold, for the title's depth line: real people (one per personKey), countries and Classics. */
+export function depthOf(players: EnginePlayer[]): { players: number; countries: number; editions: number } {
+  const count = (pick: (p: EnginePlayer) => string | number) => new Set(players.map(pick)).size;
+  return { players: count((p) => p.personKey), countries: count((p) => p.country), editions: count((p) => p.edition) };
+}

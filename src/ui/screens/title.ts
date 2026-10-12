@@ -1,27 +1,36 @@
-// Title screen: resume an interrupted run, daily challenge (primary), free
+// Title screen: resume an interrupted run, today's challenge (or, once it is
+// played, the day card: its record, the streak and a live countdown), free
 // play, hard mode, how-to, footer. Renders instantly; player data may still be
 // loading in the background when it appears.
 
-import { cycleLang, howtoPanels, nextLangLabel, t } from '../../i18n';
+import { cycleLang, getLocale, howtoPanels, nextLangLabel, t } from '../../i18n';
 import { IS_PORTAL } from '../../portal';
-import { earnedBadgeCount } from '../../game/badges';
+import { BADGE_IDS, earnedBadgeCount } from '../../game/badges';
 import {
-  currentStreak, dailyNumber, dailyResult, msUntilNextDay, personalBest, setSound, soundOn, todayKey, type Mode,
+  currentStreak, dailyNumber, dailyResult, personalBest, setSound, soundOn, todayKey, type Mode, type StoredResult,
 } from '../../game/state';
-import { fetchToday } from '../../game/stats';
+import { fetchToday, MIN_PUBLIC_SAMPLE } from '../../game/stats';
 import { setAccent } from '../accents';
 import { mountAd } from '../ads';
 import { tipLink } from '../tip';
 import { siteLinks } from '../siteLinks';
 import { crowdRoar, unlockAudio } from '../sound';
 import { openDialog } from '../dialog';
+import { countdownLine, streakChip } from '../dayCard';
 import { clear, h } from '../dom';
 
 export interface TitleCallbacks {
   onStart: (mode: Mode) => void;
   onRerender: () => void;
-  /** An interrupted run that can be picked up exactly where it left off. */
-  resume?: { mode: Mode; round: number; onResume: () => void };
+  /** What the rosters hold, once they have loaded (the depth line). */
+  depth: Promise<{ players: number; countries: number; editions: number }>;
+  /**
+   * An interrupted run that can be picked up exactly where it left off.
+   * complete: all 12 picks are in, so the run is saved and only its reveal is left.
+   */
+  resume?: { mode: Mode; round: number; complete: boolean; onResume: () => void };
+  /** Opens the Stats dialog. The 📊 controls show only when it is set (it ships with that dialog). */
+  onStats?: () => void;
 }
 
 function modeLabel(mode: Mode): string {
@@ -31,41 +40,47 @@ function modeLabel(mode: Mode): string {
 export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
   clear(app);
   setAccent(null);
+  const resume = cb.resume;
+  // A saved run whose reveal is still to watch: nothing here may give its result away.
+  const revealPending = resume?.complete === true;
+  const onStats = revealPending ? undefined : cb.onStats;
   const played = dailyResult();
   const streak = currentStreak();
-  const bestFree = personalBest('free');
-  const bestHard = personalBest('hard');
 
+  const sound = h(
+    'button.chip-btn',
+    {
+      type: 'button',
+      'aria-label': t('a11y.sound'),
+      'aria-pressed': String(soundOn()),
+      onclick: () => {
+        const on = !soundOn();
+        setSound(on);
+        // The toggle tap is the user gesture that unlocks audio on iOS; a
+        // soft roar confirms it worked.
+        if (on) {
+          unlockAudio();
+          crowdRoar(0.35);
+        }
+        sound.textContent = on ? '🔊' : '🔇';
+        sound.setAttribute('aria-pressed', String(on));
+      },
+    },
+    soundOn() ? '🔊' : '🔇',
+  );
+  // The wordmark is the hero below; the header holds only the chips.
   const header = h(
     'header.hdr',
     {},
-    h('span.brand', {}, 'INVICTO'),
     h(
       'div.hdr-btns',
       {},
-      h(
-        'button.chip-btn',
-        {
-          'aria-label': 'sound',
-          onclick: (e: Event) => {
-            const on = !soundOn();
-            setSound(on);
-            // The toggle tap is the user gesture that unlocks audio on iOS; a
-            // soft roar confirms it worked.
-            if (on) {
-              unlockAudio();
-              crowdRoar(0.35);
-            }
-            (e.currentTarget as HTMLElement).textContent = on ? '🔊' : '🔇';
-          },
-        },
-        soundOn() ? '🔊' : '🔇',
-      ),
-      h('button.chip-btn', { onclick: () => { cycleLang(); cb.onRerender(); } }, `🌐 ${nextLangLabel()}`),
+      onStats ? h('button.chip-btn', { type: 'button', 'aria-label': t('a11y.stats'), onclick: onStats }, '📊') : null,
+      sound,
+      h('button.chip-btn', { type: 'button', onclick: () => { cycleLang(); cb.onRerender(); } }, `🌐 ${nextLangLabel()}`),
     ),
   );
 
-  const resume = cb.resume;
   const resumeBtn = resume
     ? h(
         'button.btn.primary',
@@ -73,8 +88,12 @@ export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
         h(
           'span',
           {},
-          t('title.resume'),
-          h('span.sub', {}, `${t('draft.round', { n: Math.min(resume.round + 1, 12) })} · ${modeLabel(resume.mode)}`),
+          resume.complete ? t('title.watch') : t('title.resume'),
+          h(
+            'span.sub',
+            {},
+            `${resume.complete ? t('title.lineupSet') : t('draft.round', { n: resume.round + 1 })} · ${modeLabel(resume.mode)}`,
+          ),
         ),
       )
     : null;
@@ -83,15 +102,15 @@ export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
     'div.menu',
     {},
     resumeBtn,
+    played
+      ? doneCard(played, streak, revealPending && resume?.mode === 'daily', cb, onStats)
+      : h(
+          'button.btn' + (resume ? '' : '.primary'),
+          { onclick: () => cb.onStart('daily') },
+          h('span', {}, `⭐ ${t('title.dailyNum', { n: dailyNumber() })}`, h('span.sub', {}, t('title.dailySub'))),
+        ),
     h(
-      'button.btn' + (resume ? '' : '.primary'),
-      { onclick: () => cb.onStart('daily') },
-      played
-        ? h('span', {}, t('title.dailyPractice'))
-        : h('span', {}, `⭐ ${t('title.dailyNum', { n: dailyNumber() })}`, h('span.sub', {}, t('title.dailySub'))),
-    ),
-    h(
-      'button.btn',
+      'button.btn' + (played && !resume ? '.primary' : ''),
       { onclick: () => cb.onStart('free') },
       // U+FE0F asks for the color emoji; Japanese fonts otherwise draw an outline ball.
       h('span', {}, `⚾\uFE0F ${t('title.free')}`, h('span.sub', {}, t('title.freeSub'))),
@@ -104,28 +123,8 @@ export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
     h('button.chip-btn', { style: 'align-self:center;margin-top:4px', onclick: () => showHowto() }, t('title.howto')),
   );
 
-  const metaBits: string[] = [];
-  if (played) {
-    metaBits.push(t('title.playedToday', { record: played.record }));
-    const ms = msUntilNextDay();
-    metaBits.push(t('title.nextDaily', { h: Math.floor(ms / 3600000), m: Math.floor((ms % 3600000) / 60000) }));
-  }
-  if (streak > 0) metaBits.push(t('title.streak', { n: streak }));
-  const badgeCount = earnedBadgeCount();
-  if (badgeCount > 0) metaBits.push(t('title.badges', { n: badgeCount }));
-  if (bestFree) metaBits.push(t('title.best', { record: bestFree.record }));
-  if (bestHard) metaBits.push(t('title.bestHard', { record: bestHard.record }));
-
-  const metaEl = h('div.menu-meta', {}, metaBits.join('  ·  '));
-  // Portal builds have no stats backend; skip the call so portal QA sees no
-  // failed requests (the site build keeps its global daily numbers).
-  if (!IS_PORTAL) {
-    void fetchToday(todayKey()).then((today) => {
-      if (!today || today.total < 1) return;
-      metaBits.push(t('global.counts', { total: today.total, invictos: today.invictos }));
-      metaEl.textContent = metaBits.join('  ·  ');
-    });
-  }
+  // The streak is alive but today is unplayed, so the last daily was yesterday.
+  const streakRisk = !played && streak > 0 ? h('p.streak-risk', {}, t('title.streakRisk', { n: streak })) : null;
 
   const adBox = h('div.ad-box');
   mountAd(adBox, 'title');
@@ -152,11 +151,98 @@ export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
         h('div.flag-strip', {}, '🇻🇪 🇩🇴 🇵🇷 🇯🇵 🇺🇸 🇲🇽 🇨🇺 🇰🇷 🇳🇱 🇹🇼'),
       ),
       menu,
-      metaEl,
+      streakRisk,
+      revealPending ? null : statusChips(),
+      metaLine(cb.depth),
       adBox,
       footer,
     ),
   );
+}
+
+/**
+ * Today's challenge once it is played: the record, the streak and the
+ * countdown to the next one, then Stats and Practice. pending: the run is
+ * saved but its reveal is still to watch, so the card keeps the record back
+ * and offers no practice run (starting one would throw the reveal away).
+ */
+function doneCard(played: StoredResult, streak: number, pending: boolean, cb: TitleCallbacks, onStats?: () => void): HTMLElement {
+  const won = played.outcome === 'invicto' || played.outcome === 'campeon';
+  return h(
+    'div.day-card.daily-done',
+    {},
+    h(
+      'div.day-card-top',
+      {},
+      h(
+        'div',
+        {},
+        h('div.eyebrow', {}, t('title.doneEyebrow', { n: dailyNumber() })),
+        pending
+          ? h('div.day-line', {}, t('title.donePending'))
+          : h(
+              'div.day-record' + (won ? '.won' : ''),
+              {},
+              h('span.display', {}, played.record),
+              h('span.day-tier', {}, t(`result.${played.outcome}`)),
+            ),
+      ),
+      streak > 0 ? streakChip(streak) : null,
+    ),
+    countdownLine(cb.onRerender),
+    pending
+      ? null
+      : h(
+          'div.day-actions',
+          {},
+          onStats ? h('button.chip-btn', { type: 'button', onclick: onStats }, t('title.stats')) : null,
+          h('button.chip-btn', { type: 'button', onclick: () => cb.onStart('daily') }, t('title.practice')),
+        ),
+  );
+}
+
+/** A returning player's numbers, one unbreakable chip each (a record never splits at its hyphen). */
+function statusChips(): HTMLElement | null {
+  const bestFree = personalBest('free');
+  const bestHard = personalBest('hard');
+  const badges = earnedBadgeCount();
+  const chips = [
+    bestFree ? t('title.best', { record: bestFree.record }) : null,
+    bestHard ? t('title.bestHard', { record: bestHard.record }) : null,
+    badges > 0 ? t('title.badges', { n: badges, total: BADGE_IDS.length }) : null,
+  ].filter((chip): chip is string => chip !== null);
+  return chips.length > 0 ? h('div.meta-chips', {}, ...chips.map((chip) => h('span.meta-chip', {}, chip))) : null;
+}
+
+/**
+ * The line under the menu: today's crowd from MIN_PUBLIC_SAMPLE runs on,
+ * otherwise what the game holds. Its box keeps its height while it loads.
+ */
+function metaLine(depth: TitleCallbacks['depth']): HTMLElement {
+  const el = h('div.menu-meta');
+  const num = new Intl.NumberFormat(getLocale());
+  let counts: string | null = null;
+  let held: string | null = null;
+  const paint = () => {
+    el.textContent = counts ?? held ?? '';
+  };
+  depth.then(
+    (d) => {
+      held = t('title.depth', { players: num.format(d.players), countries: num.format(d.countries), editions: num.format(d.editions) });
+      paint();
+    },
+    () => {}, // no rosters, no line: starting a run shows the retry screen
+  );
+  // Portal builds have no stats backend; skip the call so portal QA sees no
+  // failed requests.
+  if (!IS_PORTAL) {
+    void fetchToday(todayKey()).then((today) => {
+      if (!today || today.total < MIN_PUBLIC_SAMPLE) return;
+      counts = t('global.counts', { total: num.format(today.total), invictos: num.format(today.invictos) });
+      paint();
+    });
+  }
+  return el;
 }
 
 /** The rules as a stepper: swipe on touch, or Back, Next, the dots and the arrow keys. */

@@ -8,11 +8,13 @@
 
 import './styles.css';
 import { applyMeta, getLang, t } from './i18n';
-import { loadData, type GameData } from './game/data';
+import { depthOf, loadData, type GameData } from './game/data';
 import { dailyResult, todayKey, type Mode } from './game/state';
 import { recordRun } from './game/finish';
 import { lineup, newSession, type Session } from './game/session';
-import { clearRun, loadRun, restoreSession, saveRun, snapshotSession, snapshotUsable, type RunSnapshot } from './game/resume';
+import {
+  clearRun, lineupComplete, loadRun, restoreSession, saveRun, snapshotSession, snapshotUsable, type RunSnapshot,
+} from './game/resume';
 import { openSlots } from './engine/draft';
 import { simulateRun } from './engine/simulate';
 import { renderTitle } from './ui/screens/title';
@@ -91,7 +93,15 @@ function showTitle(): void {
   renderTitle(app, {
     onRerender: showTitle,
     onStart: (mode: Mode) => void startRun(mode),
-    resume: resumable ? { mode: resumable.mode, round: resumable.round, onResume: () => void resumeRun(resumable) } : undefined,
+    depth: dataPromise.then((d) => depthOf(d.players)),
+    resume: resumable
+      ? {
+          mode: resumable.mode,
+          round: resumable.round,
+          complete: lineupComplete(resumable),
+          onResume: () => void resumeRun(resumable),
+        }
+      : undefined,
   });
   // Localize the below-the-fold info section to match the current language
   // (runs on boot, on return-to-title, and after a language switch).
@@ -131,17 +141,18 @@ async function resumeRun(snap: RunSnapshot): Promise<void> {
   // which was saved before the reload.
   if (session.mode === 'daily' && !complete) session.scored = !dailyResult(session.day);
   enterGame();
-  if (complete) runTournament(session);
+  if (complete) runTournament(session, snap.savedAt);
   else renderDraft(app, session, draftCallbacks(session));
 }
 
-function runTournament(session: Session): void {
+/** replayOf: the savedAt of a complete lineup's snapshot, whose run was saved before a reload cut its reveal. */
+function runTournament(session: Session, replayOf?: number): void {
   resetScroll();
   const run = simulateRun(lineup(session), session.seed);
   // (lineup() returns the slot-keyed record; the engine gates pitching as its own category)
   // Saved now, not on the result screen: a reload during the reveal must find
   // the daily played. The same lineup and seed replay the same run.
-  const newBadges = recordRun(session, run);
+  const newBadges = recordRun(session, run, replayOf);
   renderSim(app, run, session.data, session.state.lineup, () => {
     resetScroll();
     clearRun(); // the run is complete; nothing left to resume
@@ -149,6 +160,7 @@ function runTournament(session: Session): void {
     if (run.outcome === 'invicto') portalHappytime();
     renderResult(app, session, run, newBadges, {
       onAgain: () => void startRun(session.mode), // one more run, zero friction
+      onFree: () => void startRun('free'),
       onHome: showTitle,
     });
   });

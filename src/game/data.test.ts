@@ -4,6 +4,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 import type { EnginePlayer } from '../engine/types';
+import { depthOf } from './data';
 
 const readJson = (path: string) => JSON.parse(readFileSync(new URL(`../../${path}`, import.meta.url), 'utf-8'));
 /** A shipped record: the engine fields plus how the rating was made (DATA.md "Ratings"). */
@@ -133,5 +134,13 @@ describe('rating spot checks in players.json', () => {
   test('a foreign-league regular with an old MLB stint is not rated as a minor leaguer', () => {
     expect(record('2006-ned-randall-simon').rating).toBeGreaterThan(45); // Orix 2006
     expect(record('2017-jpn-shintaro-fujinami').rating).toBeGreaterThan(50); // Hanshin 2017
+  });
+});
+
+describe('depthOf, the numbers on the title', () => {
+  test('counts each real player once, and every country and Classic with a roster', () => {
+    const depth = depthOf(players);
+    expect(depth).toEqual({ players: new Set(players.map((p) => p.personKey)).size, countries: 23, editions: 6 });
+    expect(depth.players).toBeLessThan(players.length); // people, not roster rows
   });
 });

@@ -101,7 +101,10 @@ Anonymous daily aggregates ("you beat X% of today's managers", INVICTO counts, p
 served by two routes on the same Worker (`worker/index.ts`): `POST /api/result` and
 `GET /api/today`. No accounts, no cookies, no IPs; a random client UUID dedupes resubmits.
 The client fails silently if the API is unreachable; the game never depends on it. The portal
-build compiles these calls out entirely (`IS_PORTAL` in `src/portal.ts`).
+build compiles these calls out entirely (`IS_PORTAL` in `src/portal.ts`). No crowd number
+shows (a percent, "Top X%", the day's counts) until the day has 25 runs (`MIN_PUBLIC_SAMPLE` in
+`src/game/stats.ts`). The percentile leaves your own run out and counts a tie as half, and a
+share card carries "Top X%" only in the top half.
 
 One-time setup (needs Node ≥ 20 for wrangler):
 

@@ -1,14 +1,16 @@
 // Result poster screen: the screenshot moment. The run is already saved
 // (game/finish.ts, before the sim reveal); this shows it, sends scored dailies
 // to the global stats, fires confetti, and offers share / copy / play-again.
+// A daily run also gets the day card: its challenge, the streak and the
+// countdown to the next one.
 
 import { SLOTS } from '../../engine/positions';
 import type { RunResult } from '../../engine/types';
 import { getLocale, t } from '../../i18n';
 import type { Session } from '../../game/session';
 import type { BadgeId } from '../../game/badges';
-import { dailyNumber } from '../../game/state';
-import { percentileBeaten, rarestPick, submitResult, topSharePct } from '../../game/stats';
+import { currentStreak, dailyNumber, dailyResult, todayKey } from '../../game/state';
+import { percentileBeaten, rarestPick, submitResult, topSharePct, type TodayStats } from '../../game/stats';
 import { setAccent } from '../accents';
 import { mountAd } from '../ads';
 import { tipLink } from '../tip';
@@ -17,11 +19,33 @@ import { IS_PORTAL } from '../../portal';
 import { clear, h, toast } from '../dom';
 import { confetti } from '../confetti';
 import type { PosterData } from '../poster';
-import { emojiCard, copyText, sharePoster, siteUrl, type ShareContext } from '../share';
+import { emojiCard, copyText, posterFooter, sharePoster, type ShareContext } from '../share';
+import { countdownLine, lineWith, streakChip } from '../dayCard';
 
 export interface ResultCallbacks {
   onAgain: () => void;
+  onFree: () => void;
   onHome: () => void;
+  /** Opens the Stats dialog. The panel's 📊 button shows only when it is set (it ships with that dialog). */
+  onStats?: () => void;
+}
+
+/**
+ * The crowd lines under a scored daily. The first run of the day is told so;
+ * under MIN_PUBLIC_SAMPLE runs the stats return no percent, so only the
+ * counts show; a 0% beat line is left out.
+ */
+function globalLines(today: TodayStats, wins: number, lineup: Session['state']['lineup']): string[] {
+  if (today.total <= 1) return [t('global.first')];
+  const lines: string[] = [];
+  const pct = percentileBeaten(wins, today.distribution);
+  if (pct) lines.push(t('global.beat', { pct }));
+  const num = new Intl.NumberFormat(getLocale());
+  lines.push(t('global.counts', { total: num.format(today.total), invictos: num.format(today.invictos) }));
+  const rare = rarestPick(today.yourPicks ?? [], today.total);
+  const who = rare && Object.values(lineup).find((p) => p?.id === rare.id);
+  if (rare && who) lines.push(t('global.rarest', { name: who.name, pct: rare.pct }));
+  return lines;
 }
 
 /** newBadges: the badges this run earned for the first time (they pop). */
@@ -43,9 +67,13 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
     return { slot, flag: session.data.countries.get(p.country)!.flag, name: p.name, edition: p.edition };
   });
   const gameFlags = run.games.map((g) => ({ flag: session.data.countries.get(g.opponent.country)!.flag, win: g.win }));
-  const dailyNum = session.mode === 'daily' ? dailyNumber() : null;
-  const dateStr = new Intl.DateTimeFormat(getLocale(), { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date());
-  const footerLine = [siteUrl(), dateStr, dailyNum ? `#${dailyNum}` : null].filter(Boolean).join('  ·  ');
+  // A run is named by the day it was dealt, never the clock now: a daily
+  // finished after midnight keeps its own number and date.
+  const daily = session.mode === 'daily';
+  const dailyNum = daily ? dailyNumber(session.day) : null;
+  const practice = daily && !session.scored;
+  const streak = daily && session.scored ? currentStreak(session.day) : 0;
+  const footerLine = posterFooter(session.day, dailyNum, practice);
 
   const stageKey = run.outcome.startsWith('eliminated') ? run.outcome.replace('eliminated-', '') : null;
   const tierLine =
@@ -57,7 +85,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
           ? t('share.tiers.subcampeon', { record })
           : t('result.eliminatedShare', { stage: t(`result.stageShort.${stageKey}`), record });
 
-  const shareCtx: ShareContext = { run, dailyNum, hard: session.mode === 'hard', tierLine, gameFlags };
+  const shareCtx: ShareContext = { dailyNum, practice, hard: session.mode === 'hard', streak, tierLine, gameFlags };
   const posterData: PosterData = {
     brand: 'INVICTO',
     tagline: t('tagline'),
@@ -95,29 +123,29 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
   );
 
   // Global daily stats: submit scored dailies, then enrich the screen + shares.
+  // topSharePct is null under the sample floor and outside the top half.
   let globalTopPct: number | null = null;
   const globalLine = () => (globalTopPct !== null ? t('global.top', { pct: globalTopPct }) : null);
   const extraLines = () => [globalLine(), badgeLine].filter(Boolean).join('\n') || null;
   const posterForShare = (): PosterData =>
     globalTopPct !== null ? { ...posterData, footer: `${footerLine}  ·  ${t('global.top', { pct: globalTopPct })}` } : posterData;
-  const statsEl = h('div.result-meta');
+  const statsEl = h('div.result-meta.global-lines');
   // Portal builds have no stats backend (see title.ts).
-  if (session.mode === 'daily' && session.scored && !IS_PORTAL) {
+  if (daily && session.scored && !IS_PORTAL) {
     const picks = SLOTS.map((slot) => session.state.lineup[slot]!.id);
     void submitResult({ day: session.day, wins: run.wins, losses: run.losses, outcome: run.outcome, picks }).then((today) => {
       if (!today) return;
       globalTopPct = topSharePct(run.wins, today.distribution);
-      const pct = percentileBeaten(run.wins, today.distribution);
-      const parts = [pct === null ? t('global.first') : t('global.beat', { pct })];
-      parts.push(t('global.counts', { total: today.total, invictos: today.invictos }));
-      const rare = rarestPick(today.yourPicks ?? [], today.total);
-      if (rare) {
-        const who = Object.values(session.state.lineup).find((p) => p?.id === rare.id);
-        if (who) parts.push(t('global.rarest', { name: who.name, pct: rare.pct }));
-      }
-      statsEl.append(...parts.map((line) => h('div', {}, line)));
+      statsEl.append(...globalLines(today, run.wins, session.state.lineup).map((line) => h('div', {}, line)));
     });
   }
+
+  // Today's daily again is practice; once the dealt day is over (a run that
+  // crossed midnight, or midnight while this screen is up), the same button
+  // deals the new day's scored daily, and says so.
+  const againLabel = () =>
+    !daily ? t('result.again') : session.day === todayKey() ? t('result.practiceAgain') : `⭐ ${t('title.dailyNum', { n: dailyNumber() })}`;
+  const againBtn = h('button.btn', { onclick: cb.onAgain }, againLabel());
 
   // Disabled until the share settles: a second tap while the share sheet is
   // open would fail over to the clipboard and toast 'Copied' behind the sheet.
@@ -151,7 +179,8 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
       },
       t('result.copy'),
     ),
-    h('button.btn', { onclick: cb.onAgain }, session.mode === 'daily' ? t('result.practiceAgain') : t('result.again')),
+    againBtn,
+    daily ? h('button.btn', { onclick: cb.onFree }, `⚾\uFE0F ${t('title.free')}`) : null,
   );
 
   const adBox = h('div.ad-box');
@@ -173,6 +202,33 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
         )
       : null;
 
+  // The countdown runs only while its day is today: after midnight the next
+  // challenge is already out, and the again button deals it.
+  const countdown: HTMLElement | null =
+    daily && session.day === todayKey()
+      ? countdownLine(() => {
+          countdown?.remove();
+          againBtn.textContent = againLabel();
+        })
+      : null;
+  const scoredToday = practice ? dailyResult(session.day) : null;
+  const dailyPanel = daily
+    ? h(
+        'div.day-card.daily-panel',
+        {},
+        h(
+          'div.day-card-top',
+          {},
+          h('div.eyebrow', {}, t('title.doneEyebrow', { n: dailyNumber(session.day) })),
+          streak > 0 ? streakChip(streak, true) : null,
+        ),
+        practice ? h('div.day-line', {}, t('result.practice')) : null,
+        scoredToday ? h('div.day-line', {}, ...lineWith('result.scoredAttempt', 'record', h('b', {}, scoredToday.record))) : null,
+        countdown,
+        cb.onStats ? h('div.day-actions', {}, h('button.chip-btn', { type: 'button', onclick: cb.onStats }, t('title.stats'))) : null,
+      )
+    : null;
+
   app.append(
     h(
       'div.result-screen',
@@ -181,10 +237,10 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
       posterEl,
       badgesEl,
       buttons,
+      dailyPanel,
       tipLink() ? h('div.result-meta', {}, tipLink()) : null,
       statsEl,
-      !session.scored && session.mode === 'daily' ? h('div.result-meta', {}, t('result.practice')) : null,
-      session.mode === 'daily' ? h('div.result-meta', {}, t('result.dailyNote')) : null,
+      daily ? h('div.result-meta', {}, t('result.dailyNote')) : null,
       adBox,
       h(
         'div.result-meta',

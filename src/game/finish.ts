@@ -4,7 +4,7 @@
 // played instead of an open daily to redo.
 
 import type { RunResult } from '../engine/types';
-import { evaluateBadges, recordBadges, type BadgeId } from './badges';
+import { badgesEarnedSince, evaluateBadges, recordBadges, type BadgeId } from './badges';
 import type { Session } from './session';
 import { dailyResult, saveBest, saveDailyResult, type StoredResult } from './state';
 
@@ -12,8 +12,13 @@ function sameResult(a: StoredResult, b: StoredResult): boolean {
   return a.record === b.record && a.wins === b.wins && a.losses === b.losses && a.outcome === b.outcome;
 }
 
-/** Save what the run earned; returns the badges earned for the first time. */
-export function recordRun(session: Session, run: RunResult): BadgeId[] {
+/**
+ * Save what the run earned; returns the badges earned for the first time.
+ * replayOf: the savedAt of the snapshot a run resumed from with its lineup
+ * complete. That run was committed right after the snapshot, before a reload
+ * cut its reveal short, so the badges it unlocked then are the ones to show.
+ */
+export function recordRun(session: Session, run: RunResult, replayOf?: number): BadgeId[] {
   const result: StoredResult = { record: `${run.wins}-${run.losses}`, wins: run.wins, losses: run.losses, outcome: run.outcome };
 
   if (session.mode === 'daily' && session.scored) {
@@ -32,5 +37,7 @@ export function recordRun(session: Session, run: RunResult): BadgeId[] {
   }
 
   // Every finished run earns badges, practice included.
-  return recordBadges(evaluateBadges(session.state.lineup, run));
+  const earned = evaluateBadges(session.state.lineup, run);
+  const fresh = recordBadges(earned);
+  return replayOf === undefined ? fresh : badgesEarnedSince(earned, replayOf);
 }
