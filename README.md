@@ -32,6 +32,13 @@ Title → draft → sim reveal → result poster (`src/main.ts` routes them). Th
 before the roster JSON has loaded; the data is awaited only when a run starts, and a failed
 load shows a retry card instead of a blank screen.
 
+The result carries a scouting report (`src/game/scout.ts`, drawn by `src/ui/scoutCard.ts`): the
+Team OVR, the six category bars with the weak spot, what ten more points there would buy, each
+loss with its chance before the dice, best pick and weakest link against a median player at the
+slot, and the title and 7-0 odds of that bracket. It reads the engine's own functions
+(`categoryRatings`, `ratingFromCategories`, `winChance`) and draws nothing, so seeded runs never
+change. From 960 px wide the result is two columns, with the report in a sticky right column.
+
 Everything the game remembers lives in `localStorage`:
 
 | Key | Holds |

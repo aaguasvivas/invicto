@@ -39,6 +39,7 @@ export function heroLine(game: GameResult, lineup: LineupSlots): string | null {
 
 export function renderSim(app: HTMLElement, run: RunResult, data: GameData, lineup: LineupSlots, onDone: () => void): void {
   clear(app);
+  app.dataset.screen = 'sim';
   setAccent(null);
 
   const recordEl = h('div.sim-record', {}, '0-0');

@@ -523,6 +523,16 @@ describe('CrazyGames portal build', () => {
     expect(poster).toBe('Oct 11, 2026'); // the footer is the date alone (free play has no daily number)
   });
 
+  test('the scouting report keeps its formula but links nowhere outside the game', async () => {
+    await loadPortal(fakeSdk('en-US'));
+    await tap(en.title.free);
+    draft(12);
+    await skipSim();
+    const engine = page.app.querySelector('details.scout-engine')!;
+    expect(engine.querySelector('.scout-formula')).not.toBeNull();
+    expect(page.app.querySelector('.scout-card')!.querySelectorAll('a')).toHaveLength(0);
+  });
+
   test.each([
     ['ja-JP', 'en-US', 'ja', ja, 'Español'],
     ['es-419', 'en-US', 'es', es, 'English'],
@@ -846,6 +856,108 @@ describe('the daily panel on the result', () => {
     expect(page.app.querySelector('.daily-panel .countdown')).toBeNull();
     expect(page.app.textContent).not.toContain(en.result.practiceAgain);
     expect(find('button', `⭐ ${en.title.dailyNum.replace('{n}', String(dailyNumber('2026-10-12')))}`)).toBeDefined();
+  });
+});
+
+describe('the scouting report on the result', () => {
+  const ENGINE = 'https://github.com/aaguasvivas/invicto/blob/main/src/engine/';
+
+  /** Every element under #app in document order. */
+  const inOrder = (): FakeElement[] => {
+    const out: FakeElement[] = [];
+    const walk = (el: FakeElement) => el.children.forEach((child) => (out.push(child), walk(child)));
+    walk(page.app);
+    return out;
+  };
+  const position = (cls: string) => inOrder().findIndex((el) => el.classList.contains(cls));
+
+  test('sits under the buttons, above the crowd lines and the tip, and explains the run', async () => {
+    await load();
+    await tap(en.title.free);
+    draft(12);
+    await skipSim();
+    expect(page.app.dataset.screen).toBe('result');
+    const card = page.app.querySelector('.scout-card')!;
+    expect(card).not.toBeNull();
+    expect(position('result-btns')).toBeLessThan(position('scout-card'));
+    expect(position('scout-card')).toBeLessThan(position('global-lines'));
+    expect(position('global-lines')).toBeLessThan(position('tip-link'));
+
+    expect(card.querySelector('.scout-title')!.textContent).toBe(en.scout.title);
+    expect(card.querySelector('.scout-ovr-label')!.textContent).toBe(en.scout.teamOvr);
+    expect(card.querySelector('.scout-ovr')!.textContent).toMatch(/^\d{1,2}\.\d$/);
+
+    // Six bars in engine order, one of them the gate, which holds the lowest value.
+    const rows = card.querySelectorAll('.scout-row');
+    expect(rows.map((row) => row.querySelector('.scout-label')!.textContent)).toEqual(Object.values(en.scout.cat));
+    const values = rows.map((row) => Number(row.querySelector('.scout-value')!.textContent));
+    const gates = card.querySelectorAll('.scout-row.gate');
+    expect(gates).toHaveLength(1);
+    expect(Number(gates[0].querySelector('.scout-value')!.textContent)).toBe(Math.min(...values));
+    expect(gates[0].querySelector('.scout-tag')!.textContent).toBe(en.scout.gateTag);
+    expect(card.querySelectorAll('.scout-tag')).toHaveLength(1);
+
+    // One line per loss, each with its verdict.
+    const losses = page.app.querySelectorAll('.poster-games')[0].textContent.split('❌').length - 1;
+    const verdicts = [en.scout.lossLuck, en.scout.lossCoin, en.scout.lossUnderdog].map(
+      (template) => new RegExp(`^${template.replace(/[.*+?^$()|[\]\\]/g, '\\$&').replace(/\{\w+\}/g, '.+')}$`),
+    );
+    const lines = card.querySelectorAll('.scout-loss').map((el) => el.querySelector('.scout-loss-text')!.textContent);
+    expect(lines).toHaveLength(losses);
+    for (const line of lines) expect(verdicts.some((v) => v.test(line)), line).toBe(true);
+
+    expect(card.querySelector('.scout-picks')!.textContent).toContain(en.scout.bestPick);
+    expect(card.querySelector('.scout-picks')!.textContent).toContain(en.scout.weakLink);
+    expect(card.querySelector('.scout-odds')!.textContent).toMatch(/^With this lineup: title [<\d.]+% · INVICTO [<\d.]+%$/);
+
+    const engine = card.querySelector('details.scout-engine')!;
+    expect(engine.querySelector('summary')!.textContent).toBe(en.scout.howEngine);
+    expect(engine.querySelectorAll('a').map((a) => a.href)).toEqual([`${ENGINE}teamRating.ts`, `${ENGINE}simulate.ts`]);
+    const formulas = engine.querySelectorAll('.scout-formula').map((el) => el.textContent).join('\n');
+    expect(formulas).toContain(`= ${card.querySelector('.scout-ovr')!.textContent}`);
+
+    await goHome();
+    expect(page.app.dataset.screen).toBe('title');
+  });
+
+  test.each([
+    ['es', es],
+    ['ja', ja],
+    ['ko', ko],
+  ])('in %s it names the team number the same way everywhere', async (lang, table) => {
+    await load('none', [lang]);
+    await tap(table.title.free);
+    draft(12);
+    await skipSim();
+    const card = page.app.querySelector('.scout-card')!;
+    expect(card.querySelector('.scout-ovr-label')!.textContent).toBe(table.scout.teamOvr);
+    expect(card.querySelectorAll('.scout-label').map((el) => el.textContent)).toEqual(Object.values(table.scout.cat));
+  });
+
+  test('Hard Mode shows no rating during the draft and reveals all twelve after the run', async () => {
+    await load();
+    await tap(en.title.hard);
+    expect(page.app.dataset.screen).toBe('draft');
+    expect(page.app.querySelectorAll('.rating-chip')).toHaveLength(0);
+    draft(6);
+    expect(page.app.querySelectorAll('.rating-chip')).toHaveLength(0);
+    draft(6);
+    expect(page.app.dataset.screen).toBe('sim');
+    expect(page.app.querySelectorAll('.rating-chip')).toHaveLength(0);
+    await skipSim();
+    const reveal = page.app.querySelector('.scout-reveal')!;
+    expect(reveal.querySelector('.scout-reveal-title')!.textContent).toBe(en.scout.hardReveal);
+    const chips = reveal.querySelectorAll('.rating-chip').map((el) => Number(el.textContent));
+    expect(chips).toHaveLength(12);
+    for (const rating of chips) expect(rating).toBeGreaterThan(0);
+  });
+
+  test('a free run has no reveal: the ratings were on screen all along', async () => {
+    await load();
+    await tap(en.title.free);
+    draft(12);
+    await skipSim();
+    expect(page.app.querySelector('.scout-reveal')).toBeNull();
   });
 });
 

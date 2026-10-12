@@ -5,6 +5,7 @@
 // depend on an inserted word) hold for every string.
 
 import { describe, expect, test } from 'vitest';
+import { CATEGORIES } from '../engine/teamRating';
 import type { HeroKind, Outcome, Stage } from '../engine/types';
 import { BADGE_IDS } from '../game/badges';
 import es from './es.json';
@@ -71,6 +72,7 @@ const DYNAMIC_KEYS = [
   ...[...new Set(STAGES.map((s) => (s.startsWith('pool') ? 'pool' : s)))].map((s) => `sim.stages.${s}`), // sim.ts
   ...['C', 'IF', 'OF', 'DH', 'P'].map((group) => `draft.posGroups.${group}`), // draft.ts roster groups
   ...['minors', 'farm'].map((note) => `draft.${note}`), // draft.ts clubLabel
+  ...CATEGORIES.map((c) => `scout.cat.${c}`), // scoutCard.ts bars and leverage line
 ];
 
 describe('language tables', () => {

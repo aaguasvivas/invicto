@@ -39,6 +39,7 @@ function modeLabel(mode: Mode): string {
 
 export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
   clear(app);
+  app.dataset.screen = 'title';
   setAccent(null);
   const resume = cb.resume;
   // A saved run whose reveal is still to watch: nothing here may give its result away.

@@ -41,8 +41,12 @@ interface Opponent {
   rating: number;
 }
 
-/** Pool order + knockout opponents, all distinct countries, seeded. */
-function scheduleOpponents(seed: string): { stage: Stage; opponent: Opponent }[] {
+/**
+ * Pool order + knockout opponents, all distinct countries, seeded. Ratings are
+ * unrounded here (GameResult rounds them). Calling it again for a seed draws
+ * from the same 'opponents' stream and changes nothing.
+ */
+export function scheduleOpponents(seed: string): { stage: Stage; opponent: Opponent }[] {
   const rng = rngFor(seed, 'opponents');
   const minnows = shuffle(MINNOW_COUNTRIES, rng);
   const mids = shuffle(MID_COUNTRIES, rng);
@@ -62,6 +66,28 @@ function scheduleOpponents(seed: string): { stage: Stage; opponent: Opponent }[]
     { stage: 'sf', opponent: { country: powers[2], rating: KNOCKOUT_RATINGS.sf } },
     { stage: 'final', opponent: { country: powers[3], rating: KNOCKOUT_RATINGS.final } },
   ];
+}
+
+// winChance integrates the per-game noise on a fixed grid: z = -6, -5.9, ... 6
+// with normal weights that sum to 1.
+const Z_GRID = Array.from({ length: 121 }, (_, i) => (i - 60) / 10);
+const Z_WEIGHTS = (() => {
+  const density = Z_GRID.map((z) => Math.exp(-(z * z) / 2));
+  const total = density.reduce((a, b) => a + b, 0);
+  return density.map((d) => d / total);
+})();
+
+/**
+ * The chance to win a game by `gap` rating points (team minus opponent), before
+ * the game's dice: the logistic curve in playGame averaged over its noise,
+ * Z ~ N(0, 1). It draws nothing; the scouting report reads it after the run.
+ */
+export function winChance(gap: number): number {
+  let chance = 0;
+  for (let i = 0; i < Z_GRID.length; i++) {
+    chance += Z_WEIGHTS[i] / (1 + Math.exp(-(gap + GAME_NOISE_SD * Z_GRID[i]) / LOGISTIC_SCALE));
+  }
+  return chance;
 }
 
 /**

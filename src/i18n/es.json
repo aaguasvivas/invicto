@@ -101,6 +101,27 @@
     "eliminatedShare": "Eliminado en {stage} {record}",
     "stageShort": { "pool": "grupos", "qf": "cuartos", "sf": "semis", "final": "la final" }
   },
+  "scout": {
+    "title": "Informe del scout",
+    "teamOvr": "OVR del equipo",
+    "cat": { "contact": "Contacto", "power": "Poder", "speed": "Velocidad", "defense": "Defensa", "clutch": "Clutch", "pitching": "Pitcheo" },
+    "gateTag": "freno",
+    "gate": "Tu freno: {cat} ({n}). Con 10 puntos más ahí, tu OVR del equipo pasa de {a} a {b}. Con 10 más de {best}, solo llega a {c}.",
+    "lossLuck": "Mala suerte: le ganas a {opp} el {p}% de las veces.",
+    "lossCoin": "Moneda al aire: {p}% contra {opp}.",
+    "lossUnderdog": "Eras el underdog: {p}% contra {opp}.",
+    "bestPick": "Mejor pick",
+    "weakLink": "Eslabón débil",
+    "baseline": "Lo que cada uno suma al OVR del equipo, comparado con un pelotero promedio en su posición.",
+    "odds": "Con este lineup: título {t}% · INVICTO {i}%",
+    "hardReveal": "Draftaste a ciegas. Así eran tus números:",
+    "howEngine": "Cómo lo calcula el motor",
+    "engine": {
+      "blend": "Las seis categorías se combinan con un mínimo suave: la más baja es la que más pesa.",
+      "ovr": "Esa mezcla se lleva a la escala de los rivales:",
+      "game": "Cada juego enfrenta tu OVR del equipo al del rival, más el azar:"
+    }
+  },
   "flavor": {
     "win-mercy": [
       "¡Nocaut técnico! {us}-{them} y a la ducha 💀",

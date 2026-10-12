@@ -2,7 +2,9 @@
 // (game/finish.ts, before the sim reveal); this shows it, sends scored dailies
 // to the global stats, fires confetti, and offers share / copy / play-again.
 // A daily run also gets the day card: its challenge, the streak and the
-// countdown to the next one.
+// countdown to the next one. The scouting report (ui/scoutCard.ts) explains
+// the run. From 960 px the screen is two columns: the poster and its buttons
+// on the left, the day card and the report in a sticky column on the right.
 
 import { SLOTS } from '../../engine/positions';
 import type { RunResult } from '../../engine/types';
@@ -18,6 +20,7 @@ import { siteLinks } from '../siteLinks';
 import { IS_PORTAL } from '../../portal';
 import { clear, h, toast } from '../dom';
 import { confetti } from '../confetti';
+import { scoutCard } from '../scoutCard';
 import type { PosterData } from '../poster';
 import { emojiCard, copyText, posterFooter, sharePoster, type ShareContext } from '../share';
 import { countdownLine, lineWith, streakChip } from '../dayCard';
@@ -51,6 +54,7 @@ function globalLines(today: TodayStats, wins: number, lineup: Session['state']['
 /** newBadges: the badges this run earned for the first time (they pop). */
 export function renderResult(app: HTMLElement, session: Session, run: RunResult, newBadges: BadgeId[], cb: ResultCallbacks): void {
   clear(app);
+  app.dataset.screen = 'result';
   setAccent(null);
   const record = `${run.wins}-${run.losses}`;
   const tier: PosterData['tier'] =
@@ -234,12 +238,13 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
       'div.result-screen',
       {},
       h('div', { style: 'height:14px' }),
-      posterEl,
-      badgesEl,
-      buttons,
-      dailyPanel,
+      h(
+        'div.result-grid',
+        {},
+        h('div.result-main', {}, posterEl, badgesEl, buttons),
+        h('div.result-side', {}, dailyPanel, scoutCard(session, run), statsEl),
+      ),
       tipLink() ? h('div.result-meta', {}, tipLink()) : null,
-      statsEl,
       daily ? h('div.result-meta', {}, t('result.dailyNote')) : null,
       adBox,
       h(

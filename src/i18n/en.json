@@ -101,6 +101,27 @@
     "eliminatedShare": "Out in {stage} {record}",
     "stageShort": { "pool": "pool play", "qf": "the quarters", "sf": "the semis", "final": "the final" }
   },
+  "scout": {
+    "title": "Scouting report",
+    "teamOvr": "Team OVR",
+    "cat": { "contact": "Contact", "power": "Power", "speed": "Speed", "defense": "Defense", "clutch": "Clutch", "pitching": "Pitching" },
+    "gateTag": "weak spot",
+    "gate": "Your weak spot: {cat} ({n}). Ten more points there take your Team OVR from {a} to {b}. Ten more {best} only gets you to {c}.",
+    "lossLuck": "You lost to {opp} in a game you win {p}% of the time. Bad luck.",
+    "lossCoin": "Coin flip: {p}% against {opp}.",
+    "lossUnderdog": "You were the underdog: {p}% against {opp}.",
+    "bestPick": "Best pick",
+    "weakLink": "Weakest link",
+    "baseline": "What each adds to Team OVR, compared with an average player at his position.",
+    "odds": "With this lineup: title {t}% · INVICTO {i}%",
+    "hardReveal": "You drafted blind. Here are the numbers:",
+    "howEngine": "How the engine calculates it",
+    "engine": {
+      "blend": "The six categories combine through a soft minimum: the lowest one weighs the most.",
+      "ovr": "That blend maps onto the opponents' scale:",
+      "game": "Each game puts your Team OVR against the opponent's, plus luck:"
+    }
+  },
   "flavor": {
     "win-mercy": [
       "Mercy rule! {us}-{them}, hit the showers 💀",

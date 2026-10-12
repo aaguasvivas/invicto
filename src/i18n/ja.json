@@ -101,6 +101,27 @@
     "eliminatedShare": "{stage}敗退 {record}",
     "stageShort": { "pool": "1次ラウンド", "qf": "準々決勝", "sf": "準決勝", "final": "決勝" }
   },
+  "scout": {
+    "title": "スカウトレポート",
+    "teamOvr": "チーム総合",
+    "cat": { "contact": "ミート", "power": "パワー", "speed": "走力", "defense": "守備", "clutch": "チャンス", "pitching": "投手" },
+    "gateTag": "弱点",
+    "gate": "弱点は{cat}（{n}）。ここを10上げればチーム総合は{a}から{b}に。{best}を10上げても{c}止まり。",
+    "lossLuck": "{opp}戦は勝率{p}%の試合だった。運がなかった。",
+    "lossCoin": "五分五分：{opp}戦の勝率は{p}%。",
+    "lossUnderdog": "格上が相手：{opp}戦の勝率は{p}%。",
+    "bestPick": "ベスト指名",
+    "weakLink": "ワースト指名",
+    "baseline": "同じポジションの平均的な選手と比べて、チーム総合をどれだけ押し上げたか。",
+    "odds": "この編成で優勝{t}% · INVICTO {i}%",
+    "hardReveal": "能力値を見ずにドラフトした。本当の数字はこちら：",
+    "howEngine": "エンジンの計算方法",
+    "engine": {
+      "blend": "6つのカテゴリーを「ソフト最小値」でまとめる。いちばん低い数字がいちばん効く。",
+      "ovr": "その値を対戦相手と同じ尺度に直す：",
+      "game": "各試合は、チーム総合と相手の数字の差に運が加わって決まる："
+    }
+  },
   "flavor": {
     "win-mercy": [
       "コールド勝ち！{us}-{them}で試合終了 💀",

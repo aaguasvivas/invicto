@@ -13,6 +13,7 @@ import {
 } from '../../game/session';
 import { openDialog } from '../dialog';
 import { clear, h, toast } from '../dom';
+import { ratingChip } from '../ratingChip';
 import { nameSearch } from '../search';
 
 const PITCHER_POS: Slot[] = ['SP', 'RP', 'CL'];
@@ -33,6 +34,7 @@ export interface DraftCallbacks {
 
 export function renderDraft(app: HTMLElement, session: Session, cb: DraftCallbacks): void {
   clear(app);
+  app.dataset.screen = 'draft';
   const screen = h('div.draft-screen');
   app.append(screen);
   // Same-rolls practice replay of the daily: say so before anyone thinks it's a bug.
@@ -137,7 +139,6 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
   const playerRow = (p: EnginePlayer, open: Slot[]): HTMLElement => {
     const taken = session.state.draftedPersons.includes(p.personKey);
     const slots = eligibleSlots(p.positions, open);
-    const chipClass = p.rating >= 95 ? 'r95' : p.rating >= 85 ? 'r85' : p.rating >= 70 ? 'r70' : '';
     return h(
       'button.player-row' + (taken ? '.taken' : slots.length === 0 ? '.ineligible' : ''),
       {
@@ -154,7 +155,7 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
         h('b', {}, taken ? `✓ ${p.name}` : p.name),
         p.club ? h('span', {}, clubLabel(p.club)) : null,
       ),
-      session.mode !== 'hard' ? h('span.rating-chip' + (chipClass ? `.${chipClass}` : ''), {}, String(p.rating)) : null,
+      session.mode !== 'hard' ? ratingChip(p.rating) : null,
     );
   };
 

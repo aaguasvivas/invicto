@@ -622,6 +622,172 @@ html:has(dialog[open]) { overflow: hidden; }
 .result-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
 .result-meta { text-align: center; color: var(--text-dim); font-size: 13px; margin-top: 12px; }
 
+/* The grid wrappers vanish on phones: poster, badges, buttons, day card and
+   report stay one column, exactly as before. */
+.result-grid, .result-main, .result-side { display: contents; }
+
+/* ---------- scouting report (result) ---------- */
+.scout-card {
+  margin-top: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px 0;
+  overflow: hidden; /* the disclosure's pressed state keeps the card's rounded corners */
+}
+.scout-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.scout-title { padding-top: 2px; }
+.scout-ovr-block { text-align: right; flex: none; }
+.scout-ovr-label { color: var(--text-dim); font-size: 12px; font-weight: 700; white-space: nowrap; }
+.scout-ovr { font-size: 40px; line-height: 1.05; font-variant-numeric: tabular-nums; }
+
+/* label | bar | value; the rows are grid rows, so every bar starts and ends in line */
+.scout-bars {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr) 34px;
+  align-items: center;
+  gap: 6px 10px;
+  margin-top: 10px;
+}
+.scout-row { display: contents; }
+.scout-label { font-size: 13px; font-weight: 700; color: var(--text-dim); white-space: nowrap; }
+.scout-track { position: relative; height: 20px; display: flex; align-items: center; }
+.scout-track::before {
+  content: '';
+  position: absolute;
+  inset: 6px 0;
+  border-radius: 4px;
+  background: var(--surface-2);
+}
+.scout-fill {
+  position: relative;
+  height: 8px;
+  border-radius: 4px;
+  background: #7d8fc6;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+.scout-value { font-size: 14px; font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; }
+.scout-row.gate .scout-label, .scout-row.gate .scout-value { color: var(--red); }
+/* The weak spot's bar ends in its tag: the tag's right edge is the bar's end,
+   so it never covers another bar or runs past the rail. */
+.scout-row.gate .scout-fill { background: var(--red); min-width: max-content; }
+.scout-tag {
+  font-size: 9.5px;
+  font-weight: 800;
+  line-height: 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #2a0710;
+  background: var(--red);
+  border-radius: 999px;
+  padding: 0 7px;
+}
+.scout-tag:lang(ja), .scout-tag:lang(ko) { letter-spacing: 0.02em; }
+
+.scout-text { margin: 12px 0 0; color: var(--text-dim); font-size: 13.5px; line-height: 1.5; }
+.scout-card b { color: var(--text); font-weight: 800; white-space: nowrap; }
+.scout-section { margin: 12px 0 0; padding-top: 12px; border-top: 1px solid var(--line); }
+.scout-card:lang(ko) { word-break: keep-all; overflow-wrap: break-word; }
+.scout-card:lang(ja) { word-break: auto-phrase; line-break: strict; }
+
+.scout-losses { display: flex; flex-direction: column; gap: 8px; }
+.scout-loss { display: flex; align-items: flex-start; gap: 10px; font-size: 13.5px; line-height: 1.45; color: var(--text-dim); }
+.scout-flag { flex: none; font-size: 18px; line-height: 1.1; }
+
+/* label | flag and name | signed delta */
+.scout-picks { display: grid; grid-template-columns: max-content minmax(0, 1fr) auto; align-items: baseline; gap: 6px 10px; }
+.scout-pick { display: contents; }
+.scout-pick-label { color: var(--text-dim); font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+.scout-pick-label:lang(ja), .scout-pick-label:lang(ko) { letter-spacing: 0.02em; }
+.scout-name { min-width: 0; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.scout-delta { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; text-align: right; }
+.scout-pick.best .scout-delta { color: var(--gold-2); }
+.scout-note { grid-column: 1 / -1; margin: 2px 0 0; color: var(--text-dim); font-size: 12px; line-height: 1.45; }
+
+/* Hard Mode: the ratings the draft kept hidden */
+.scout-reveal-title { margin: 0 0 6px; color: var(--text-dim); font-size: 13.5px; line-height: 1.45; }
+.scout-reveal-row { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 2px 0; }
+.scout-reveal-row .slot { color: var(--text-dim); font-size: 11px; font-weight: 800; }
+.scout-reveal-row .rating-chip { font-size: 16px; min-width: 36px; padding: 2px 6px; }
+
+.scout-odds { color: var(--text-dim); font-size: 13.5px; line-height: 1.5; }
+
+/* how the engine calculates it: closed by default, the formula with this lineup's numbers */
+.scout-engine { margin: 12px -16px 0; border-top: 1px solid var(--line); }
+.scout-engine summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 16px;
+  color: var(--gold-2);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.scout-engine summary::-webkit-details-marker { display: none; }
+.scout-engine summary::after {
+  content: '';
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  transform: translateY(-2px) rotate(45deg);
+}
+.scout-engine[open] summary::after { transform: translateY(2px) rotate(-135deg); }
+.scout-engine summary:active { background: var(--surface-2); }
+.scout-engine summary:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; border-radius: 0 0 14px 14px; }
+.scout-engine-body { padding: 0 16px 16px; }
+.scout-step { margin: 10px 0 6px; color: var(--text-dim); font-size: 13px; line-height: 1.5; }
+.scout-step:first-child { margin-top: 0; }
+.scout-formula {
+  margin: 0;
+  padding: 8px 10px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.scout-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.scout-links .chip-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  color: var(--gold-2);
+  text-decoration: none;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+}
+.scout-links .chip-btn:active { background: var(--surface-2); }
+
+/* Desktop: two columns. The poster, badges and buttons on the left; the day
+   card and the scouting report on the right, which stays in view while the
+   poster scrolls. Below 960 px the phone column above is unchanged. */
+@media (min-width: 960px) {
+  #app[data-screen='result'] { max-width: 960px; }
+  .result-grid {
+    display: grid;
+    grid-template-columns: 480px 420px;
+    justify-content: center;
+    align-items: start;
+    column-gap: 24px;
+  }
+  .result-main, .result-side { display: flex; flex-direction: column; min-width: 0; }
+  .result-side { position: sticky; top: 14px; } /* the screen's top spacer: both columns start level */
+  .result-side > :first-child { margin-top: 0; }
+}
+
 /* ---------- badges (first-time earns pop in under the poster) ---------- */
 .badge-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
 .badge-chip {

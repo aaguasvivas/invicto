@@ -47,15 +47,32 @@ export function softMin(values: number[], weights: number[], p: number = SOFTMIN
   return sum ** (1 / p);
 }
 
-export function teamRating(lineup: LineupSlots): number {
+/**
+ * The six values the rating blends: the hitters' category means and the mean
+ * rating of the SP/RP/CL slots (50 with no pitcher). A lineup with no hitter
+ * yet takes its hitter means from whoever it has.
+ */
+export function categoryRatings(lineup: LineupSlots): Record<Category, number> {
   const hitters = HITTER_SLOTS.map((s) => lineup[s]).filter((p): p is EnginePlayer => Boolean(p));
   const pitchers = PITCHER_SLOTS.map((s) => lineup[s]).filter((p): p is EnginePlayer => Boolean(p));
   const means = categoryMeans(hitters.length > 0 ? hitters : Object.values(lineup) as EnginePlayer[]);
   const pitching = pitchers.length > 0 ? pitchers.reduce((sum, p) => sum + p.rating, 0) / pitchers.length : 50;
-  const all: Record<Category, number> = { ...means, pitching };
-  const blend = softMin(
-    CATEGORIES.map((c) => all[c]),
+  return { ...means, pitching };
+}
+
+/** The soft-min blend of the six values, before calibration. */
+export function categoryBlend(values: Record<Category, number>): number {
+  return softMin(
+    CATEGORIES.map((c) => values[c]),
     CATEGORIES.map((c) => RATING_WEIGHTS[c]),
   );
-  return Math.max(1, Math.min(99, CAL_A + CAL_B * blend));
+}
+
+/** Six category values → team rating on the opponent scale, clamped to 1..99. */
+export function ratingFromCategories(values: Record<Category, number>): number {
+  return Math.max(1, Math.min(99, CAL_A + CAL_B * categoryBlend(values)));
+}
+
+export function teamRating(lineup: LineupSlots): number {
+  return ratingFromCategories(categoryRatings(lineup));
 }

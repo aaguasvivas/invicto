@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { simulateRun } from './simulate';
+import { scheduleOpponents, simulateRun, winChance } from './simulate';
+import { teamRating } from './teamRating';
 import { lineupWithMeans } from './test-helpers';
 
 const mid = () => lineupWithMeans(72, 70, 56, 58, 72, 70);
@@ -102,5 +103,53 @@ describe('simulateRun', () => {
     const poolRatings = run.games.filter((g) => g.stage.startsWith('pool')).map((g) => g.opponent.rating).sort((a, b) => a - b);
     expect(poolRatings[0]).toBeLessThan(62); // minnow
     expect(poolRatings[3]).toBeGreaterThan(72); // power
+  });
+});
+
+describe('scheduleOpponents', () => {
+  test('is the bracket the run plays: same stages and countries, ratings before rounding', () => {
+    for (let i = 0; i < 50; i++) {
+      const seed = `sched-${i}`;
+      const run = simulateRun(mid(), seed);
+      const schedule = scheduleOpponents(seed);
+      run.games.forEach((game, k) => {
+        expect(schedule[k].stage).toBe(game.stage);
+        expect(schedule[k].opponent.country).toBe(game.opponent.country);
+        expect(Math.round(schedule[k].opponent.rating)).toBe(game.opponent.rating);
+      });
+    }
+  });
+});
+
+describe('winChance', () => {
+  test('is one half for an even game and rises with the gap', () => {
+    expect(winChance(0)).toBeCloseTo(0.5, 12);
+    expect(winChance(-5)).toBeLessThan(winChance(0));
+    expect(winChance(5)).toBeGreaterThan(winChance(0));
+    expect(winChance(5) + winChance(-5)).toBeCloseTo(1, 12);
+    expect(winChance(60)).toBeLessThan(1);
+    expect(winChance(-60)).toBeGreaterThan(0);
+  });
+
+  test.each([
+    ['casual', mid],
+    ['elite', () => lineupWithMeans(85, 88, 62, 60, 85, 84)],
+    ['gated', () => lineupWithMeans(95, 95, 95, 95, 40, 95)],
+  ])('over 2,000 seeds it predicts the %s lineup\'s pool-game win rate within 1.5 points', (_, lineup) => {
+    const team = teamRating(lineup());
+    let predicted = 0;
+    let won = 0;
+    let games = 0;
+    for (let i = 0; i < 2000; i++) {
+      const seed = `chance-${i}`;
+      const schedule = scheduleOpponents(seed);
+      const run = simulateRun(lineup(), seed);
+      for (let k = 0; k < 4; k++) {
+        predicted += winChance(team - schedule[k].opponent.rating);
+        won += Number(run.games[k].win);
+        games++;
+      }
+    }
+    expect(Math.abs(predicted / games - won / games)).toBeLessThan(0.015);
   });
 });

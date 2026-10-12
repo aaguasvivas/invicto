@@ -101,6 +101,27 @@
     "eliminatedShare": "{stage} 탈락 {record}",
     "stageShort": { "pool": "조별리그", "qf": "8강", "sf": "4강", "final": "결승" }
   },
+  "scout": {
+    "title": "스카우팅 리포트",
+    "teamOvr": "팀 종합",
+    "cat": { "contact": "컨택", "power": "파워", "speed": "주력", "defense": "수비", "clutch": "클러치", "pitching": "투수" },
+    "gateTag": "약점",
+    "gate": "약점은 {cat}({n}). 여기를 10 올리면 팀 종합이 {a}에서 {b}까지 오른다. {best} 수치를 10 올려도 {c}에 그친다.",
+    "lossLuck": "{opp}전 승률은 {p}%였다. 운이 없었다.",
+    "lossCoin": "반반의 승부: {opp}전 승률 {p}%.",
+    "lossUnderdog": "언더독이었다: {opp}전 승률 {p}%.",
+    "bestPick": "베스트 픽",
+    "weakLink": "워스트 픽",
+    "baseline": "같은 포지션 평균 선수와 비교해 팀 종합을 얼마나 끌어올렸는지 보여 준다.",
+    "odds": "이 라인업의 우승 확률 {t}% · INVICTO {i}%",
+    "hardReveal": "능력치 없이 드래프트했다. 실제 숫자는 이랬다:",
+    "howEngine": "엔진 계산 방식",
+    "engine": {
+      "blend": "6개 카테고리를 '소프트 최솟값'으로 합친다. 가장 낮은 수치가 가장 크게 작용한다.",
+      "ovr": "그 값을 상대 팀과 같은 척도로 옮긴다:",
+      "game": "각 경기는 팀 종합과 상대 수치의 차이에 운이 더해져 결정된다:"
+    }
+  },
   "flavor": {
     "win-mercy": [
       "콜드게임 승리! {us}-{them}, 조기 종료 💀",
