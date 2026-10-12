@@ -17,7 +17,7 @@ import { IS_PORTAL } from '../../portal';
 import { clear, h, toast } from '../dom';
 import { confetti } from '../confetti';
 import type { PosterData } from '../poster';
-import { emojiCard, copyText, sharePoster, type ShareContext } from '../share';
+import { emojiCard, copyText, sharePoster, siteUrl, type ShareContext } from '../share';
 
 export interface ResultCallbacks {
   onAgain: () => void;
@@ -45,7 +45,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
   const gameFlags = run.games.map((g) => ({ flag: session.data.countries.get(g.opponent.country)!.flag, win: g.win }));
   const dailyNum = session.mode === 'daily' ? dailyNumber() : null;
   const dateStr = new Intl.DateTimeFormat(getLocale(), { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date());
-  const footerLine = [t('share.url'), dateStr, dailyNum ? `#${dailyNum}` : null].filter(Boolean).join('  ·  ');
+  const footerLine = [siteUrl(), dateStr, dailyNum ? `#${dailyNum}` : null].filter(Boolean).join('  ·  ');
 
   const stageKey = run.outcome.startsWith('eliminated') ? run.outcome.replace('eliminated-', '') : null;
   const tierLine =

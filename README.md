@@ -122,8 +122,10 @@ Vite dev server proxies `/api` there).
   (AdSense → Privacy & messaging) covers the consent message.
 - **CrazyGames (portal build):** `npm run build:crazygames` writes a self-contained
   `dist-crazygames/` with relative asset paths and the CrazyGames SDK wired through
-  `src/portal.ts` (loading, gameplay start/stop, happytime). Upload the folder's contents
-  unzipped.
+  `src/portal.ts` (loading, gameplay start/stop, happytime, the player's CrazyGames language
+  and the site's mute button). That bundle contains no site domain (share card and poster
+  footer included), no AdSense path and no tip link, and the page turns off text selection.
+  Upload the folder's contents unzipped.
 
 ## Deploying (Cloudflare Workers)
 

@@ -379,6 +379,178 @@ describe('result screen', () => {
     expect(toasts()).not.toContain(en.result.copied);
     expect(toasts()).not.toContain(en.result.shareFailed);
   });
+
+  test.each([
+    ['es', es, 'invictobaseball.com'],
+    ['en', en, 'invictobaseball.com/en/'],
+    ['ja', ja, 'invictobaseball.com/ja/'],
+    ['ko', ko, 'invictobaseball.com/ko/'],
+  ])('in %s the copied card ends with the site in that language, and the poster footer starts with it', async (lang, table, url) => {
+    const copied: string[] = [];
+    await load('none', [lang]);
+    Object.assign(navigator, { clipboard: { writeText: async (text: string) => void copied.push(text) } });
+    await tap(table.title.free);
+    draft(12);
+    await skipSim();
+    await tap(table.result.copy);
+    expect(copied).toHaveLength(1);
+    expect(copied[0].split('\n').at(-1)).toBe(url);
+    expect(page.app.querySelector('.poster-foot')!.textContent.startsWith(`${url}  ·  `)).toBe(true);
+  });
+});
+
+describe('CrazyGames portal build', () => {
+  /** The CrazyGames SDK as the game sees it after init: the player's locale and the site's mute button. */
+  function fakeSdk(locale: string, muteAudio = false) {
+    const listeners: ((settings: { muteAudio: boolean; disableChat: boolean }) => void)[] = [];
+    const settings = { muteAudio, disableChat: false };
+    return {
+      init: async () => {},
+      user: { systemInfo: { countryCode: 'US', locale } },
+      game: {
+        settings,
+        addSettingsChangeListener: (fn: (typeof listeners)[number]) => void listeners.push(fn),
+        removeSettingsChangeListener: () => {},
+        gameplayStart: () => {},
+        gameplayStop: () => {},
+        loadingStart: () => {},
+        loadingStop: () => {},
+        happytime: () => {},
+      },
+      /** The player presses the mute button on the CrazyGames page. */
+      pressMute(on: boolean) {
+        settings.muteAudio = on;
+        for (const fn of listeners) fn({ ...settings });
+      },
+    };
+  }
+
+  /** A WebAudio stand-in: counts the roars started and knows what reaches the speakers, and at what volume. */
+  function fakeAudio() {
+    let started = 0;
+    const destination = {};
+    const toSpeakers: { gain: { value: number } }[] = [];
+    const node = () => ({
+      connect<T>(next: T): T {
+        if (next === destination) toSpeakers.push(this as unknown as (typeof toSpeakers)[number]);
+        return next;
+      },
+    });
+    vi.stubGlobal(
+      'AudioContext',
+      class {
+        state = 'running';
+        currentTime = 0;
+        sampleRate = 8000;
+        destination = destination;
+        async resume() {
+          this.state = 'running';
+        }
+        createBuffer(_channels: number, length: number) {
+          return { getChannelData: () => new Float32Array(Math.floor(length)) };
+        }
+        createBufferSource() {
+          return { ...node(), buffer: null, start: () => void started++ };
+        }
+        createBiquadFilter() {
+          return { ...node(), type: '', frequency: { value: 0 }, Q: { value: 0 } };
+        }
+        createGain() {
+          return { ...node(), gain: { value: 1, setValueAtTime: () => {}, exponentialRampToValueAtTime: () => {} } };
+        }
+      },
+    );
+    return {
+      started: () => started,
+      /** The volume of everything that reaches the speakers (the roars play through one output). */
+      volume: () => toSpeakers.map((n) => n.gain.value),
+    };
+  }
+
+  async function loadPortal(sdk: ReturnType<typeof fakeSdk>, languages?: string[]): Promise<void> {
+    vi.stubEnv('VITE_PORTAL', 'crazygames');
+    (globalThis as Record<string, unknown>).CrazyGames = { SDK: sdk };
+    await load('none', languages);
+  }
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.doUnmock('./ui/poster');
+    Reflect.deleteProperty(globalThis, 'CrazyGames');
+  });
+
+  test('the share card, the shared poster and the poster footer name no website', async () => {
+    const drawn: { footer: string }[] = [];
+    vi.doMock('./ui/poster', () => ({ ensurePosterFonts: async () => {}, drawSharePoster: (_: unknown, data: { footer: string }) => drawn.push(data) }));
+    vi.stubGlobal('File', class { constructor(readonly parts: unknown[], readonly name: string) {} });
+    const shared: string[] = [];
+    const copied: string[] = [];
+    await loadPortal(fakeSdk('en-US'));
+    Object.assign(navigator, {
+      share: async (data: { text: string }) => void shared.push(data.text),
+      canShare: () => true,
+      clipboard: { writeText: async (text: string) => void copied.push(text) },
+    });
+    await tap(en.title.free);
+    draft(12);
+    await skipSim();
+    await tap(en.result.share);
+    await tap(en.result.copy);
+
+    expect(shared).toHaveLength(1);
+    expect(copied).toEqual(shared);
+    expect(drawn).toHaveLength(1);
+    const poster = page.app.querySelector('.poster-foot')!.textContent;
+    for (const text of [shared[0], drawn[0].footer, poster]) expect(text).not.toMatch(/invictobaseball|\.com/);
+    expect(poster).toBe('Oct 11, 2026'); // the footer is the date alone (free play has no daily number)
+  });
+
+  test.each([
+    ['ja-JP', 'en-US', 'ja', ja, 'Español'],
+    ['es-419', 'en-US', 'es', es, 'English'],
+    ['en-GB', 'es-DO', 'en', en, 'Español'],
+    ['pt-BR', 'es-DO', 'en', en, 'Español'], // not one of ours: English, not the browser's Spanish
+  ])('a CrazyGames player with locale %s on a %s browser starts in %s, unpinned', async (locale, browser, lang, table, nextLabel) => {
+    await loadPortal(fakeSdk(locale), [browser]);
+    expect(page.app.textContent).toContain(table.title.free);
+    expect(document.documentElement.lang).toBe(lang);
+    expect(document.title).toBe(table.meta.title);
+    expect(find('button', '🌐').textContent).toBe(`🌐 ${nextLabel}`); // the switcher's first tap is the other major language
+    expect(store.has('invicto.lang')).toBe(false); // a default, not the player's choice
+  });
+
+  test('a language picked in the game beats the CrazyGames locale', async () => {
+    store.set('invicto.lang', 'ko');
+    await loadPortal(fakeSdk('ja-JP'), ['en-US']);
+    expect(page.app.textContent).toContain(ko.title.free);
+    expect(document.documentElement.lang).toBe('ko');
+  });
+
+  test("the CrazyGames mute button silences the game over its own sound toggle, and cuts a roar in flight", async () => {
+    const audio = fakeAudio();
+    store.set('invicto.sound', 'on');
+    const sdk = fakeSdk('en-US', true);
+    await loadPortal(sdk);
+    const toggle = find('button', '🔊');
+    toggle.click(); // off
+    toggle.click(); // on: the confirming roar stays silent while CrazyGames mutes
+    expect(audio.started()).toBe(0);
+
+    sdk.pressMute(false);
+    toggle.click();
+    toggle.click();
+    expect(audio.started()).toBe(1);
+    expect(audio.volume()).toEqual([1]);
+
+    sdk.pressMute(true); // mid-roar: it goes silent at once
+    expect(audio.volume()).toEqual([0]);
+    toggle.click();
+    toggle.click();
+    expect(audio.started()).toBe(1);
+
+    sdk.pressMute(false);
+    expect(audio.volume()).toEqual([1]);
+  });
 });
 
 describe('title buttons', () => {

@@ -1,7 +1,8 @@
-// Tip jar (Ko-fi / Buy Me a Coffee). A calm, optional ask, the 82-0 model: no
-// ads, just a "buy me a coffee" link. Renders nothing until TIP_JAR_URL is
-// filled in (same disabled-until-configured pattern as ads.ts), so it never
-// shows a dead link.
+// Tip jar (Ko-fi / Buy Me a Coffee). A calm, optional ask: one "buy me a
+// coffee" link on the title and result screens, beside the dormant AdSense
+// slots (ads.ts). Renders nothing until TIP_JAR_URL is filled in (the same
+// disabled-until-configured pattern as ads.ts), so it never shows a dead link,
+// and nothing in a portal build.
 
 import { t } from '../i18n';
 import { IS_PORTAL } from '../portal';

@@ -234,7 +234,6 @@
   },
   "share": {
     "title": "INVICTO",
-    "url": "invictobaseball.com",
     "tiers": { "invicto": "7-0 ⭐ INVICTO", "campeon": "{record} 🏆 CAMPEÓN", "subcampeon": "Subcampeón {record} 🥈" }
   },
   "badges": {

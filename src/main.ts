@@ -155,9 +155,9 @@ function runTournament(session: Session): void {
 }
 
 async function boot(): Promise<void> {
+  await portalInit(); // in the CrazyGames build this can set the language
   document.documentElement.lang = getLang();
   applyMeta();
-  await portalInit();
   startLoading();
   showTitle();
 }

@@ -1,7 +1,9 @@
 // Tiny i18n with a language registry: adding a language is one JSON file plus
 // one REGISTRY entry (see README "Adding a language"). Spanish is the default
 // for any es-* browser; the choice persists once the user picks. The /en/,
-// /ja/ and /ko/ entry pages hint their language for that page view only.
+// /ja/ and /ko/ entry pages hint their language for that page view only, and
+// in the CrazyGames build the portal's locale for its player replaces the
+// browser's guess (adoptHostLocale).
 //
 // Brand nouns (INVICTO, CAMPEÓN) are deliberately NOT translated: they are the
 // game's tier names in every language, like a trophy engraving.
@@ -35,26 +37,48 @@ declare global {
   var __INVICTO_LANG: string | undefined;
 }
 
-/** An explicit choice first (only setLang stores one), then the page's hint, then the browser. */
+const byCode = (code: string | null | undefined) => REGISTRY.find((l) => l.code === code);
+/** Ours for a BCP 47 locale by its language part: "es-419" and "ko_KR" match, "pt-BR" does not. */
+const byLocale = (locale: string | undefined) => byCode(locale?.toLowerCase().split(/[-_]/)[0]);
+const ENGLISH = byCode('en') ?? REGISTRY[0];
+/** The language the player picked in the game (only setLang stores one). */
+const storedChoice = () => byCode(storage.get('invicto.lang'));
+
+/** An explicit choice first, then the page's hint, then the browser. */
 function detectLang(): LanguageDef {
-  const byCode = (code: string | null | undefined) => REGISTRY.find((l) => l.code === code);
-  const preset = byCode(storage.get('invicto.lang')) ?? byCode(globalThis.__INVICTO_LANG);
+  const preset = storedChoice() ?? byCode(globalThis.__INVICTO_LANG);
   if (preset) return preset;
   for (const pref of navigator.languages ?? [navigator.language]) {
-    const base = pref?.toLowerCase().split('-')[0];
-    const match = REGISTRY.find((l) => l.code === base);
+    const match = byLocale(pref);
     if (match) return match;
   }
-  return REGISTRY.find((l) => l.code === 'en') ?? REGISTRY[0];
+  return ENGLISH;
 }
 
-let current: LanguageDef = detectLang();
+let current: LanguageDef;
+let cycle: LanguageDef[];
 
 // Switcher cycle for this session: whatever language you start in, the other
 // major language (es/en, in REGISTRY order) is always the FIRST tap, then the
 // rest. A ja/ko "next" label on first sight reads as "there is no English or
 // Spanish here", so it never leads.
-const CYCLE: LanguageDef[] = [current, ...REGISTRY.filter((l) => l.code !== current.code)];
+function startIn(def: LanguageDef): void {
+  current = def;
+  cycle = [def, ...REGISTRY.filter((l) => l.code !== def.code)];
+}
+
+startIn(detectLang());
+
+/**
+ * Start in the language a host platform reports for its player (CrazyGames'
+ * systemInfo.locale, e.g. "es-ES"), and in English when it is not one of ours.
+ * A language picked in the game still wins. Nothing is stored: like a locale
+ * page's hint, it is a default, not the player's choice.
+ */
+export function adoptHostLocale(locale: string | undefined): void {
+  if (!locale || storedChoice()) return;
+  startIn(byLocale(locale) ?? ENGLISH);
+}
 
 export function getLang(): Lang {
   return current.code;
@@ -75,15 +99,15 @@ export function setLang(code: Lang): void {
 
 /** Advance to the next language in this session's cycle (works for any count). */
 export function cycleLang(): Lang {
-  const idx = CYCLE.findIndex((l) => l.code === current.code);
-  setLang(CYCLE[(idx + 1) % CYCLE.length].code);
+  const idx = cycle.findIndex((l) => l.code === current.code);
+  setLang(cycle[(idx + 1) % cycle.length].code);
   return current.code;
 }
 
 /** Label for the language switcher: the language you would switch TO. */
 export function nextLangLabel(): string {
-  const idx = CYCLE.findIndex((l) => l.code === current.code);
-  return CYCLE[(idx + 1) % CYCLE.length].label;
+  const idx = cycle.findIndex((l) => l.code === current.code);
+  return cycle[(idx + 1) % cycle.length].label;
 }
 
 function lookup(path: string): unknown {

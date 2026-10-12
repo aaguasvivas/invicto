@@ -1,8 +1,21 @@
 // Emoji card + Web Share API with PNG poster (clipboard fallbacks).
 
-import { t } from '../i18n';
+import { getLang, t } from '../i18n';
 import type { RunResult } from '../engine/types';
+import { IS_PORTAL } from '../portal';
 import { drawSharePoster, ensurePosterFonts, type PosterData } from './poster';
+
+/**
+ * The site in the player's language (Spanish lives at the root): the last line
+ * of the share card and the start of the poster footer. None in a portal
+ * build: game portals do not allow a game to send players to another site, so
+ * the domain is compiled out of that bundle.
+ */
+export function siteUrl(): string | null {
+  if (IS_PORTAL) return null;
+  const lang = getLang();
+  return lang === 'es' ? 'invictobaseball.com' : `invictobaseball.com/${lang}/`;
+}
 
 export interface ShareContext {
   run: RunResult;
@@ -19,7 +32,8 @@ export function emojiCard(ctx: ShareContext, extraLine?: string | null): string 
   const games = ko ? `${pool} | ${ko}` : pool;
   const lines = [header, games, ctx.tierLine];
   if (extraLine) lines.push(extraLine);
-  lines.push(t('share.url'));
+  const url = siteUrl();
+  if (url) lines.push(url);
   return lines.join('\n');
 }
 

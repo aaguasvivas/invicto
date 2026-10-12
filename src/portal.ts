@@ -4,11 +4,21 @@
 // missing, disabled, or throwing (their SDK runs in demo mode on localhost and
 // is disabled on other domains).
 
+import { adoptHostLocale } from './i18n';
+import { setHostMuted } from './ui/sound';
+
 export const IS_PORTAL = import.meta.env.VITE_PORTAL === 'crazygames';
+
+interface CrazySettings {
+  muteAudio: boolean;
+}
 
 interface CrazySDK {
   init(): Promise<void>;
+  user: { systemInfo: { locale?: string } };
   game: {
+    settings: CrazySettings;
+    addSettingsChangeListener(listener: (settings: CrazySettings) => void): void;
     gameplayStart(): void;
     gameplayStop(): void;
     loadingStart(): void;
@@ -22,11 +32,30 @@ function sdk(): CrazySDK | null {
   return (window as unknown as { CrazyGames?: { SDK?: CrazySDK } }).CrazyGames?.SDK ?? null;
 }
 
+/**
+ * Start the SDK, then take two settings from the player's CrazyGames account:
+ * their language (unless they picked one in the game) and the site's mute
+ * button, which outranks the game's own sound toggle. Runs before the first
+ * screen renders, so the title already shows in that language.
+ */
 export async function portalInit(): Promise<void> {
+  const crazy = sdk();
+  if (!crazy) return;
   try {
-    await sdk()?.init();
+    await crazy.init();
   } catch {
-    // SDK is best-effort
+    return; // SDK is best-effort
+  }
+  try {
+    adoptHostLocale(crazy.user.systemInfo.locale);
+  } catch {
+    // best-effort
+  }
+  try {
+    setHostMuted(crazy.game.settings.muteAudio === true);
+    crazy.game.addSettingsChangeListener((settings) => setHostMuted(settings.muteAudio === true));
+  } catch {
+    // best-effort
   }
 }
 

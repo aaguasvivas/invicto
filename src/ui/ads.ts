@@ -1,7 +1,10 @@
-// Tasteful ads, 82-0 style: a single responsive unit on calm screens only
-// (title bottom, result bottom) — never during the draft or the sim reveal.
-// Fully disabled until ADSENSE_CLIENT and the slot ids are filled in (see
-// README "Monetization") — until then this renders nothing at all.
+// AdSense for the website: one responsive unit on calm screens only (title
+// bottom, result bottom), never during the draft or the sim reveal. It renders
+// nothing at all until ADSENSE_CLIENT and the slot ids are filled in (see
+// README "Monetization"). The portal build never loads AdSense: a portal runs
+// its own ads, and the early return compiles this whole path out of that bundle.
+
+import { IS_PORTAL } from '../portal';
 
 export const ADSENSE_CLIENT = 'ca-pub-4879291425090726';
 const AD_SLOTS: Record<'title' | 'result', string> = {
@@ -18,6 +21,7 @@ declare global {
 let scriptInjected = false;
 
 export function mountAd(container: HTMLElement, placement: 'title' | 'result'): void {
+  if (IS_PORTAL) return;
   if (!ADSENSE_CLIENT || !AD_SLOTS[placement]) return;
   if (!scriptInjected) {
     const script = document.createElement('script');
