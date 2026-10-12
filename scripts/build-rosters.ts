@@ -128,7 +128,7 @@ function editionsInWords(lang: Lang, n: number): string {
 }
 
 /** Rating first, then name: the order of every table and every top list. */
-const byRatingThenName = (a: RosterRecord, b: RosterRecord) => b.rating - a.rating || a.name.localeCompare(b.name);
+const byRatingThenName = (a: RosterRecord, b: RosterRecord) => b.rating - a.rating || a.name.localeCompare(b.name, 'en');
 
 interface Page {
   lang: Lang;
@@ -335,12 +335,12 @@ function editionPage(lang: Lang, edition: EditionTeams, players: RosterRecord[],
 const ARTICLE_LINKS: Record<Lang, [string, string][]> = {
   es: [
     ['/articles/como-quedar-invicto.html', 'Cómo quedar INVICTO: la guía de estrategia oficial'],
-    ['/articles/dominicana-2013.html', 'La única temporada perfecta: Dominicana 2013'],
+    ['/articles/dominicana-2013.html', 'La primera temporada perfecta: Dominicana 2013'],
     [`/${BEST_ARTICLES.es}`, 'Los mejores del Clásico según los datos'],
   ],
   en: [
     ['/en/articles/how-to-run-the-table.html', 'How to run the table: the official strategy guide'],
-    ['/en/articles/dominican-republic-2013.html', 'The only perfect run: Dominican Republic 2013'],
+    ['/en/articles/dominican-republic-2013.html', 'The first perfect run: Dominican Republic 2013'],
     [`/${BEST_ARTICLES.en}`, 'The best Classic players, according to the data'],
   ],
 };
@@ -424,7 +424,7 @@ ${paths.map((p) => `  <url><loc>${ORIGIN}${p}</loc></url>`).join('\n')}
 export function renderSite({ players, editions, editorial, articles, staticPages }: SiteInput): Map<string, string> {
   const years = editions.map((e) => e.year);
   const codes = new Set(players.map((p) => p.country));
-  const countries = COUNTRIES.filter((c) => codes.has(c.code)).sort((a, b) => slugOf(a).localeCompare(slugOf(b)));
+  const countries = COUNTRIES.filter((c) => codes.has(c.code)).sort((a, b) => slugOf(a).localeCompare(slugOf(b), 'en'));
   for (const code of Object.keys(editorial.countries)) if (!codes.has(code)) throw new Error(`roster-editorial.json: ${code} has no players`);
   for (const year of Object.keys(editorial.editions)) if (!years.includes(Number(year))) throw new Error(`roster-editorial.json: no edition ${year}`);
 
