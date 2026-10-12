@@ -630,6 +630,52 @@ describe('challenge links', () => {
     expect(page.app.querySelector('.vs-card')).not.toBeNull();
   });
 
+  test("a past daily played here as practice compares under that daily's number and date, and the next button names today's", async () => {
+    const ana = await challengeFrom(DAILY, 'first', 'Ana');
+    const ben = await challengeFrom(DAILY, 'last', 'Ben');
+    vi.setSystemTime(new Date(2026, 9, 13, 12, 0));
+    store = new Map(); // Luis answers Ana's link two days later, as practice
+    await load('none', undefined, fragment(ana.link));
+    await tap(en.challenge.accept);
+    draft(12);
+    await skipSim();
+    await goHome();
+
+    const copied: string[] = [];
+    await load('none', undefined, fragment(ben.link)); // then Ben's link to the same daily comes in
+    Object.assign(navigator, { clipboard: { writeText: async (text: string) => void copied.push(text) } });
+    expect(card()!.querySelector('.challenge-chip')!.textContent).toBe(en.challenge.playedChip);
+    await tap(en.challenge.accept);
+    expect(page.app.querySelector('.vs-card')).not.toBeNull();
+    const dealt = dailyNumber('2026-10-11');
+    expect(page.app.querySelector('.poster-foot')!.textContent.startsWith(`invictobaseball.com/en  ·  Oct 11, 2026  ·  #${dealt}`)).toBe(true);
+    await tap(en.challenge.button);
+    expect(copied[0].split('\n')[0].startsWith(`INVICTO #${dealt} `)).toBe(true);
+    // Today's daily is unplayed: the button names it, and it deals it scored, not as practice.
+    expect(page.app.textContent).not.toContain(en.result.practiceAgain);
+    await tap(`⭐ ${en.title.dailyNum.replace('{n}', String(dailyNumber('2026-10-13')))}`);
+    expect(page.app.querySelector('.draft-screen')).not.toBeNull();
+    expect(page.body.querySelector('.toast')?.textContent).not.toBe(en.draft.practiceNote);
+  });
+
+  test('a deal played here whose lineup the rosters no longer hold is dealt afresh, and the card says so before Accept', async () => {
+    const ana = await challengeFrom(DAILY, 'last', 'Ana');
+    store = new Map(); // Luis played today's daily; a roster rebuild then retired one of his picks
+    await load();
+    await tap(DAILY);
+    draft(12);
+    await skipSim();
+    await goHome();
+    const [kept] = JSON.parse(store.get('invicto.mine')!);
+    store.set('invicto.mine', JSON.stringify([{ ...kept, ids: ['retired-player', ...kept.ids.slice(1)] }]));
+
+    await load('none', undefined, fragment(ana.link));
+    expect(card()!.querySelector('.challenge-chip')!.textContent).toBe(en.draft.practiceNote); // today's daily, already played
+    await tap(en.challenge.accept);
+    expect(page.app.querySelector('.draft-screen')).not.toBeNull();
+    expect(rollShown()).toBe(ana.firstRoll);
+  });
+
   test('a reload during a challenge draft resumes it with the rival', async () => {
     const ana = await challengeFrom(en.title.hard, 'first', 'Ana');
     store = new Map();

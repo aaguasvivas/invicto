@@ -7,7 +7,7 @@ import { rollBase } from '../engine/draft';
 import { makePlayer } from '../engine/test-helpers';
 import type { EditionTeams, EnginePlayer, Slot } from '../engine/types';
 import type { GameData } from './data';
-import { newSession } from './session';
+import { newSession, playedSession } from './session';
 
 const TEAMS: EditionTeams = Object.fromEntries(editionsJson.editions.map((e) => [e.year, e.teams.map((t) => t.code)]));
 
@@ -49,5 +49,18 @@ describe('newSession', () => {
     const hard = newSession(data, 'hard', true, 'hard-mg5x2k7q-8f3k1z');
     expect(hard.roll).toEqual(rollBase('hard-mg5x2k7q-8f3k1z', 0, TEAMS));
     expect(hard.rival).toBeUndefined();
+  });
+});
+
+describe('playedSession', () => {
+  test('a daily seed is named by its own day, whenever it was played; free and hard keep the day they were played', () => {
+    // A past daily played as practice two days later: the comparison is still that daily.
+    const past = playedSession(data, 'daily-2026-10-01', '2026-10-12', { C: players[0] });
+    expect(past.mode).toBe('daily');
+    expect(past.day).toBe('2026-10-01');
+    expect(past.scored).toBe(false);
+    const free = playedSession(data, 'free-mg5x2k7q-8f3k1z', '2026-10-03', { C: players[0] });
+    expect(free.mode).toBe('free');
+    expect(free.day).toBe('2026-10-03');
   });
 });

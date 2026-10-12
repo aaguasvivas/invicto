@@ -17,7 +17,7 @@ import { depthOf, loadData, type GameData } from './game/data';
 import { dailyNumber, dailyResult, todayKey, type Mode } from './game/state';
 import { recordRun } from './game/finish';
 import {
-  challengeKind, isOwnChallenge, ownRun, parseChallenge, recordOf, resolveChallenge, seedDay, type ChallengeCode, type MyRun, type Rival,
+  challengeKind, isOwnChallenge, ownRun, parseChallenge, recordOf, resolveChallenge, seedDay, type ChallengeCode, type Rival,
 } from './game/challenge';
 import { lineup, newSession, playedSession, type Session } from './game/session';
 import {
@@ -183,8 +183,12 @@ function runTournament(session: Session, replayOf?: number): void {
 // ---------------------------------------------------------------------------
 // Challenge links
 
-/** A link opened at boot, on the title until Accept or Not now. own: it is this device's own run. */
-let incoming: { code: ChallengeCode; own: boolean } | null = null;
+/**
+ * A link opened at boot, on the title until Accept or Not now. own: it is this
+ * device's own run. played: Accept opens the comparison (see playedRun). Both
+ * are settled by vetIncoming once the rosters are in.
+ */
+let incoming: { code: ChallengeCode; own: boolean; played: boolean } | null = null;
 
 /**
  * Take a #r= fragment off the address bar before anything else runs: a reload
@@ -200,25 +204,27 @@ function takeLinkFragment(): string | null {
 
 /**
  * Once the rosters are in: a link whose picks are no real lineup is dropped,
- * silently, and the device's own link turns into a prompt to share it. The
- * title redraws only when either happens.
+ * silently; the device's own link turns into a prompt to share it; and a deal
+ * played here stays played only while the rosters still hold its lineup, the
+ * same test Accept makes. The title redraws only when one of these changes.
  */
 async function vetIncoming(): Promise<void> {
   const pending = incoming;
   const d = await dataPromise.catch(() => null);
   if (!d || !pending || incoming !== pending) return;
   const rival = resolveChallenge(pending.code, d.players);
-  if (rival && !isOwnChallenge(rival, ownRun(rival.seed))) return;
-  incoming = rival ? { ...pending, own: true } : null;
+  const vetted = rival && { code: pending.code, own: isOwnChallenge(rival, ownRun(rival.seed)), played: playedRun(rival.seed, d) !== null };
+  if (vetted && vetted.own === pending.own && vetted.played === pending.played) return;
+  incoming = vetted;
   if (app.dataset.screen === 'title') showTitle();
 }
 
-function titleChallenge({ code, own }: { code: ChallengeCode; own: boolean }): TitleChallenge {
+function titleChallenge({ code, own, played }: { code: ChallengeCode; own: boolean; played: boolean }): TitleChallenge {
   const day = seedDay(code.seed);
   return {
     name: code.nick,
     record: recordOf(code.wins),
-    kind: own ? 'own' : challengeKind(code.seed, todayKey(), dailyResult() !== null, ownRun(code.seed) !== null),
+    kind: own ? 'own' : challengeKind(code.seed, todayKey(), dailyResult() !== null, played),
     dailyNum: day ? dailyNumber(day) : null,
     onAccept: () => void acceptChallenge(code),
     onDismiss: () => {
@@ -229,8 +235,20 @@ function titleChallenge({ code, own }: { code: ChallengeCode; own: boolean }): T
   };
 }
 
-/** The players of a run kept on this device, or null when the rosters no longer hold one of them. */
-function lineupOf(run: MyRun, d: GameData): LineupSlots | null {
+/** A run this device finished, rebuilt with today's rosters: what a comparison replays. */
+interface PlayedRun {
+  day: string;
+  lineup: LineupSlots;
+}
+
+/**
+ * This device's run of a seed, or null when it never finished that deal or
+ * the rosters no longer hold one of its players: Accept then deals the run
+ * afresh, and the title's chip says so.
+ */
+function playedRun(seed: string, d: GameData): PlayedRun | null {
+  const run = ownRun(seed);
+  if (!run) return null;
   const byId = new Map(d.players.map((p) => [p.id, p]));
   const lineup: LineupSlots = {};
   for (const [i, slot] of SLOTS.entries()) {
@@ -238,7 +256,7 @@ function lineupOf(run: MyRun, d: GameData): LineupSlots | null {
     if (!player) return null;
     lineup[slot] = player;
   }
-  return lineup;
+  return { day: run.day, lineup };
 }
 
 async function acceptChallenge(code: ChallengeCode): Promise<void> {
@@ -247,10 +265,9 @@ async function acceptChallenge(code: ChallengeCode): Promise<void> {
   incoming = null;
   const rival = resolveChallenge(code, d.players);
   if (!rival) return showTitle(); // no real lineup: ignored
-  const mine = ownRun(code.seed);
-  const mineLineup = mine && lineupOf(mine, d);
-  const kind = challengeKind(code.seed, todayKey(), dailyResult() !== null, mineLineup !== null);
-  if (kind === 'compare') return showComparison(d, rival, mine!, mineLineup!);
+  const mine = playedRun(code.seed, d);
+  const kind = challengeKind(code.seed, todayKey(), dailyResult() !== null, mine !== null);
+  if (kind === 'compare') return showComparison(d, rival, mine!);
   // This deal is already in progress (Accept, then a reload): go on with it.
   const snap = loadRun();
   if (snap?.seed === code.seed && snapshotUsable(snap, todayKey())) return resumeRun({ ...snap, rival: code.raw });
@@ -260,15 +277,15 @@ async function acceptChallenge(code: ChallengeCode): Promise<void> {
 }
 
 /** A deal this device already played: straight to the head-to-head. Nothing is saved, sent or earned again. */
-function showComparison(d: GameData, rival: Rival, mine: MyRun, mineLineup: LineupSlots): void {
-  const session = playedSession(d, rival.seed, mine.day, mineLineup);
+function showComparison(d: GameData, rival: Rival, mine: PlayedRun): void {
+  const session = playedSession(d, rival.seed, mine.day, mine.lineup);
   session.rival = rival;
   resetScroll();
   document.body.classList.add('in-game');
   renderResult(
     app,
     session,
-    simulateRun(mineLineup, rival.seed),
+    simulateRun(mine.lineup, rival.seed),
     [],
     { onAgain: () => void startRun(session.mode), onFree: () => void startRun('free'), onHome: showTitle },
     true,
@@ -288,7 +305,8 @@ async function boot(): Promise<void> {
   applyMeta();
   const raw = fragment ?? (await portalInviteParam());
   const code = raw ? parseChallenge(raw) : null; // an invalid link is ignored
-  incoming = code && { code, own: false };
+  // Until the rosters load, a run kept for this seed counts as played; vetIncoming checks it still rebuilds.
+  incoming = code && { code, own: false, played: ownRun(code.seed) !== null };
   startLoading();
   if (incoming) void vetIncoming();
   showTitle();

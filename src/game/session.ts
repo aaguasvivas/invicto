@@ -7,7 +7,7 @@ import {
   type DraftState,
 } from '../engine/draft';
 import type { EnginePlayer, LineupSlots, Roll, Slot } from '../engine/types';
-import { seedMode, type Rival } from './challenge';
+import { seedDay, seedMode, type Rival } from './challenge';
 import { todayKey, type Mode } from './state';
 import { roster, type GameData } from './data';
 
@@ -50,14 +50,19 @@ export function newSession(data: GameData, mode: Mode, scored: boolean, seed?: s
   return session;
 }
 
-/** A run played before, rebuilt from its seed and lineup for a challenge comparison. It is never scored again. */
+/**
+ * A run played before, rebuilt from its seed and lineup for a challenge
+ * comparison. It is never scored again. The seed names the mode, and a daily
+ * seed its day too: a past daily played as practice on a later day is still
+ * that daily, under its own number and date. day: when a free or hard run was played.
+ */
 export function playedSession(data: GameData, seed: string, day: string, lineup: LineupSlots): Session {
   const players = Object.values(lineup).filter((p): p is EnginePlayer => p !== undefined);
   return {
     mode: seedMode(seed),
     seed,
     scored: false,
-    day,
+    day: seedDay(seed) ?? day,
     data,
     state: { lineup, draftedPersons: players.map((p) => p.personKey), round: players.length, countryRerollUsed: false, editionRerollUsed: false },
     roll: rollBase(seed, 0, data.editionTeams),
