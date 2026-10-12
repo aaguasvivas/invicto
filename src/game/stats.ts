@@ -1,6 +1,6 @@
 // Global daily stats: anonymous submission + "you beat X% today" math.
 // The backend is two routes on the same Worker that serves the site (see
-// worker/index.ts). Everything here fails silently — the game never depends
+// worker/index.ts). Everything here fails silently: the game never depends
 // on the network.
 
 export interface TodayStats {
