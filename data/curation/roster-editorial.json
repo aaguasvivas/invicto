@@ -1,0 +1,122 @@
+{
+  "countries": {
+    "AUS": {
+      "es": "Australia pasó de invitado incómodo a rival serio: en 2023 avanzó a cuartos de final por primera vez. Su béisbol crece cada ciclo con una liga doméstica que ya exporta talento.",
+      "en": "Australia went from awkward guest to serious opponent: in 2023 they reached the quarterfinals for the first time. Their baseball grows every cycle behind a domestic league that now exports talent."
+    },
+    "BRA": {
+      "es": "Brasil clasificó por primera vez en 2013 con una generación formada entre São Paulo y el sistema de ligas menores, con fuerte herencia japonesa. Paulo Orlando llegó después a ganar una Serie Mundial.",
+      "en": "Brazil qualified for the first time in 2013 with a generation formed between São Paulo and the minor league system, with a strong Japanese heritage. Paulo Orlando went on to win a World Series."
+    },
+    "CAN": {
+      "es": "Canadá siempre trae bates de primera fila aunque el calendario no lo acompañe: Votto, Morneau y Freeman han vestido la hoja de maple en el torneo. Todavía no ha llegado tan lejos como sugiere su talento.",
+      "en": "Canada always brings big-league bats, even when the schedule works against it: Votto, Morneau and Freeman have all worn the maple leaf here. It still has not made the deep run its talent suggests."
+    },
+    "CHN": {
+      "es": "China sigue construyendo su programa a punta de disciplina. Ray Chang es el emblema de sus mejores rosters y cada edición suma experiencia para un proyecto de largo plazo.",
+      "en": "China keeps building its program on discipline. Ray Chang is the emblem of their best rosters, and every edition adds experience to a long-term project."
+    },
+    "COL": {
+      "es": "Colombia debutó en 2017 y de una vez asustó a Estados Unidos en un juego que se decidió en entradas extra. José Quintana y Jorge Alfaro encabezan una generación que ya compite de tú a tú.",
+      "en": "Colombia debuted in 2017 and immediately scared the United States in a game decided in extra innings. José Quintana and Jorge Alfaro lead a generation that already competes head to head."
+    },
+    "CUB": {
+      "es": "La escuela cubana llegó a la primera final de la historia (2006) con su generación dorada. Cada edición trae nombres que después brillan en las mayores: de Despaigne a José Abreu y Luis Robert.",
+      "en": "The Cuban school reached the very first final in 2006 with its golden generation. Every edition brings names that later shine in the majors: from Despaigne to José Abreu and Luis Robert."
+    },
+    "CZE": {
+      "es": "Chequia se robó el cariño de todos en su debut de 2023: un roster de semiprofesionales (bomberos, maestros, agentes de bolsa) que compitió con dignidad total contra superestrellas. Eric Sogard le dio oficio de Grandes Ligas.",
+      "en": "Czechia stole everyone’s heart in its 2023 debut: a roster of semi-professionals (firefighters, teachers, stockbrokers) that competed with total dignity against superstars. Eric Sogard gave them big league craft."
+    },
+    "DOM": {
+      "es": "La república del béisbol. Lo de 2013 es la razón de que este juego se llame Invicto: República Dominicana ganó el torneo entero sin perder un solo juego, la única temporada perfecta en la historia del Clásico.",
+      "en": "The republic of baseball. What happened in 2013 is the reason this game is called Invicto: the Dominican Republic won the whole tournament without losing a single game, the only perfect run in Classic history."
+    },
+    "ESP": {
+      "es": "España debutó en 2013 apoyada en la conexión caribeña de su federación y pelea cada clasificatorio. Su reto: que el talento naturalizado le alcance para llegar lejos.",
+      "en": "Spain debuted in 2013, leaning on the Caribbean connections of its federation, and fights through every qualifier. The challenge: turning naturalized talent into deep runs."
+    },
+    "GBR": {
+      "es": "Gran Bretaña clasificó por primera vez en 2023 y para 2026 ya presume nombres de impacto como Jazz Chisholm Jr. Uno de los programas de crecimiento más rápido del torneo.",
+      "en": "Great Britain qualified for the first time in 2023 and by 2026 already boasts impact names like Jazz Chisholm Jr. One of the fastest-growing programs in the tournament."
+    },
+    "ISR": {
+      "es": "La sorpresa de 2017: Israel abrió el torneo 4-0 y eliminó a potencias enteras con un roster de peloteros de ligas menores. Hoy trae nombres de las mayores como Joc Pederson y Harrison Bader.",
+      "en": "The surprise of 2017: Israel opened the tournament 4-0 and knocked out entire powerhouses with a roster of minor leaguers. Today they bring major league names like Joc Pederson and Harrison Bader."
+    },
+    "ITA": {
+      "es": "Italia mezcla ligas europeas con ítalo-americanos de las mayores y ha alcanzado cuartos de final, incluida la batalla de 2023 en Tokio. Nimmo y compañía mantienen viva la azzurra beisbolera.",
+      "en": "Italy blends European leagues with Italian-American big leaguers and has reached the quarterfinals, including the 2023 battle in Tokyo. Nimmo and company keep baseball azzurra alive."
+    },
+    "JPN": {
+      "es": "El gigante del torneo: campeón en 2006, 2009 y 2023. El último título terminó con la escena más famosa de la historia del Clásico, Ohtani ponchando a Trout para el out final. Ningún país ha dominado el evento así.",
+      "en": "The giant of the tournament: champions in 2006, 2009 and 2023. The last title ended with the most famous scene in Classic history, Ohtani striking out Trout for the final out. No country has dominated the event like this."
+    },
+    "KOR": {
+      "es": "Potencia técnica y disciplinada, Corea del Sur fue semifinalista en 2006 y subcampeona en 2009, cayendo en una final de infarto contra Japón. El bate insignia de aquella era: Lee Seung-yeop.",
+      "en": "A technical, disciplined powerhouse, South Korea reached the 2006 semifinals and the 2009 final, falling to Japan in a heart-stopper. The signature bat of that era: Lee Seung-yeop."
+    },
+    "MEX": {
+      "es": "México dio el golpe de 2023: semifinalista por primera vez, eliminado por Japón en un final de fotografía. Tradición de brazos serios y bateadores de contacto que se agrandan en el torneo.",
+      "en": "Mexico delivered the shock of 2023: semifinalists for the first time, eliminated by Japan in a photo finish. A tradition of serious arms and contact hitters who grow taller in this tournament."
+    },
+    "NCA": {
+      "es": "Nicaragua, tierra de Dennis Martínez, debutó en 2023 tras décadas tocando la puerta. Erasmo Ramírez y los prospectos pinoleros llevan la bandera de un país que respira pelota.",
+      "en": "Nicaragua, the land of Dennis Martínez, debuted in 2023 after decades of knocking on the door. Erasmo Ramírez and the pinolero prospects carry the flag of a country that breathes baseball."
+    },
+    "NED": {
+      "es": "El reino del guante: Países Bajos fue semifinalista en 2013 y 2017 con infields de lujo encabezados por Bogaerts, Simmons, Profar y Schoop, más el poder curazoleño de siempre.",
+      "en": "The kingdom of the glove: the Netherlands reached the semifinals in 2013 and 2017 with luxury infields led by Bogaerts, Simmons, Profar and Schoop, plus the usual power from Curaçao."
+    },
+    "PAN": {
+      "es": "Panamá es historia pura del béisbol centroamericano y regresó al Clásico con una nueva camada. Carlos Lee y Carlos Ruiz cargaron la ofensiva de las primeras ediciones.",
+      "en": "Panama is pure Central American baseball history and returned to the Classic with a new wave. Carlos Lee and Carlos Ruiz carried the offense in the early editions."
+    },
+    "PUR": {
+      "es": "Nadie ha rozado la copa tantas veces sin llevársela: Puerto Rico fue subcampeón en 2013 y 2017, con equipos que enamoraron a todo el Caribe. Su identidad: receptores de oro y un bullpen que no tiembla.",
+      "en": "Nobody has come so close so often without taking the trophy home: Puerto Rico finished runner-up in 2013 and 2017 with teams the whole Caribbean fell in love with. Their identity: gold-glove catchers and a bullpen that never blinks."
+    },
+    "RSA": {
+      "es": "Sudáfrica ha peleado cada clasificatorio desde 2006 con un programa pequeño pero orgulloso. Barry Armitage es su referencia histórica en los datos del juego.",
+      "en": "South Africa has fought through every qualifier since 2006 with a small but proud program. Barry Armitage is their historical reference in the game’s data."
+    },
+    "TPE": {
+      "es": "Taipéi Chino vive el Clásico como una final permanente: avanzó a la segunda ronda en 2013 ante su gente y ha producido brazos memorables, con Hong-Chih Kuo como estandarte en los datos.",
+      "en": "Chinese Taipei lives every Classic like a permanent final: they reached the second round at home in 2013 and keep producing memorable arms, with Hong-Chih Kuo as their flagbearer in the data."
+    },
+    "USA": {
+      "es": "La nómina más profunda del torneo casi siempre sale de aquí, pero el título se le negó a Estados Unidos hasta 2017, cuando por fin levantó la copa. En los datos de Invicto vive el techo absoluto del juego: el 99 de Aaron Judge en 2026.",
+      "en": "The deepest roster pool in the tournament almost always comes from here, yet the title eluded the United States until 2017, when they finally lifted the trophy. The absolute ceiling of Invicto lives in their data: Aaron Judge and his 99 in 2026."
+    },
+    "VEN": {
+      "es": "Cuna de bateadores de línea pura y brazos de élite, Venezuela fue semifinalista en 2009 y siempre llega con nómina para más. El pico venezolano en los datos es doble: el madero de Miguel Cabrera y la zurda de Johan Santana.",
+      "en": "A cradle of pure line-drive hitters and elite arms, Venezuela reached the 2009 semifinals and always shows up with a roster built for more. Their twin peaks in the data: Miguel Cabrera at the plate and the left arm of Johan Santana."
+    }
+  },
+  "editions": {
+    "2006": {
+      "es": "La edición inaugural. Japón se llevó el primer título venciendo a Cuba en la final de San Diego, y el torneo demostró que el béisbol de selecciones iba en serio: Corea del Sur llegó invicta a semifinales y Estados Unidos quedó fuera temprano.",
+      "en": "The inaugural edition. Japan took the first title by beating Cuba in the San Diego final, and the tournament proved national team baseball was serious business: South Korea reached the semifinals unbeaten and the United States went home early."
+    },
+    "2009": {
+      "es": "Japón repitió la corona en una final épica contra Corea del Sur, definida en entradas extra con el hit de Ichiro que todavía duele en Seúl. Venezuela alcanzó su primera semifinal.",
+      "en": "Japan repeated as champions in an epic final against South Korea, decided in extra innings by the Ichiro hit that still stings in Seoul. Venezuela reached its first semifinal."
+    },
+    "2013": {
+      "es": "La edición de la temporada perfecta: República Dominicana ganó sus ocho juegos y levantó la copa invicta ante Puerto Rico, la hazaña que inspira este juego. Países Bajos y su infield de lujo llegaron a semifinales.",
+      "en": "The edition of the perfect season: the Dominican Republic won all eight of its games and lifted the trophy unbeaten against Puerto Rico, the feat that inspires this game. The Netherlands and their luxury infield reached the semifinals."
+    },
+    "2017": {
+      "es": "Estados Unidos por fin fue campeón, aplastando a Puerto Rico en la final de Los Ángeles. Los boricuas se quedaron con el subcampeonato por segunda edición seguida y el pelo teñido de rubio como bandera.",
+      "en": "The United States finally won it all, crushing Puerto Rico in the Los Angeles final. The Boricuas took runner-up honors for the second straight edition, blond-dyed hair and all."
+    },
+    "2023": {
+      "es": "La edición más vista de la historia terminó con Japón campeón por tercera vez y la escena inmortal: Shohei Ohtani ponchando a Mike Trout para el 3-2 final sobre Estados Unidos en Miami. México rozó la final y Checa se ganó al mundo.",
+      "en": "The most-watched edition in history ended with Japan champions for the third time and an immortal scene: Shohei Ohtani striking out Mike Trout to seal the 3-2 win over the United States in Miami. Mexico came within an out of the final and Czechia won the world over."
+    },
+    "2026": {
+      "es": "La edición más reciente del Clásico, con el campo más profundo que registran los datos de Invicto: el 99 de Aaron Judge, el brazo de Paul Skenes y una camada nueva de estrellas de todas las ligas.",
+      "en": "The most recent edition of the Classic, with the deepest field in Invicto’s data: Aaron Judge’s 99, the arm of Paul Skenes and a new wave of stars from every league."
+    }
+  }
+}
