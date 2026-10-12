@@ -1,13 +1,17 @@
 // Simulation screen: bracket cards flip one at a time, and the pacing escalates
 // with the stakes (after a short guard, a tap anywhere skips everything, even
 // mid-beat). A 6-0 team gets a gold pre-reveal beat before the final: THE moment.
+// With a rival from a challenge link, each card adds the rival's game at the
+// same stage, and the gold beat says what the final means against them.
 
 import type { GameResult, LineupSlots, RunResult, Stage } from '../../engine/types';
+import type { Rival } from '../../game/challenge';
 import { countryName, flavor, t } from '../../i18n';
 import type { GameData } from '../../game/data';
 import { setAccent } from '../accents';
 import { clear, h } from '../dom';
 import { crowdRoar, vibrate } from '../sound';
+import { rivalName } from '../versus';
 
 /** Delay before each card flips, by stage: anticipation grows with the stakes. */
 const REVEAL_MS = { pool: 600, qf: 750, sf: 950, final: 1300 } as const;
@@ -37,7 +41,19 @@ export function heroLine(game: GameResult, lineup: LineupSlots): string | null {
   return t(`hero.${key}`, params);
 }
 
-export function renderSim(app: HTMLElement, run: RunResult, data: GameData, lineup: LineupSlots, onDone: () => void): void {
+/**
+ * The rival's game at a stage: their score and mark (the mark alone when only
+ * the claimed record is known), or that they never got this far.
+ */
+export function rivalLine(rival: Rival, stage: Stage, stages: readonly Stage[]): string {
+  const name = rivalName(rival);
+  const i = stages.indexOf(stage);
+  if (i >= rival.wins.length) return `⚔️ ${t('challenge.simNotReached', { name })}`;
+  const game = rival.run?.games[i];
+  return `⚔️ ${name}: ${game ? `${game.teamScore}-${game.oppScore} ` : ''}${rival.wins[i] ? '✅' : '❌'}`;
+}
+
+export function renderSim(app: HTMLElement, run: RunResult, data: GameData, lineup: LineupSlots, onDone: () => void, rival?: Rival): void {
   clear(app);
   app.dataset.screen = 'sim';
   setAccent(null);
@@ -98,6 +114,7 @@ export function renderSim(app: HTMLElement, run: RunResult, data: GameData, line
         ),
         h('div.game-flavor', {}, flavor(game.flavorKey, game.flavorVariant, { opp: oppName, us: game.teamScore, them: game.oppScore })),
         star ? h('div.game-flavor.hero', {}, star) : null,
+        rival ? h('div.game-flavor.rival', {}, rivalLine(rival, game.stage, allStages)) : null,
       ),
       h('span.game-result-badge', {}, game.win ? '✅' : '❌'),
     );
@@ -122,7 +139,9 @@ export function renderSim(app: HTMLElement, run: RunResult, data: GameData, line
     if (game.stage === 'final' && wins === 6 && losses === 0 && !finalBeatShown) {
       finalBeatShown = true;
       const card = cards.get(game.stage)!;
-      beatLine = h('div.beat-line', {}, t('sim.beatFinal'));
+      // Against a rival: win and you beat them, or (they went 7-0) win and you match them.
+      const stakes = rival ? t(rival.wins.every(Boolean) ? 'challenge.simMatch' : 'challenge.simBeat', { name: rivalName(rival) }) : null;
+      beatLine = h('div.beat-line', {}, t('sim.beatFinal'), stakes ? h('div.beat-rival', {}, stakes) : null);
       bracket.insertBefore(beatLine, card);
       card.classList.add('beat-gold');
       timer = window.setTimeout(step, FINAL_BEAT_MS);

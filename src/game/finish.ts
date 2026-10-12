@@ -1,10 +1,12 @@
-// Committing a finished run: the scored daily, the personal best and badges.
-// It runs as soon as the lineup is complete and the tournament is simulated,
-// before the 7-10 s reveal: a reload during the reveal finds the day already
-// played instead of an open daily to redo.
+// Committing a finished run: the scored daily, the personal best, badges and
+// the run itself (for challenge comparisons). It runs as soon as the lineup is
+// complete and the tournament is simulated, before the 7-10 s reveal: a reload
+// during the reveal finds the day already played instead of an open daily to
+// redo.
 
 import type { RunResult } from '../engine/types';
 import { badgesEarnedSince, evaluateBadges, recordBadges, type BadgeId } from './badges';
+import { rememberRun } from './challenge';
 import type { Session } from './session';
 import { dailyResult, saveBest, saveDailyResult, type StoredResult } from './state';
 
@@ -35,6 +37,9 @@ export function recordRun(session: Session, run: RunResult, replayOf?: number): 
     if (session.mode === 'daily') saveDailyResult(result, session.day);
     saveBest(session.mode, result);
   }
+
+  // A link to this deal can then open straight on the comparison.
+  rememberRun(session.seed, session.state.lineup, session.day);
 
   // Every finished run earns badges, practice included.
   const earned = evaluateBadges(session.state.lineup, run);

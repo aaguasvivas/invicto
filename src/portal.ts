@@ -24,6 +24,10 @@ interface CrazySDK {
     loadingStart(): void;
     loadingStop(): void;
     happytime(): void;
+    /** A link to the game's CrazyGames page carrying these params (sync or async across SDK versions). */
+    inviteLink?(params: Record<string, string>): string | Promise<string>;
+    /** A param of the invite link this page was opened from. */
+    getInviteParam?(name: string): string | null | Promise<string | null>;
   };
 }
 
@@ -104,5 +108,38 @@ export function portalHappytime(): void {
     sdk()?.game.happytime();
   } catch {
     // best-effort
+  }
+}
+
+/** The SDK can make invite links, so a challenge can be shared without naming another site. */
+export function portalCanInvite(): boolean {
+  try {
+    return typeof sdk()?.game.inviteLink === 'function';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * A challenge link that stays on CrazyGames: their invite link to the game's
+ * page with the code as its r param. Null without the SDK or the call, and
+ * then the share carries no link at all (a portal build never names our site).
+ */
+export async function portalInviteLink(code: string): Promise<string | null> {
+  try {
+    const link = await Promise.resolve(sdk()?.game.inviteLink?.({ r: code }));
+    return typeof link === 'string' && link ? link : null;
+  } catch {
+    return null; // best-effort
+  }
+}
+
+/** The challenge code of the invite link this page was opened from, if any. */
+export async function portalInviteParam(): Promise<string | null> {
+  try {
+    const value = await Promise.resolve(sdk()?.game.getInviteParam?.('r'));
+    return typeof value === 'string' && value ? value : null;
+  } catch {
+    return null; // best-effort
   }
 }

@@ -5,8 +5,10 @@
 
 import { describe, expect, test } from 'vitest';
 import { applyPick, openSlots } from '../engine/draft';
+import { simulateRun } from '../engine/simulate';
 import { lineupWithMeans, makePlayer } from '../engine/test-helpers';
 import type { EnginePlayer } from '../engine/types';
+import { encodeChallenge, rivalFrom } from './challenge';
 import type { GameData } from './data';
 import { lineupComplete, restoreSession, snapshotSession, snapshotUsable, type RunSnapshot } from './resume';
 import type { Session } from './session';
@@ -92,6 +94,42 @@ describe('snapshotSession / restoreSession: a complete lineup', () => {
     expect(restored.scored).toBe(true);
     expect(restored.state.round).toBe(12);
     expect(Object.keys(restored.state.lineup)).toHaveLength(12);
+  });
+});
+
+describe('snapshotSession / restoreSession: a challenge in progress', () => {
+  // The rival travels as the raw link code (RunSnapshot keeps v: 1); a
+  // snapshot from before challenge links has no such field.
+  const lineup = lineupWithMeans(72, 70, 56, 58, 72, 70);
+  const players = [p1, p2, ...(Object.values(lineup) as EnginePlayer[])];
+  const withPlayers: GameData = { ...data, players };
+  const seed = 'free-mg5x2k7q-8f3k1z';
+  const code = encodeChallenge(seed, lineup, simulateRun(lineup, seed), players, 'Ana');
+  const challenged = (): Session => ({ ...midDraft(), mode: 'free', seed, data: withPlayers, rival: rivalFrom(code, players)! });
+
+  test('a snapshot without a rival field restores exactly as before', () => {
+    const snap = snapshotSession(midDraft());
+    expect('rival' in snap).toBe(false);
+    const restored = restoreSession(snap, data)!;
+    expect('rival' in restored).toBe(false);
+    expect(restored).toEqual(midDraft());
+  });
+
+  test('the rival is saved as its code and comes back resolved', () => {
+    const snap = snapshotSession(challenged());
+    expect(snap.rival).toBe(code);
+    expect(snap.v).toBe(1);
+    const restored = restoreSession(JSON.parse(JSON.stringify(snap)), withPlayers)!;
+    expect(restored.rival?.name).toBe('Ana');
+    expect(restored.rival?.lineup?.C?.id).toBe(lineup.C!.id);
+  });
+
+  test('a rival code that no longer resolves leaves the run itself intact', () => {
+    const snap = { ...snapshotSession(challenged()), rival: 'not-a-code' };
+    const restored = restoreSession(snap, withPlayers)!;
+    expect(restored).not.toBeNull();
+    expect(restored.rival).toBeUndefined();
+    expect(restored.seed).toBe(seed);
   });
 });
 

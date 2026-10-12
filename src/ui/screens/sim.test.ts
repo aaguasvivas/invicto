@@ -6,6 +6,7 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { makePlayer } from '../../engine/test-helpers';
 import type { GameResult, HeroMoment, LineupSlots } from '../../engine/types';
+import type { Rival } from '../../game/challenge';
 import { installDom, installStorage } from '../../test/fakedom';
 
 afterEach(() => {
@@ -74,5 +75,35 @@ describe('heroLine', () => {
     const heroLine = await heroLineIn('en-US');
     expect(heroLine(game(closer), { SP: lineup.SP })).toBeNull();
     expect(heroLine(game(closer, { hero: null }), lineup)).toBeNull();
+  });
+});
+
+describe('rivalLine', () => {
+  const STAGES = ['pool-1', 'pool-2', 'pool-3', 'pool-4', 'qf', 'sf', 'final'] as const;
+  const rival = (over: Partial<Rival> = {}): Rival => ({
+    code: 'x', name: 'Ana', seed: 'free-a-b', wins: [true, false, true, true, false], lineup: null, run: null, ...over,
+  });
+
+  test("a stage the rival never reached says so; a record-only rival shows the mark alone", async () => {
+    vi.resetModules();
+    installDom(['en-US']);
+    installStorage();
+    const { rivalLine } = await import('./sim');
+    expect(rivalLine(rival(), 'pool-2', STAGES)).toBe('⚔️ Ana: ❌');
+    expect(rivalLine(rival(), 'qf', STAGES)).toBe('⚔️ Ana: ❌');
+    expect(rivalLine(rival(), 'sf', STAGES)).toBe('⚔️ Ana: did not get this far');
+    expect(rivalLine(rival({ name: null }), 'final', STAGES)).toBe('⚔️ your rival: did not get this far');
+  });
+
+  test('with a replayed run, the score of their game at that stage', async () => {
+    vi.resetModules();
+    installDom(['es-DO']);
+    installStorage();
+    const { rivalLine } = await import('./sim');
+    const games = rival().wins.map((win, i) => game(closer, { stage: STAGES[i], win, teamScore: win ? 7 : 2, oppScore: win ? 5 : 4 }));
+    const run = { teamRating: 80, games, wins: 3, losses: 2, outcome: 'eliminated-qf' as const };
+    expect(rivalLine(rival({ run, lineup: {} }), 'pool-1', STAGES)).toBe('⚔️ Ana: 7-5 ✅');
+    expect(rivalLine(rival({ run, lineup: {} }), 'qf', STAGES)).toBe('⚔️ Ana: 2-4 ❌');
+    expect(rivalLine(rival({ run, lineup: {} }), 'final', STAGES)).toBe('⚔️ Ana: no llegó');
   });
 });

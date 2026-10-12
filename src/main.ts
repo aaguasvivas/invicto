@@ -5,27 +5,38 @@
 // failed load shows a retry instead of a blank screen. Runs autosave after
 // every pick so a reloaded tab can resume exactly where it was, and a finished
 // run is saved before the sim reveal, so a reload cannot reopen the daily.
+//
+// A challenge link (#r=... on the site, the invite param r on CrazyGames) is
+// read once at boot and dropped from the address bar. It waits on the title
+// for Accept, which deals the friend's seed (game/challenge.ts says where each
+// kind of link leads), and never starts a run by itself.
 
 import './styles.css';
 import { applyMeta, getLang, t } from './i18n';
 import { depthOf, loadData, type GameData } from './game/data';
-import { dailyResult, todayKey, type Mode } from './game/state';
+import { dailyNumber, dailyResult, todayKey, type Mode } from './game/state';
 import { recordRun } from './game/finish';
-import { lineup, newSession, type Session } from './game/session';
+import {
+  challengeKind, isOwnChallenge, ownRun, parseChallenge, recordOf, resolveChallenge, seedDay, type ChallengeCode, type MyRun, type Rival,
+} from './game/challenge';
+import { lineup, newSession, playedSession, type Session } from './game/session';
 import {
   clearRun, lineupComplete, loadRun, restoreSession, saveRun, snapshotSession, snapshotUsable, type RunSnapshot,
 } from './game/resume';
 import { openSlots } from './engine/draft';
+import { SLOTS } from './engine/positions';
 import { simulateRun } from './engine/simulate';
-import { renderTitle } from './ui/screens/title';
+import type { LineupSlots } from './engine/types';
+import { renderTitle, type TitleChallenge } from './ui/screens/title';
 import { renderDraft, type DraftCallbacks } from './ui/screens/draft';
 import { renderSim } from './ui/screens/sim';
 import { renderResult } from './ui/screens/result';
 import { renderLoadError } from './ui/screens/loadError';
 import { renderLandingInfo } from './ui/landing';
 import { toast } from './ui/dom';
+import { challengeLink, shareText } from './ui/share';
 import {
-  portalGameplayStart, portalGameplayStop, portalHappytime, portalInit, portalLoadingStart, portalLoadingStop,
+  portalGameplayStart, portalGameplayStop, portalHappytime, portalInit, portalInviteParam, portalLoadingStart, portalLoadingStop,
 } from './portal';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
@@ -102,6 +113,7 @@ function showTitle(): void {
           onResume: () => void resumeRun(resumable),
         }
       : undefined,
+    challenge: incoming ? titleChallenge(incoming) : undefined,
   });
   // Localize the below-the-fold info section to match the current language
   // (runs on boot, on return-to-title, and after a language switch).
@@ -115,14 +127,16 @@ function draftCallbacks(session: Session): DraftCallbacks {
   };
 }
 
-async function startRun(mode: Mode): Promise<void> {
+/** deal: a challenge's rival, with its seed (and scoring) when the mode would not deal it by itself. */
+async function startRun(mode: Mode, deal?: { rival: Rival; seed?: string; scored?: boolean }): Promise<void> {
   const d = await ready();
   if (!d) return;
   clearRun(); // a new run replaces any interrupted one
   enterGame();
   // Daily scores only the first attempt of the day; replays are practice.
-  const scored = mode === 'daily' ? !dailyResult() : true;
-  const session = newSession(d, mode, scored);
+  const scored = deal?.scored ?? (mode === 'daily' ? !dailyResult() : true);
+  const session = newSession(d, mode, scored, deal?.seed);
+  if (deal) session.rival = deal.rival;
   renderDraft(app, session, draftCallbacks(session));
 }
 
@@ -163,14 +177,120 @@ function runTournament(session: Session, replayOf?: number): void {
       onFree: () => void startRun('free'),
       onHome: showTitle,
     });
-  });
+  }, session.rival);
+}
+
+// ---------------------------------------------------------------------------
+// Challenge links
+
+/** A link opened at boot, on the title until Accept or Not now. own: it is this device's own run. */
+let incoming: { code: ChallengeCode; own: boolean } | null = null;
+
+/**
+ * Take a #r= fragment off the address bar before anything else runs: a reload
+ * must not offer the challenge again (resume covers reloads), and no script
+ * after this one ever sees it. Browsers never send a fragment to a server.
+ */
+function takeLinkFragment(): string | null {
+  const match = /^#r=(.+)$/.exec(location.hash);
+  if (!match) return null;
+  history.replaceState(history.state, '', location.pathname + location.search);
+  return match[1];
+}
+
+/**
+ * Once the rosters are in: a link whose picks are no real lineup is dropped,
+ * silently, and the device's own link turns into a prompt to share it. The
+ * title redraws only when either happens.
+ */
+async function vetIncoming(): Promise<void> {
+  const pending = incoming;
+  const d = await dataPromise.catch(() => null);
+  if (!d || !pending || incoming !== pending) return;
+  const rival = resolveChallenge(pending.code, d.players);
+  if (rival && !isOwnChallenge(rival, ownRun(rival.seed))) return;
+  incoming = rival ? { ...pending, own: true } : null;
+  if (app.dataset.screen === 'title') showTitle();
+}
+
+function titleChallenge({ code, own }: { code: ChallengeCode; own: boolean }): TitleChallenge {
+  const day = seedDay(code.seed);
+  return {
+    name: code.nick,
+    record: recordOf(code.wins),
+    kind: own ? 'own' : challengeKind(code.seed, todayKey(), dailyResult() !== null, ownRun(code.seed) !== null),
+    dailyNum: day ? dailyNumber(day) : null,
+    onAccept: () => void acceptChallenge(code),
+    onDismiss: () => {
+      incoming = null;
+      showTitle();
+    },
+    onShare: () => void shareOwnLink(code),
+  };
+}
+
+/** The players of a run kept on this device, or null when the rosters no longer hold one of them. */
+function lineupOf(run: MyRun, d: GameData): LineupSlots | null {
+  const byId = new Map(d.players.map((p) => [p.id, p]));
+  const lineup: LineupSlots = {};
+  for (const [i, slot] of SLOTS.entries()) {
+    const player = byId.get(run.ids[i]);
+    if (!player) return null;
+    lineup[slot] = player;
+  }
+  return lineup;
+}
+
+async function acceptChallenge(code: ChallengeCode): Promise<void> {
+  const d = await ready();
+  if (!d) return;
+  incoming = null;
+  const rival = resolveChallenge(code, d.players);
+  if (!rival) return showTitle(); // no real lineup: ignored
+  const mine = ownRun(code.seed);
+  const mineLineup = mine && lineupOf(mine, d);
+  const kind = challengeKind(code.seed, todayKey(), dailyResult() !== null, mineLineup !== null);
+  if (kind === 'compare') return showComparison(d, rival, mine!, mineLineup!);
+  // This deal is already in progress (Accept, then a reload): go on with it.
+  const snap = loadRun();
+  if (snap?.seed === code.seed && snapshotUsable(snap, todayKey())) return resumeRun({ ...snap, rival: code.raw });
+  if (kind === 'daily' || kind === 'dailyPlayed') return startRun('daily', { rival });
+  if (kind === 'past') return startRun('free', { rival, seed: code.seed, scored: false });
+  return startRun(kind, { rival, seed: code.seed });
+}
+
+/** A deal this device already played: straight to the head-to-head. Nothing is saved, sent or earned again. */
+function showComparison(d: GameData, rival: Rival, mine: MyRun, mineLineup: LineupSlots): void {
+  const session = playedSession(d, rival.seed, mine.day, mineLineup);
+  session.rival = rival;
+  resetScroll();
+  document.body.classList.add('in-game');
+  renderResult(
+    app,
+    session,
+    simulateRun(mineLineup, rival.seed),
+    [],
+    { onAgain: () => void startRun(session.mode), onFree: () => void startRun('free'), onHome: showTitle },
+    true,
+  );
+}
+
+/** The device's own link, passed on: the dare and the link. */
+async function shareOwnLink(code: ChallengeCode): Promise<void> {
+  const link = await challengeLink(code.raw);
+  if (link && (await shareText(`${t('challenge.shareLine')}\n${link}`)) === 'copied') toast(t('challenge.copied'));
 }
 
 async function boot(): Promise<void> {
+  const fragment = takeLinkFragment(); // first, before any await
   await portalInit(); // in the CrazyGames build this can set the language
   document.documentElement.lang = getLang();
   applyMeta();
+  const raw = fragment ?? (await portalInviteParam());
+  const code = raw ? parseChallenge(raw) : null; // an invalid link is ignored
+  incoming = code && { code, own: false };
   startLoading();
+  if (incoming) void vetIncoming();
   showTitle();
 }
 

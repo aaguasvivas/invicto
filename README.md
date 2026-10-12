@@ -39,6 +39,18 @@ slot, and the title and 7-0 odds of that bracket. It reads the engine's own func
 (`categoryRatings`, `ratingFromCategories`, `winChance`) and draws nothing, so seeded runs never
 change. From 960 px wide the result is two columns, with the report in a sticky right column.
 
+Every result can be shared as a challenge link (`src/game/challenge.ts`). The link's fragment
+carries the run's seed, its 12 picks as indexes into the sorted player ids, the record it claims
+and an optional nickname: `#r=<seed>.<fp><pattern><picks>[~nick]` (a full link is about 85
+characters). A browser never sends a fragment to a server, and the game drops it from the
+address bar on load. The friend's run replays the same seed, so it deals the same rolls and the
+same dice; on one seed a higher Team OVR never does worse (pinned in `challenge.test.ts`), so
+the draft alone decides the head-to-head. The title shows the challenge and never starts a run
+by itself. Today's daily stays the real, scored daily; a past daily plays as practice; a deal
+this device already played opens straight on the comparison, which saves, sends and earns
+nothing. The result opens on a VS card (`src/ui/versus.ts`). Links made before a roster rebuild
+still deal the same rolls, but compare records only.
+
 Everything the game remembers lives in `localStorage`:
 
 | Key | Holds |
@@ -49,6 +61,8 @@ Everything the game remembers lives in `localStorage`:
 | `invicto.best.<mode>` | personal best per mode |
 | `invicto.badges` | earned badge ids (`src/game/badges.ts`) |
 | `invicto.run` | autosave of an unfinished run, written after every pick and reroll; cleared when the run ends, and a daily snapshot expires with its day |
+| `invicto.mine` | the last 30 finished runs (seed, player ids, day), so a challenge link to one of them opens on the comparison |
+| `invicto.nick` | the optional nickname that signs challenge links |
 
 The resume snapshot stores player ids, not player objects, and is rebuilt against the current
 data on load (`src/game/resume.ts`); a snapshot that no longer matches is dropped silently.
@@ -143,6 +157,8 @@ Vite dev server proxies `/api` there).
   `src/portal.ts` (loading, gameplay start/stop, happytime, the player's CrazyGames language
   and the site's mute button). That bundle contains no site domain (share card and poster
   footer included), no AdSense path and no tip link, and the page turns off text selection.
+  Challenge links there are CrazyGames invite links (`inviteLink({ r })`, read back with
+  `getInviteParam('r')`); without them the result offers the poster image only.
   Upload the folder's contents unzipped.
 
 ## Deploying (Cloudflare Workers)

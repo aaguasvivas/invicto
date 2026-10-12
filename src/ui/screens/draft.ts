@@ -1,9 +1,11 @@
 // Draft screen: roll reveal with slot-machine spin, searchable roster grouped by
-// position, reroll buttons, pinned lineup tray. Ratings hidden in hard mode.
+// position, reroll buttons, pinned lineup tray. Ratings hidden in hard mode. A
+// run dealt by a challenge link names the rival on the round line.
 
 import { eligibleSlots, SLOTS } from '../../engine/positions';
 import { openSlots, POWERS } from '../../engine/draft';
 import type { EnginePlayer, Slot } from '../../engine/types';
+import { recordOf } from '../../game/challenge';
 import { countryName, t } from '../../i18n';
 import { setAccent } from '../accents';
 import { crowdRoar, vibrate } from '../sound';
@@ -15,6 +17,7 @@ import { openDialog } from '../dialog';
 import { clear, h, toast } from '../dom';
 import { ratingChip } from '../ratingChip';
 import { nameSearch } from '../search';
+import { rivalName } from '../versus';
 
 const PITCHER_POS: Slot[] = ['SP', 'RP', 'CL'];
 const SPIN_MS = 700;
@@ -39,6 +42,7 @@ export function renderDraft(app: HTMLElement, session: Session, cb: DraftCallbac
   app.append(screen);
   // Same-rolls practice replay of the daily: say so before anyone thinks it's a bug.
   if (session.mode === 'daily' && !session.scored) toast(t('draft.practiceNote'));
+  else if (session.rival && session.state.round === 0) toast(t('challenge.sub'));
   drawRound(screen, session, cb, true);
 }
 
@@ -69,7 +73,12 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
   const rollCard = h(
     'div.roll-card',
     {},
-    h('div.roll-round', {}, t('draft.round', { n: session.state.round + 1 })),
+    h(
+      'div.roll-round',
+      {},
+      t('draft.round', { n: session.state.round + 1 }),
+      session.rival ? h('span.roll-rival', {}, ` · ⚔️ ${rivalName(session.rival)} ${recordOf(session.rival.wins)}`) : null,
+    ),
     flagEl,
     nameEl,
     editionEl,

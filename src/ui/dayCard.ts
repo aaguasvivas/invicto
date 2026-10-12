@@ -13,9 +13,9 @@ import { h } from './dom';
 
 let running: ReturnType<typeof setInterval> | undefined;
 
-/** A localized line with its {name} value set off in bold, wherever the language puts it. */
-export function lineWith(key: string, name: string, value: HTMLElement): (string | HTMLElement)[] {
-  const [before, after] = t(key, { [name]: '\u0000' }).split('\u0000');
+/** A localized line with its {name} value set off as an element, wherever the language puts it; params fill the rest. */
+export function lineWith(key: string, name: string, value: HTMLElement, params: Record<string, string | number> = {}): (string | HTMLElement)[] {
+  const [before, after] = t(key, { ...params, [name]: '\u0000' }).split('\u0000');
   return [before, value, after];
 }
 

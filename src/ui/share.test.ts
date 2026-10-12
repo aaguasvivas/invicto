@@ -79,8 +79,28 @@ describe('emojiCard header', () => {
     expect(header(share.emojiCard(ctx({ dailyNum: null })))).toBe('INVICTO ⚾');
   });
 
-  test('the card keeps the link to the site, with its trailing slash', () => {
-    expect(share.emojiCard(ctx()).split('\n').at(-1)).toBe('invictobaseball.com/en/');
+});
+
+describe('the challenge in the card', () => {
+  test('the card ends with the dare and the link that answers it', () => {
+    const link = share.challengeUrl('free-mg5x2k7q-8f3k1z.ju3a050607');
+    expect(link).toBe('https://invictobaseball.com/en/#r=free-mg5x2k7q-8f3k1z.ju3a050607');
+    expect(share.emojiCard(ctx(), 'Top 3% today', link).split('\n').slice(-3)).toEqual([
+      'Top 3% today',
+      'Can you beat me? Same rolls, same dice 👇',
+      link,
+    ]);
+  });
+
+  test('Spanish links live at the root', async () => {
+    await page('es-DO');
+    expect(share.challengeUrl('x')).toBe('https://invictobaseball.com/#r=x');
+  });
+
+  test('without a link the card names no site and dares nobody', () => {
+    const card = share.emojiCard(ctx(), null, null);
+    expect(card.split('\n').at(-1)).toBe('Runner-up 5-2 🥈');
+    expect(card).not.toMatch(/invictobaseball|👇/);
   });
 });
 

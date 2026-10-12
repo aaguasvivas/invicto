@@ -1,11 +1,13 @@
-// Title screen: resume an interrupted run, today's challenge (or, once it is
-// played, the day card: its record, the streak and a live countdown), free
-// play, hard mode, how-to, footer. Renders instantly; player data may still be
-// loading in the background when it appears.
+// Title screen: a friend's challenge link when one was opened, resume an
+// interrupted run, today's challenge (or, once it is played, the day card: its
+// record, the streak and a live countdown), free play, hard mode, how-to,
+// footer. Renders instantly; player data may still be loading in the
+// background when it appears.
 
 import { cycleLang, getLocale, howtoPanels, nextLangLabel, t } from '../../i18n';
 import { IS_PORTAL } from '../../portal';
 import { BADGE_IDS, earnedBadgeCount } from '../../game/badges';
+import type { ChallengeKind } from '../../game/challenge';
 import {
   currentStreak, dailyNumber, dailyResult, personalBest, setSound, soundOn, todayKey, type Mode, type StoredResult,
 } from '../../game/state';
@@ -16,7 +18,7 @@ import { tipLink } from '../tip';
 import { siteLinks } from '../siteLinks';
 import { crowdRoar, unlockAudio } from '../sound';
 import { openDialog } from '../dialog';
-import { countdownLine, streakChip } from '../dayCard';
+import { countdownLine, lineWith, streakChip } from '../dayCard';
 import { clear, h } from '../dom';
 
 export interface TitleCallbacks {
@@ -31,6 +33,20 @@ export interface TitleCallbacks {
   resume?: { mode: Mode; round: number; complete: boolean; onResume: () => void };
   /** Opens the Stats dialog. The 📊 controls show only when it is set (it ships with that dialog). */
   onStats?: () => void;
+  /** A friend's challenge link, waiting for Accept or Not now. It never starts a run by itself. */
+  challenge?: TitleChallenge;
+}
+
+export interface TitleChallenge {
+  name: string | null;
+  record: string;
+  /** what Accept does, or 'own': the link is this device's own run, to share on */
+  kind: ChallengeKind | 'own';
+  /** a daily seed's challenge number */
+  dailyNum: number | null;
+  onAccept: () => void;
+  onDismiss: () => void;
+  onShare: () => void;
 }
 
 function modeLabel(mode: Mode): string {
@@ -47,6 +63,9 @@ export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
   const onStats = revealPending ? undefined : cb.onStats;
   const played = dailyResult();
   const streak = currentStreak();
+  const challenge = cb.challenge ? challengeCard(cb.challenge) : null;
+  // The challenge's Accept is then the one gold button on the screen.
+  const gold = (primary: boolean) => (primary && !challenge ? '.primary' : '');
 
   const sound = h(
     'button.chip-btn',
@@ -84,7 +103,7 @@ export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
 
   const resumeBtn = resume
     ? h(
-        'button.btn.primary',
+        'button.btn' + gold(true),
         { onclick: resume.onResume },
         h(
           'span',
@@ -102,16 +121,17 @@ export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
   const menu = h(
     'div.menu',
     {},
+    challenge,
     resumeBtn,
     played
       ? doneCard(played, streak, revealPending && resume?.mode === 'daily', cb, onStats)
       : h(
-          'button.btn' + (resume ? '' : '.primary'),
+          'button.btn' + gold(!resume),
           { onclick: () => cb.onStart('daily') },
           h('span', {}, `⭐ ${t('title.dailyNum', { n: dailyNumber() })}`, h('span.sub', {}, t('title.dailySub'))),
         ),
     h(
-      'button.btn' + (played && !resume ? '.primary' : ''),
+      'button.btn' + gold(played !== null && !resume),
       { onclick: () => cb.onStart('free') },
       // U+FE0F asks for the color emoji; Japanese fonts otherwise draw an outline ball.
       h('span', {}, `⚾\uFE0F ${t('title.free')}`, h('span.sub', {}, t('title.freeSub'))),
@@ -142,7 +162,7 @@ export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
   app.append(
     header,
     h(
-      'div.title-screen',
+      'div.title-screen' + (challenge ? '.with-challenge' : ''),
       {},
       h(
         'div.logo-block',
@@ -158,6 +178,50 @@ export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
       adBox,
       footer,
     ),
+  );
+}
+
+/** What Accept does with the link, in the words of the menu it skips. */
+function modeChip(kind: ChallengeKind, n: number): string {
+  switch (kind) {
+    case 'free':
+      return `⚾\uFE0F ${t('title.free')}`;
+    case 'hard':
+      return t('title.hard');
+    case 'daily':
+      return `⭐ ${t('challenge.dailyChip', { n })}`;
+    case 'dailyPlayed':
+      return t('draft.practiceNote');
+    case 'past':
+      return t('challenge.pastChip', { n });
+    case 'compare':
+      return t('challenge.playedChip');
+  }
+}
+
+/**
+ * A friend's challenge: who sent it, their record on this deal and what
+ * Accept does. Spoiler-safe: the record, never the picks. The device's own
+ * link asks to be shared instead.
+ */
+function challengeCard(c: TitleChallenge): HTMLElement {
+  const record = h('span.challenge-record', {}, c.record);
+  const { kind } = c;
+  const own = kind === 'own';
+  const headline = own
+    ? [t('challenge.own')]
+    : c.name
+      ? lineWith('challenge.headline', 'record', record, { name: c.name })
+      : lineWith('challenge.anonymous', 'record', record);
+  return h(
+    'section.challenge-card',
+    { 'aria-labelledby': 'challenge-headline' },
+    h('div.eyebrow', {}, `⚔️ ${t('challenge.eyebrow')}`),
+    h('h2.challenge-headline', { id: 'challenge-headline' }, ...headline),
+    own ? null : h('p.challenge-sub', {}, t('challenge.sub')),
+    own ? null : h(`div.challenge-chip${kind === 'daily' ? '.counts' : ''}`, {}, modeChip(kind, c.dailyNum ?? 0)),
+    h('button.btn.primary', { onclick: own ? c.onShare : c.onAccept }, own ? t('challenge.button') : t('challenge.accept')),
+    h('button.challenge-dismiss', { type: 'button', onclick: c.onDismiss }, t('challenge.dismiss')),
   );
 }
 

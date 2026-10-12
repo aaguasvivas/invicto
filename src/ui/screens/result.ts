@@ -1,16 +1,19 @@
 // Result poster screen: the screenshot moment. The run is already saved
 // (game/finish.ts, before the sim reveal); this shows it, sends scored dailies
-// to the global stats, fires confetti, and offers share / copy / play-again.
-// A daily run also gets the day card: its challenge, the streak and the
-// countdown to the next one. The scouting report (ui/scoutCard.ts) explains
-// the run. From 960 px the screen is two columns: the poster and its buttons
-// on the left, the day card and the report in a sticky column on the right.
+// to the global stats, fires confetti, and offers the challenge link, the
+// poster image and play-again. A run dealt by a challenge link opens on the
+// head-to-head (ui/versus.ts). A daily run also gets the day card: its
+// challenge, the streak and the countdown to the next one. The scouting
+// report (ui/scoutCard.ts) explains the run. From 960 px the screen is two
+// columns: the head-to-head, the poster and its buttons on the left, the day
+// card and the report in a sticky column on the right.
 
 import { SLOTS } from '../../engine/positions';
 import type { RunResult } from '../../engine/types';
 import { getLocale, t } from '../../i18n';
 import type { Session } from '../../game/session';
 import type { BadgeId } from '../../game/badges';
+import { encodeChallenge, NICK_MAX, recordOf, savedNick, saveNick } from '../../game/challenge';
 import { currentStreak, dailyNumber, dailyResult, todayKey } from '../../game/state';
 import { percentileBeaten, rarestPick, submitResult, topSharePct, type TodayStats } from '../../game/stats';
 import { setAccent } from '../accents';
@@ -22,8 +25,9 @@ import { clear, h, toast } from '../dom';
 import { confetti } from '../confetti';
 import { scoutCard } from '../scoutCard';
 import type { PosterData } from '../poster';
-import { emojiCard, copyText, posterFooter, sharePoster, type ShareContext } from '../share';
+import { canChallenge, challengeLink, emojiCard, posterFooter, sharePoster, shareText, type ShareContext } from '../share';
 import { countdownLine, lineWith, streakChip } from '../dayCard';
+import { rivalName, versusCard } from '../versus';
 
 export interface ResultCallbacks {
   onAgain: () => void;
@@ -51,12 +55,17 @@ function globalLines(today: TodayStats, wins: number, lineup: Session['state']['
   return lines;
 }
 
-/** newBadges: the badges this run earned for the first time (they pop). */
-export function renderResult(app: HTMLElement, session: Session, run: RunResult, newBadges: BadgeId[], cb: ResultCallbacks): void {
+/**
+ * newBadges: the badges this run earned for the first time (they pop).
+ * compare: a deal this device played before, opened from a friend's link to
+ * see the head-to-head: nothing is saved, sent or celebrated again.
+ */
+export function renderResult(app: HTMLElement, session: Session, run: RunResult, newBadges: BadgeId[], cb: ResultCallbacks, compare = false): void {
   clear(app);
   app.dataset.screen = 'result';
   setAccent(null);
   const record = `${run.wins}-${run.losses}`;
+  const rival = session.rival;
   const tier: PosterData['tier'] =
     run.outcome === 'invicto' ? 'invicto' : run.outcome === 'campeon' ? 'campeon' : run.outcome === 'subcampeon' ? 'subcampeon' : 'out';
 
@@ -75,7 +84,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
   // finished after midnight keeps its own number and date.
   const daily = session.mode === 'daily';
   const dailyNum = daily ? dailyNumber(session.day) : null;
-  const practice = daily && !session.scored;
+  const practice = daily && !session.scored && !compare;
   const streak = daily && session.scored ? currentStreak(session.day) : 0;
   const footerLine = posterFooter(session.day, dailyNum, practice);
 
@@ -90,6 +99,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
           : t('result.eliminatedShare', { stage: t(`result.stageShort.${stageKey}`), record });
 
   const shareCtx: ShareContext = { dailyNum, practice, hard: session.mode === 'hard', streak, tierLine, gameFlags };
+  const versusLine = rival ? t('challenge.poster', { name: rivalName(rival), record: recordOf(rival.wins) }) : null;
   const posterData: PosterData = {
     brand: 'INVICTO',
     tagline: t('tagline'),
@@ -100,12 +110,14 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
     games: gameFlags,
     footer: footerLine,
     hard: session.mode === 'hard',
+    ...(versusLine ? { versus: versusLine } : {}),
   };
 
   const posterEl = h(
     'div.poster.' + (tier === 'subcampeon' ? 'out' : tier),
     {},
     h('div.poster-tier.display', {}, t(`result.${run.outcome}`)),
+    versusLine ? h('div.poster-vs', {}, versusLine) : null,
     h('div.poster-record', {}, record),
     h('div.poster-sub', {}, t(`result.${run.outcome}Sub`)),
     h(
@@ -135,7 +147,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
     globalTopPct !== null ? { ...posterData, footer: `${footerLine}  ·  ${t('global.top', { pct: globalTopPct })}` } : posterData;
   const statsEl = h('div.result-meta.global-lines');
   // Portal builds have no stats backend (see title.ts).
-  if (daily && session.scored && !IS_PORTAL) {
+  if (daily && session.scored && !compare && !IS_PORTAL) {
     const picks = SLOTS.map((slot) => session.state.lineup[slot]!.id);
     void submitResult({ day: session.day, wins: run.wins, losses: run.losses, outcome: run.outcome, picks }).then((today) => {
       if (!today) return;
@@ -151,41 +163,70 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
     !daily ? t('result.again') : session.day === todayKey() ? t('result.practiceAgain') : `⭐ ${t('title.dailyNum', { n: dailyNumber() })}`;
   const againBtn = h('button.btn', { onclick: cb.onAgain }, againLabel());
 
+  // The challenge: this run's card, the dare and its link (no link in a
+  // portal build that cannot make one: the card then names no site at all).
+  const challengeText = async (): Promise<string> => {
+    const code = encodeChallenge(session.seed, session.state.lineup, run, session.data.players, savedNick());
+    return emojiCard(shareCtx, extraLines(), await challengeLink(code));
+  };
+  const sendChallenge = async () => {
+    if ((await shareText(await challengeText())) === 'copied') toast(t('challenge.copied'));
+  };
+  const sendImage = async () => {
+    const result = await sharePoster(posterForShare(), await challengeText());
+    if (result === 'copied-image' || result === 'copied-text') toast(t('result.copied'));
+    else if (result === 'failed') toast(t('result.shareFailed'));
+  };
   // Disabled until the share settles: a second tap while the share sheet is
-  // open would fail over to the clipboard and toast 'Copied' behind the sheet.
-  const shareBtn = h(
-    'button.btn.primary',
-    {
-      onclick: async () => {
-        shareBtn.disabled = true;
-        try {
-          const result = await sharePoster(posterForShare(), emojiCard(shareCtx, extraLines()));
-          if (result === 'copied-image' || result === 'copied-text') toast(t('result.copied'));
-          else if (result === 'failed') toast(t('result.shareFailed'));
-        } finally {
-          shareBtn.disabled = false;
-        }
+  // open would fail over to the clipboard and toast behind the sheet.
+  const shareButton = (classes: string, label: string, share: () => Promise<void>): HTMLButtonElement => {
+    const btn = h(
+      `button.btn${classes}`,
+      {
+        onclick: async () => {
+          btn.disabled = true;
+          try {
+            await share();
+          } finally {
+            btn.disabled = false;
+          }
+        },
       },
-    },
-    t('result.share'),
-  ) as HTMLButtonElement;
+      label,
+    ) as HTMLButtonElement;
+    return btn;
+  };
+
+  // One gold button per screen: Send it back on the head-to-head when there
+  // is one, the challenge otherwise, the image where no link can be made.
+  const linkable = canChallenge();
   const buttons = h(
     'div.result-btns',
     {},
-    shareBtn,
-    h(
-      'button.btn',
-      {
-        onclick: async () => {
-          if (await copyText(emojiCard(shareCtx, extraLines()))) toast(t('result.copied'));
-          else toast(t('result.shareFailed'));
-        },
-      },
-      t('result.copy'),
-    ),
+    linkable ? shareButton(rival ? '' : '.primary', t('challenge.button'), sendChallenge) : null,
+    shareButton(linkable ? '' : '.primary', t('challenge.shareImage'), sendImage),
     againBtn,
     daily ? h('button.btn', { onclick: cb.onFree }, `⚾\uFE0F ${t('title.free')}`) : null,
   );
+  // Signs the links shared from here on. Saved on every keystroke, so it never stands in the way of a share.
+  const nickField = linkable
+    ? h(
+        'label.nick-field',
+        {},
+        h('span', {}, t('challenge.nick')),
+        h('input.nick-input', {
+          type: 'text',
+          maxLength: NICK_MAX,
+          value: savedNick(),
+          autocomplete: 'off',
+          enterKeyHint: 'done',
+          oninput: (e: Event) => saveNick((e.target as HTMLInputElement).value),
+        }),
+      )
+    : null;
+  const vsCard = rival
+    ? versusCard(run, rival, session.data, session.state.lineup, linkable ? shareButton('.primary', t('challenge.rematch'), sendChallenge) : null)
+    : null;
 
   const adBox = h('div.ad-box');
   mountAd(adBox, 'result');
@@ -216,7 +257,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
         })
       : null;
   const scoredToday = practice ? dailyResult(session.day) : null;
-  const dailyPanel = daily
+  const dailyPanel = daily && !compare
     ? h(
         'div.day-card.daily-panel',
         {},
@@ -241,11 +282,11 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
       h(
         'div.result-grid',
         {},
-        h('div.result-main', {}, posterEl, badgesEl, buttons),
+        h('div.result-main', {}, vsCard, posterEl, badgesEl, buttons, nickField),
         h('div.result-side', {}, dailyPanel, scoutCard(session, run), statsEl),
       ),
       tipLink() ? h('div.result-meta', {}, tipLink()) : null,
-      daily ? h('div.result-meta', {}, t('result.dailyNote')) : null,
+      daily && !compare ? h('div.result-meta', {}, t('result.dailyNote')) : null,
       adBox,
       h(
         'div.result-meta',
@@ -256,6 +297,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
     ),
   );
 
+  if (compare) return; // celebrated when it was played
   if (run.outcome === 'invicto') confetti('invicto');
   else if (run.outcome === 'campeon') confetti('campeon');
 }

@@ -3,10 +3,12 @@
 // best and badges. A reload during the 7-10 s reveal must find the day played.
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { SLOTS } from '../engine/positions';
 import { lineupWithMeans } from '../engine/test-helpers';
 import type { Outcome, RunResult } from '../engine/types';
 import { installStorage } from '../test/fakedom';
 import { earnedBadges } from './badges';
+import { ownRun } from './challenge';
 import type { GameData } from './data';
 import { recordRun } from './finish';
 import type { Session } from './session';
@@ -86,6 +88,16 @@ describe('recordRun: the scored daily', () => {
   test('badges pop only the first time they are earned', () => {
     expect(recordRun(session({ mode: 'free' }), qf)).toContain('una_sola_edicion');
     expect(recordRun(session({ mode: 'free' }), qf)).toEqual([]);
+  });
+});
+
+describe('recordRun: my runs, for challenge comparisons', () => {
+  test('every finished run is kept by seed, practice and replays included, the first of a seed winning', () => {
+    recordRun(session(), qf);
+    recordRun(session({ scored: false, state: { ...session().state, lineup: { ...lineup, C: lineup['1B'], '1B': lineup.C } } }), runnerUp);
+    recordRun(session({ mode: 'free', seed: 'free-abc', scored: false }), qf);
+    expect(ownRun('daily-2026-10-11')).toEqual({ seed: 'daily-2026-10-11', ids: SLOTS.map((s) => lineup[s]!.id), day: '2026-10-11' });
+    expect(ownRun('free-abc')).not.toBeNull();
   });
 });
 

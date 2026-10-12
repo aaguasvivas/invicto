@@ -6,6 +6,7 @@
 
 import { SLOTS } from '../engine/positions';
 import type { EnginePlayer, Roll, Slot } from '../engine/types';
+import { rivalFrom } from './challenge';
 import type { GameData } from './data';
 import type { Session } from './session';
 import { previousDayKey, type Mode } from './state';
@@ -27,6 +28,8 @@ export interface RunSnapshot {
   roll: Roll;
   redrawAttempt: number;
   savedAt: number;
+  /** a challenge in progress: the rival's link code (absent otherwise, and in snapshots older than challenge links) */
+  rival?: string;
 }
 
 const KEY = 'invicto.run';
@@ -50,6 +53,7 @@ export function snapshotSession(session: Session): RunSnapshot {
     roll: { ...session.roll },
     redrawAttempt: session.redrawAttempt,
     savedAt: Date.now(),
+    ...(session.rival ? { rival: session.rival.code } : {}),
   };
 }
 
@@ -65,6 +69,8 @@ export function restoreSession(snap: RunSnapshot, data: GameData): Session | nul
     lineup[slot as Slot] = player;
     drafted.push(player);
   }
+  // A rival code that no longer resolves drops the rival, never the run.
+  const rival = typeof snap.rival === 'string' ? rivalFrom(snap.rival, data.players) : null;
   return {
     mode: snap.mode,
     seed: snap.seed,
@@ -84,6 +90,7 @@ export function restoreSession(snap: RunSnapshot, data: GameData): Session | nul
     roll: { ...snap.roll },
     redrawAttempt: snap.redrawAttempt,
     autoRedrew: false,
+    ...(rival ? { rival } : {}),
   };
 }
 

@@ -70,6 +70,8 @@ const DYNAMIC_KEYS = [
   ...BADGE_IDS.flatMap((id) => [`badges.${id}.name`, `badges.${id}.desc`]), // result.ts
   ...[...HERO_KINDS, 'closerWin'].map((kind) => `hero.${kind}`), // sim.ts heroLine
   ...[...new Set(STAGES.map((s) => (s.startsWith('pool') ? 'pool' : s)))].map((s) => `sim.stages.${s}`), // sim.ts
+  ...[...new Set(STAGES.map((s) => (s.startsWith('pool') ? 'pool' : s)))].map((s) => `challenge.stages.${s}`), // versus.ts games table
+  ...['won', 'lost', 'tie'].map((verdict) => `challenge.${verdict}`), // versus.ts verdict line
   ...['C', 'IF', 'OF', 'DH', 'P'].map((group) => `draft.posGroups.${group}`), // draft.ts roster groups
   ...['minors', 'farm'].map((note) => `draft.${note}`), // draft.ts clubLabel
   ...CATEGORIES.map((c) => `scout.cat.${c}`), // scoutCard.ts bars and leverage line

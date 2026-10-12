@@ -13,6 +13,8 @@ export interface PosterData {
   games: { flag: string; win: boolean }[];
   footer: string;
   hard: boolean;
+  /** "vs Ana 5-2 · same rolls": a run dealt by a challenge link; it takes the tagline's place */
+  versus?: string;
 }
 
 const NAVY = '#0a1228';
@@ -70,9 +72,9 @@ export function drawSharePoster(canvas: HTMLCanvasElement, data: PosterData): vo
   ctx.fillStyle = GOLD;
   ctx.font = '64px Anton, sans-serif';
   ctx.fillText(data.brand + (data.hard ? ' 🔥' : ''), 540, 110, SAFE);
-  ctx.fillStyle = DIM;
+  ctx.fillStyle = data.versus ? GOLD_2 : DIM;
   ctx.font = '600 30px Inter, sans-serif';
-  ctx.fillText(data.tagline, 540, 158, SAFE);
+  ctx.fillText(data.versus ?? data.tagline, 540, 158, SAFE);
 
   ctx.fillStyle = tierColor(data.tier);
   ctx.font = '74px Anton, sans-serif';

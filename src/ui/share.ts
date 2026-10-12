@@ -1,19 +1,42 @@
-// Emoji card + Web Share API with PNG poster (clipboard fallbacks).
+// The emoji card and the two ways to share a run. A challenge goes as text
+// alone, with its link: when files ride along, iOS drops the text, and the
+// link with it (WebKit bug 251500). Then the clipboard, then a dialog with the
+// text selected, which works even in an iframe that may neither share nor
+// copy. The poster goes as a PNG with the card as its caption, then to the
+// clipboard.
 
 import { getLang, getLocale, t } from '../i18n';
-import { IS_PORTAL } from '../portal';
+import { IS_PORTAL, portalCanInvite, portalInviteLink } from '../portal';
+import { openDialog } from './dialog';
+import { h } from './dom';
 import { drawSharePoster, ensurePosterFonts, type PosterData } from './poster';
 
 /**
- * The site in the player's language (Spanish lives at the root): the last line
- * of the share card and the start of the poster footer. None in a portal
+ * The site in the player's language (Spanish lives at the root), the base of
+ * a challenge link and the start of the poster footer. None in a portal
  * build: game portals do not allow a game to send players to another site, so
  * the domain is compiled out of that bundle.
  */
 export function siteUrl(): string | null {
   if (IS_PORTAL) return null;
   const lang = getLang();
-  return lang === 'es' ? 'invictobaseball.com' : `invictobaseball.com/${lang}/`;
+  return lang === 'es' ? 'invictobaseball.com/' : `invictobaseball.com/${lang}/`;
+}
+
+/** A challenge link on the site, in the player's language. None in a portal build (see siteUrl). */
+export function challengeUrl(code: string): string | null {
+  const site = siteUrl();
+  return site && `https://${site}#r=${code}`;
+}
+
+/** Whether this build can hand out a challenge link: the site always, a portal only through its invite links. */
+export function canChallenge(): boolean {
+  return !IS_PORTAL || portalCanInvite();
+}
+
+/** The link that answers a challenge: the site's, or a portal's invite link to the game's page there. */
+export async function challengeLink(code: string): Promise<string | null> {
+  return IS_PORTAL ? portalInviteLink(code) : challengeUrl(code);
 }
 
 /**
@@ -41,7 +64,8 @@ export interface ShareContext {
   gameFlags: { flag: string; win: boolean }[];
 }
 
-export function emojiCard(ctx: ShareContext, extraLine?: string | null): string {
+/** link: the challenge link; the card then ends with the dare and the link. Without one it names no site at all. */
+export function emojiCard(ctx: ShareContext, extraLine?: string | null, link?: string | null): string {
   const header = [
     t('share.title'),
     ctx.dailyNum ? `#${ctx.dailyNum}` : null,
@@ -58,8 +82,7 @@ export function emojiCard(ctx: ShareContext, extraLine?: string | null): string 
   const games = ko ? `${pool} | ${ko}` : pool;
   const lines = [header, games, ctx.tierLine];
   if (extraLine) lines.push(extraLine);
-  const url = siteUrl();
-  if (url) lines.push(url);
+  if (link) lines.push(t('challenge.shareLine'), link);
   return lines.join('\n');
 }
 
@@ -76,6 +99,33 @@ export async function copyText(text: string): Promise<boolean> {
     area.remove();
     return ok;
   }
+}
+
+/**
+ * Share a challenge as text alone. 'shared' also covers a sheet the player
+ * closed; 'copied' means it is on the clipboard; 'shown' means it waits in a
+ * dialog, selected, to be copied by hand.
+ */
+export async function shareText(text: string): Promise<'shared' | 'copied' | 'shown'> {
+  if (navigator.share) {
+    try {
+      await navigator.share({ text });
+      return 'shared';
+    } catch (err) {
+      if ((err as Error).name === 'AbortError') return 'shared';
+      // not allowed here (an iframe's permissions policy): fall through to the clipboard
+    }
+  }
+  if (await copyText(text)) return 'copied';
+  showTextToCopy(text);
+  return 'shown';
+}
+
+function showTextToCopy(text: string): void {
+  const heading = h('h2.dialog-title', {}, t('challenge.button'));
+  const area = h('textarea.share-text', { readOnly: true, rows: 7, value: text, 'aria-label': t('challenge.copyHint') }) as HTMLTextAreaElement;
+  openDialog({ heading, content: [heading, h('p.dialog-text', {}, t('challenge.copyHint')), area], focus: area });
+  area.select();
 }
 
 function canvasBlob(canvas: HTMLCanvasElement): Promise<Blob | null> {

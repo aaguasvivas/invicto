@@ -303,8 +303,12 @@ export interface FakeDom {
   body: FakeElement;
 }
 
-/** Install document, window, Node and navigator on globalThis (a fresh page). */
-export function installDom(languages: string[] = ['en-US']): FakeDom {
+/**
+ * Install document, window, Node, navigator, location and history on
+ * globalThis (a fresh page). hash: the address's fragment, e.g. '#r=...';
+ * history.replaceState rewrites it like a browser.
+ */
+export function installDom(languages: string[] = ['en-US'], hash = ''): FakeDom {
   const documentElement = new FakeElement('html');
   const head = new FakeElement('head');
   const body = new FakeElement('body');
@@ -331,6 +335,17 @@ export function installDom(languages: string[] = ['en-US']): FakeDom {
   g.window = globalThis;
   g.Node = FakeNode;
   g.scrollTo = () => {};
+  const location = { pathname: '/', search: '', hash };
+  g.location = location;
+  const history = {
+    state: null as unknown,
+    replaceState(state: unknown, _title: string, url: string) {
+      history.state = state;
+      const at = url.indexOf('#');
+      location.hash = at < 0 ? '' : url.slice(at);
+    },
+  };
+  g.history = history;
   Object.defineProperty(globalThis, 'navigator', {
     configurable: true,
     writable: true,

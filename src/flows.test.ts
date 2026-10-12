@@ -49,16 +49,16 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
-  for (const name of ['document', 'window', 'Node', 'scrollTo', 'navigator', 'localStorage']) Reflect.deleteProperty(globalThis, name);
+  for (const name of ['document', 'window', 'Node', 'scrollTo', 'navigator', 'localStorage', 'location', 'history']) Reflect.deleteProperty(globalThis, name);
 });
 
-/** Load the page: a fresh DOM and fresh modules over the same localStorage. */
-async function load(fault: StorageFault = 'none', languages?: string[]): Promise<void> {
+/** Load the page: a fresh DOM and fresh modules over the same localStorage. hash: the address's fragment. */
+async function load(fault: StorageFault = 'none', languages?: string[], hash?: string): Promise<void> {
   const now = Date.now();
   vi.clearAllTimers(); // the previous page's timers die with it (this also resets the fake clock)
   vi.setSystemTime(now);
   vi.resetModules();
-  page = installDom(languages);
+  page = installDom(languages, hash);
   installStorage(fault, store);
   await import('./main');
   await vi.advanceTimersByTimeAsync(0);
@@ -81,12 +81,13 @@ async function goHome(): Promise<void> {
   await vi.advanceTimersByTimeAsync(0);
 }
 
-/** Settle each spin and draft the first legal player into the first offered slot. */
-function draft(picks: number): void {
+/** Settle each spin and draft the first (or last) legal player into the first offered slot. */
+function draft(picks: number, pick: 'first' | 'last' = 'first'): void {
   for (let i = 0; i < picks; i++) {
     const card = page.app.querySelector('.roll-card');
     if (card?.classList.contains('spinning')) card.click();
-    const row = page.app.querySelectorAll('button.player-row').find((b) => !b.classList.contains('taken') && !b.classList.contains('ineligible'));
+    const legal = page.app.querySelectorAll('button.player-row').filter((b) => !b.classList.contains('taken') && !b.classList.contains('ineligible'));
+    const row = pick === 'first' ? legal[0] : legal.at(-1);
     if (!row) throw new Error(`no legal pick in round ${i + 1}`);
     row.click();
     page.body.querySelector('dialog.sheet')?.querySelector('button.slot-option')?.click();
@@ -356,7 +357,10 @@ describe('result screen', () => {
     vi.doUnmock('./ui/poster');
   });
 
-  test('a second tap on Share while the share sheet is open does nothing', async () => {
+  test.each([
+    ['the challenge', en.challenge.button],
+    ['the poster image', en.challenge.shareImage],
+  ])('a second tap on %s while the share sheet is open does nothing', async (_, label) => {
     // No canvas here: the poster is not drawn, only shared.
     vi.doMock('./ui/poster', () => ({ ensurePosterFonts: async () => {}, drawSharePoster: () => {} }));
     let closeSheet = () => {};
@@ -373,47 +377,306 @@ describe('result screen', () => {
       });
     });
     const write = vi.fn(async () => {});
+    const writeText = vi.fn(async () => {});
     vi.stubGlobal('File', class { constructor(readonly parts: unknown[], readonly name: string) {} });
     vi.stubGlobal('ClipboardItem', class { constructor(readonly items: unknown) {} });
     await load();
-    Object.assign(navigator, { share, canShare: () => true, clipboard: { write, writeText: vi.fn(async () => {}) } });
+    Object.assign(navigator, { share, canShare: () => true, clipboard: { write, writeText } });
     await tap(DAILY);
     draft(12);
     await skipSim();
 
-    const button = find('button', en.result.share);
+    const button = find('button', label);
     button.click();
     await vi.advanceTimersByTimeAsync(0);
     button.click();
     await vi.advanceTimersByTimeAsync(0);
     expect(share).toHaveBeenCalledTimes(1);
     expect(write).not.toHaveBeenCalled();
-    expect(toasts()).not.toContain(en.result.copied);
+    expect(writeText).not.toHaveBeenCalled();
     expect(button.disabled).toBe(true);
 
     closeSheet();
     await vi.advanceTimersByTimeAsync(0);
     expect(button.disabled).toBe(false);
-    expect(toasts()).not.toContain(en.result.copied);
-    expect(toasts()).not.toContain(en.result.shareFailed);
+    expect(toasts()).toEqual([]);
+  });
+
+  test('the challenge shares text alone, the image shares the poster with the same text as its caption', async () => {
+    vi.doMock('./ui/poster', () => ({ ensurePosterFonts: async () => {}, drawSharePoster: () => {} }));
+    vi.stubGlobal('File', class { constructor(readonly parts: unknown[], readonly name: string) {} });
+    const shared: { text: string; files?: unknown[] }[] = [];
+    await load();
+    Object.assign(navigator, { share: async (data: { text: string; files?: unknown[] }) => void shared.push(data), canShare: () => true });
+    await tap(en.title.free);
+    draft(12);
+    await skipSim();
+    expect(page.app.querySelector('.result-btns')!.children.map((b) => b.textContent)).toEqual([
+      en.challenge.button, en.challenge.shareImage, en.result.again,
+    ]);
+    expect(find('button', en.challenge.button).classList.contains('primary')).toBe(true);
+    await tap(en.challenge.button);
+    await tap(en.challenge.shareImage);
+    expect(shared[0].files).toBeUndefined(); // iOS drops the text, and the link, when files ride along
+    expect(shared[1].files).toHaveLength(1);
+    expect(shared[1].text).toBe(shared[0].text);
   });
 
   test.each([
-    ['es', es, 'invictobaseball.com'],
+    ['es', es, 'invictobaseball.com/'],
     ['en', en, 'invictobaseball.com/en/'],
     ['ja', ja, 'invictobaseball.com/ja/'],
     ['ko', ko, 'invictobaseball.com/ko/'],
-  ])('in %s the copied card ends with the site in that language, and the poster footer starts with it, no trailing slash', async (lang, table, url) => {
+  ])('in %s the challenge ends with the dare and a link in that language, and the poster footer starts with the site', async (lang, table, site) => {
     const copied: string[] = [];
     await load('none', [lang]);
     Object.assign(navigator, { clipboard: { writeText: async (text: string) => void copied.push(text) } });
     await tap(table.title.free);
     draft(12);
     await skipSim();
-    await tap(table.result.copy);
+    await tap(table.challenge.button);
     expect(copied).toHaveLength(1);
-    expect(copied[0].split('\n').at(-1)).toBe(url);
-    expect(page.app.querySelector('.poster-foot')!.textContent.startsWith(`${url.replace(/\/$/, '')}  ·  `)).toBe(true);
+    const lines = copied[0].split('\n');
+    expect(lines.at(-2)).toBe(table.challenge.shareLine);
+    expect(lines.at(-1)).toMatch(new RegExp(`^https://${site.replace(/[./]/g, '\\$&')}#r=free-[0-9a-z]+-[0-9a-z]+\\.[0-9a-z]{4}[0-9A-Za-z]{24}$`));
+    expect(toasts()).toEqual([table.challenge.copied]);
+    expect(page.app.querySelector('.poster-foot')!.textContent.startsWith(`${site.replace(/\/$/, '')}  ·  `)).toBe(true);
+  });
+
+  test('where neither share nor the clipboard works, the text waits in a dialog, selected', async () => {
+    await load();
+    Object.assign(navigator, { share: async () => Promise.reject(new DOMException('Not allowed in this frame', 'NotAllowedError')) });
+    await tap(en.title.free);
+    draft(12);
+    await skipSim();
+    await tap(en.challenge.button);
+    const dialog = page.body.querySelector('dialog')!;
+    expect(dialog.open).toBe(true);
+    const area = dialog.querySelector('textarea')!;
+    expect(area.value).toContain('#r=free-');
+    expect(activeElement()).toBe(area);
+    expect(toasts()).toEqual([]);
+  });
+
+  test('the nickname field signs the link and is remembered', async () => {
+    const copied: string[] = [];
+    await load();
+    Object.assign(navigator, { clipboard: { writeText: async (text: string) => void copied.push(text) } });
+    await tap(en.title.free);
+    draft(12);
+    await skipSim();
+    const input = page.app.querySelector('input.nick-input')!;
+    expect(input.value).toBe('');
+    input.value = ' Ana\u202E ';
+    input.dispatch('input');
+    expect(store.get('invicto.nick')).toBe('Ana');
+    await tap(en.challenge.button);
+    expect(copied[0].split('\n').at(-1)).toMatch(/~Ana$/);
+    await tap(en.result.again);
+    draft(12);
+    await skipSim();
+    expect(page.app.querySelector('input.nick-input')!.value).toBe('Ana');
+  });
+});
+
+describe('challenge links', () => {
+  afterEach(() => {
+    vi.doUnmock('./game/state');
+    vi.doUnmock('./game/stats');
+  });
+
+  /** Play a run on a fresh device, share the challenge and return its link. pick: which legal player each round. */
+  async function challengeFrom(mode: string, pick: 'first' | 'last' = 'first', nick = ''): Promise<{ link: string; record: string; firstRoll: string }> {
+    store = new Map();
+    const copied: string[] = [];
+    await load();
+    Object.assign(navigator, { clipboard: { writeText: async (text: string) => void copied.push(text) } });
+    if (nick) store.set('invicto.nick', nick);
+    await tap(mode);
+    const firstRoll = rollShown();
+    draft(12, pick);
+    await skipSim();
+    const record = page.app.querySelector('.poster-record')!.textContent;
+    await tap(en.challenge.button);
+    return { link: copied[0].split('\n').at(-1)!, record, firstRoll };
+  }
+
+  /** The current roll as the card shows it once landed. */
+  function rollShown(): string {
+    const card = page.app.querySelector('.roll-card')!;
+    if (card.classList.contains('spinning')) card.click();
+    return `${card.querySelector('.roll-country')!.textContent} ${card.querySelector('.roll-edition')!.textContent}`;
+  }
+
+  const fragment = (link: string) => link.slice(link.indexOf('#'));
+  const card = () => page.app.querySelector('.challenge-card');
+  const golds = () => page.app.querySelectorAll('button.primary').map((b) => b.textContent);
+
+  test("a free run's link deals a friend the same rolls and ends on the head-to-head", async () => {
+    const ana = await challengeFrom(en.title.free, 'first', 'Ana');
+    expect(ana.link).toMatch(/^https:\/\/invictobaseball\.com\/en\/#r=free-.+~Ana$/);
+
+    store = new Map(); // Luis, on his phone
+    await load('none', undefined, fragment(ana.link));
+    expect(location.hash).toBe(''); // read once, then gone from the address bar
+    expect(card()!.querySelector('h2')!.textContent).toBe(`Ana went ${ana.record} on this deal`);
+    expect(card()!.textContent).toContain(en.challenge.sub);
+    expect(card()!.querySelector('.challenge-chip')!.textContent).toBe(`⚾\uFE0F ${en.title.free}`);
+    expect(golds()).toEqual([en.challenge.accept]); // the challenge is the one gold button
+    expect(page.app.querySelector('.draft-screen')).toBeNull(); // never starts a run by itself
+
+    await tap(en.challenge.accept);
+    expect(toasts()).toEqual([en.challenge.sub]);
+    expect(rollShown()).toBe(ana.firstRoll);
+    expect(page.app.querySelector('.roll-round')!.textContent).toBe(`${en.draft.round.replace('{n}', '1')} · ⚔️ Ana ${ana.record}`);
+    draft(12); // the same picks Ana made: a dead heat
+
+    const sim = page.app.querySelector('.sim-screen')!;
+    await vi.advanceTimersByTimeAsync(400);
+    sim.click();
+    // Each card carries Ana's game at the same stage: the same lineup, the same games.
+    const rivalLines = page.app.querySelectorAll('.game-flavor').filter((l) => l.classList.contains('rival')).map((l) => l.textContent);
+    expect(rivalLines).toHaveLength(page.app.querySelectorAll('.game-card.reveal').length);
+    for (const card of page.app.querySelectorAll('.game-card.reveal')) {
+      const ours = card.querySelector('.game-score')!.textContent.match(/(\d+) · \D+ (\d+)$/)!;
+      const theirs = card.querySelectorAll('.game-flavor').find((l) => l.classList.contains('rival'))!.textContent;
+      expect(theirs).toBe(`⚔️ Ana: ${ours[1]}-${ours[2]} ${card.classList.contains('win') ? '✅' : '❌'}`);
+    }
+    await vi.advanceTimersByTimeAsync(1000);
+
+    const vs = page.app.querySelector('.vs-card')!;
+    expect(vs.querySelector('h2')!.textContent).toBe(en.challenge.tie.replace('{name}', 'Ana'));
+    expect(vs.querySelectorAll('.vs-record').map((r) => r.textContent)).toEqual([ana.record, ana.record]);
+    expect(vs.querySelector('tbody')!.children).toHaveLength(7);
+    expect(vs.querySelector('.vs-matched')!.textContent).toBe(en.challenge.matched.replace('{n}', '12'));
+    expect(vs.querySelector('details.vs-lineups')!.querySelectorAll('.vs-lineup-row')).toHaveLength(13);
+    expect(golds()).toEqual([en.challenge.rematch]); // Send it back is the gold one; the challenge is still there
+    expect(find('button', en.challenge.button).classList.contains('primary')).toBe(false);
+    expect(page.app.querySelector('.poster-vs')!.textContent).toBe(`vs Ana ${ana.record} · same rolls`);
+    // His own run is kept, so Ana's next link for this deal opens on the comparison.
+    expect(JSON.parse(store.get('invicto.mine')!)).toHaveLength(1);
+  });
+
+  test("today's daily, unplayed: the link starts the real scored daily with the rival", async () => {
+    const ana = await challengeFrom(DAILY, 'last');
+    store = new Map();
+    await load('none', undefined, fragment(ana.link));
+    expect(card()!.querySelector('h2')!.textContent).toBe(`${en.challenge.anonymous.replace('{record}', ana.record)}`);
+    expect(card()!.querySelector('.challenge-chip')!.textContent).toBe(`⭐ ${en.challenge.dailyChip.replace('{n}', String(dailyNumber('2026-10-11')))}`);
+    expect(find('button', DAILY).classList.contains('primary')).toBe(false); // demoted while the card shows
+    await tap(en.challenge.accept);
+    expect(rollShown()).toBe(ana.firstRoll);
+    draft(12);
+    await skipSim();
+    expect(dailyResult('2026-10-11')).not.toBeNull();
+    expect(posts()).toBeGreaterThan(0);
+    expect(page.app.querySelector('.vs-card')).not.toBeNull();
+    expect(page.app.querySelector('.daily-panel')).not.toBeNull();
+  });
+
+  test('a deal already played opens straight on the comparison: nothing saved, sent or earned', async () => {
+    const ana = await challengeFrom(DAILY, 'last', 'Ana');
+    store = new Map(); // Luis played today's daily before her link came in
+    await load();
+    await tap(DAILY);
+    draft(12);
+    await skipSim();
+    const luis = page.app.querySelector('.poster-record')!.textContent;
+    await goHome();
+
+    const saveDaily = vi.fn();
+    const submit = vi.fn();
+    vi.doMock('./game/state', async (importOriginal) => {
+      const real = await importOriginal<typeof import('./game/state')>();
+      return { ...real, saveDailyResult: (...args: Parameters<typeof real.saveDailyResult>) => (saveDaily(...args), real.saveDailyResult(...args)) };
+    });
+    vi.doMock('./game/stats', async (importOriginal) => {
+      const real = await importOriginal<typeof import('./game/stats')>();
+      return { ...real, submitResult: (...args: Parameters<typeof real.submitResult>) => (submit(...args), real.submitResult(...args)) };
+    });
+    const before = new Map(store);
+    const postsBefore = posts();
+    await load('none', undefined, fragment(ana.link));
+    expect(card()!.querySelector('.challenge-chip')!.textContent).toBe(en.challenge.playedChip);
+    await tap(en.challenge.accept);
+
+    expect(page.app.querySelector('.draft-screen')).toBeNull();
+    const vs = page.app.querySelector('.vs-card')!;
+    expect(vs.querySelectorAll('.vs-record').map((r) => r.textContent)).toEqual([luis, ana.record]);
+    expect(page.app.querySelector('.poster-record')!.textContent).toBe(luis);
+    expect(page.app.querySelector('.badge-chip')).toBeNull();
+    expect(page.app.querySelector('.daily-panel')).toBeNull();
+    expect(page.app.textContent).not.toContain(en.result.practice);
+    expect(saveDaily).not.toHaveBeenCalled();
+    expect(submit).not.toHaveBeenCalled();
+    expect(posts()).toBe(postsBefore);
+    expect(store).toEqual(before); // no daily, streak, best, badge or run written
+  });
+
+  test('a past daily plays as practice on its own seed', async () => {
+    const ana = await challengeFrom(DAILY);
+    vi.setSystemTime(new Date(2026, 9, 13, 12, 0));
+    store = new Map();
+    await load('none', undefined, fragment(ana.link));
+    expect(card()!.querySelector('.challenge-chip')!.textContent).toBe(en.challenge.pastChip.replace('{n}', String(dailyNumber('2026-10-11'))));
+    await tap(en.challenge.accept);
+    expect(rollShown()).toBe(ana.firstRoll);
+    draft(1);
+    expect(JSON.parse(store.get('invicto.run')!)).toMatchObject({ mode: 'free', scored: false, seed: 'daily-2026-10-11', rival: ana.link.split('#r=')[1] });
+    draft(11);
+    await skipSim();
+    expect(store.has('invicto.best.free')).toBe(false);
+    expect(dailyResult('2026-10-13')).toBeNull();
+    expect(page.app.querySelector('.vs-card')).not.toBeNull();
+  });
+
+  test('a reload during a challenge draft resumes it with the rival', async () => {
+    const ana = await challengeFrom(en.title.hard, 'first', 'Ana');
+    store = new Map();
+    await load('none', undefined, fragment(ana.link));
+    await tap(en.challenge.accept);
+    draft(3);
+    await load(); // the phone reloads the tab: no fragment any more
+    expect(card()).toBeNull();
+    await tap(en.title.resume);
+    expect(page.app.querySelector('.roll-round')!.textContent).toContain(`⚔️ Ana ${ana.record}`);
+  });
+
+  test('Not now puts the card away and gives the gold back to the menu', async () => {
+    const ana = await challengeFrom(en.title.free);
+    store = new Map();
+    await load('none', undefined, fragment(ana.link));
+    await tap(en.challenge.dismiss);
+    expect(card()).toBeNull();
+    expect(golds()).toEqual([find('button', DAILY).textContent]);
+  });
+
+  test('your own link asks you to share it', async () => {
+    const ana = await challengeFrom(en.title.free, 'first', 'Ana');
+    const copied: string[] = [];
+    await load('none', undefined, fragment(ana.link)); // the same device
+    Object.assign(navigator, { clipboard: { writeText: async (text: string) => void copied.push(text) } });
+    expect(card()!.querySelector('h2')!.textContent).toBe(en.challenge.own);
+    await tap(en.challenge.button);
+    expect(copied).toEqual([`${en.challenge.shareLine}\n${ana.link}`]);
+  });
+
+  test.each([
+    ['not a code', '#r=hello'],
+    ['a daily still to come', `#r=daily-2026-10-12.ab0g${'0'.repeat(24)}`], // 0-4 is a pattern a run can have
+    ['an unknown player', 'unknown'],
+  ])('a link that is %s is ignored silently, and still leaves the address bar', async (_, hash) => {
+    if (hash === 'unknown') {
+      const ana = await challengeFrom(en.title.free);
+      const code = fragment(ana.link);
+      const at = code.indexOf('.') + 5;
+      hash = `${code.slice(0, at)}zz${code.slice(at + 2)}`; // the catcher's index points past the rosters
+      store = new Map();
+    }
+    await load('none', undefined, hash);
+    expect(location.hash).toBe('');
+    expect(card()).toBeNull();
+    expect(find('button', DAILY).classList.contains('primary')).toBe(true);
   });
 });
 
@@ -497,30 +760,54 @@ describe('CrazyGames portal build', () => {
     Reflect.deleteProperty(globalThis, 'CrazyGames');
   });
 
-  test('the share card, the shared poster and the poster footer name no website', async () => {
-    const drawn: { footer: string }[] = [];
+  test('without invite links the image share, the poster and its footer name no website, and no challenge is offered', async () => {
+    const drawn: { footer: string; versus?: string }[] = [];
     vi.doMock('./ui/poster', () => ({ ensurePosterFonts: async () => {}, drawSharePoster: (_: unknown, data: { footer: string }) => drawn.push(data) }));
     vi.stubGlobal('File', class { constructor(readonly parts: unknown[], readonly name: string) {} });
     const shared: string[] = [];
-    const copied: string[] = [];
     await loadPortal(fakeSdk('en-US'));
-    Object.assign(navigator, {
-      share: async (data: { text: string }) => void shared.push(data.text),
-      canShare: () => true,
-      clipboard: { writeText: async (text: string) => void copied.push(text) },
-    });
+    Object.assign(navigator, { share: async (data: { text: string }) => void shared.push(data.text), canShare: () => true });
     await tap(en.title.free);
     draft(12);
     await skipSim();
-    await tap(en.result.share);
-    await tap(en.result.copy);
+    expect(page.app.querySelector('.result-btns')!.children.map((b) => b.textContent)).toEqual([en.challenge.shareImage, en.result.again]);
+    expect(find('button', en.challenge.shareImage).classList.contains('primary')).toBe(true);
+    expect(page.app.querySelector('input.nick-input')).toBeNull();
+    await tap(en.challenge.shareImage);
 
     expect(shared).toHaveLength(1);
-    expect(copied).toEqual(shared);
     expect(drawn).toHaveLength(1);
     const poster = page.app.querySelector('.poster-foot')!.textContent;
-    for (const text of [shared[0], drawn[0].footer, poster]) expect(text).not.toMatch(/invictobaseball|\.com/);
+    for (const text of [shared[0], drawn[0].footer, poster]) expect(text).not.toMatch(/invictobaseball|\.com|https?:/);
+    expect(shared[0]).not.toContain(en.challenge.shareLine); // no dare without a link to answer it
     expect(poster).toBe('Oct 11, 2026'); // the footer is the date alone (free play has no daily number)
+  });
+
+  test("a challenge goes out as CrazyGames' invite link, and the link it opens deals that challenge", async () => {
+    const copied: string[] = [];
+    const sdk = fakeSdk('en-US');
+    const invites: Record<string, string>[] = [];
+    Object.assign(sdk.game, {
+      inviteLink: (params: Record<string, string>) => (invites.push(params), `https://www.crazygames.com/game/invicto?r=${encodeURIComponent(params.r)}`),
+      getInviteParam: () => null,
+    });
+    await loadPortal(sdk);
+    Object.assign(navigator, { clipboard: { writeText: async (text: string) => void copied.push(text) } });
+    await tap(en.title.free);
+    draft(12);
+    await skipSim();
+    await tap(en.challenge.button);
+    const lines = copied[0].split('\n');
+    expect(lines.slice(-2)).toEqual([en.challenge.shareLine, `https://www.crazygames.com/game/invicto?r=${encodeURIComponent(invites[0].r)}`]);
+    expect(copied[0]).not.toMatch(/invictobaseball/);
+
+    // A friend opens it: CrazyGames hands the game its r param.
+    store = new Map();
+    Object.assign(sdk.game, { getInviteParam: async (name: string) => (name === 'r' ? invites[0].r : null) });
+    await loadPortal(sdk);
+    expect(page.app.querySelector('.challenge-card')).not.toBeNull();
+    await tap(en.challenge.accept);
+    expect(page.app.querySelector('.roll-round')!.textContent).toContain('⚔️');
   });
 
   test('the scouting report keeps its formula but links nowhere outside the game', async () => {
@@ -753,7 +1040,7 @@ describe('honest numbers', () => {
     api['/api/result'] = stats(JSON.parse(store.get('invicto.daily.2026-10-11')!).wins);
     await skipSim();
     await vi.advanceTimersByTimeAsync(0);
-    await tap(en.result.copy);
+    await tap(en.challenge.button);
     return copied;
   }
   const lines = () => page.app.querySelector('.global-lines')!.children.map((c) => c.textContent);
@@ -820,7 +1107,7 @@ describe('the daily panel on the result', () => {
     expect(panel.querySelector('.streak-chip')).toBeNull();
     expect(panel.textContent).toContain(en.result.practice);
     expect(panel.textContent).toContain(en.result.scoredAttempt.replace('{record}', scored));
-    await tap(en.result.copy);
+    await tap(en.challenge.button);
     expect(copied[0].split('\n')[0]).toBe(`INVICTO #${dailyNumber('2026-10-11')} ${en.share.practice} ⚾`);
     expect(page.app.querySelector('.poster-foot')!.textContent.endsWith(`#${dailyNumber('2026-10-11')} ${en.share.practice}`)).toBe(true);
   });
@@ -836,7 +1123,7 @@ describe('the daily panel on the result', () => {
     await skipSim();
 
     expect(page.app.querySelector('.poster-foot')!.textContent).toBe('invictobaseball.com/en  ·  Oct 10, 2026  ·  #122');
-    await tap(en.result.copy);
+    await tap(en.challenge.button);
     expect(copied[0].split('\n')[0]).toBe('INVICTO #122 ⚾');
     expect(page.app.textContent).not.toContain(en.result.practiceAgain);
     await tap(`⭐ ${en.title.dailyNum.replace('{n}', '123')}`);

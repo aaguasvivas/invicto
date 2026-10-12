@@ -7,6 +7,7 @@ import {
   type DraftState,
 } from '../engine/draft';
 import type { EnginePlayer, LineupSlots, Roll, Slot } from '../engine/types';
+import { seedMode, type Rival } from './challenge';
 import { todayKey, type Mode } from './state';
 import { roster, type GameData } from './data';
 
@@ -23,11 +24,14 @@ export interface Session {
   redrawAttempt: number;
   /** set when the roll just auto-redrew because nothing was pickable */
   autoRedrew: boolean;
+  /** the friend whose challenge link dealt this run (same seed, same rolls) */
+  rival?: Rival;
 }
 
-export function newSession(data: GameData, mode: Mode, scored: boolean): Session {
+/** seed: a challenge link's seed, dealt as is; without one the mode deals its own. */
+export function newSession(data: GameData, mode: Mode, scored: boolean, seed?: string): Session {
   const day = todayKey();
-  const seed =
+  seed ??=
     mode === 'daily'
       ? `daily-${day}`
       : `${mode}-${Date.now().toString(36)}-${Math.floor(Math.random() * 1e9).toString(36)}`;
@@ -44,6 +48,22 @@ export function newSession(data: GameData, mode: Mode, scored: boolean): Session
   };
   ensureLegal(session);
   return session;
+}
+
+/** A run played before, rebuilt from its seed and lineup for a challenge comparison. It is never scored again. */
+export function playedSession(data: GameData, seed: string, day: string, lineup: LineupSlots): Session {
+  const players = Object.values(lineup).filter((p): p is EnginePlayer => p !== undefined);
+  return {
+    mode: seedMode(seed),
+    seed,
+    scored: false,
+    day,
+    data,
+    state: { lineup, draftedPersons: players.map((p) => p.personKey), round: players.length, countryRerollUsed: false, editionRerollUsed: false },
+    roll: rollBase(seed, 0, data.editionTeams),
+    redrawAttempt: 0,
+    autoRedrew: false,
+  };
 }
 
 export function currentRoster(session: Session): EnginePlayer[] {
