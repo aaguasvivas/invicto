@@ -1,11 +1,13 @@
-// localStorage persistence: daily attempts, streak, personal bests, settings.
-// Daily challenge number is days since launch (#1 = launch day), local time.
+// Persistence (through storage.ts): daily attempts, streak, personal bests,
+// settings. Daily challenge number is days since launch (#1 = launch day),
+// local time.
 //
 // All date math is calendar arithmetic on local day keys ("YYYY-MM-DD"), never
 // "now minus 24 hours": DST days are 23 or 25 hours long, and a run that starts
 // at 23:58 must still count for the day it was dealt.
 
 import type { Outcome } from '../engine/types';
+import * as storage from './storage';
 
 export type Mode = 'daily' | 'free' | 'hard';
 
@@ -44,9 +46,10 @@ export function dailyNumber(dateKey = todayKey()): number {
 }
 
 function read<T>(key: string): T | null {
+  const raw = storage.get(key);
+  if (!raw) return null;
   try {
-    const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : null;
+    return JSON.parse(raw) as T;
   } catch {
     return null;
   }
@@ -62,20 +65,23 @@ export function dailyResult(dateKey = todayKey()): StoredResult | null {
  */
 export function saveDailyResult(result: StoredResult, day = todayKey()): void {
   if (dailyResult(day)) return;
-  localStorage.setItem(`invicto.daily.${day}`, JSON.stringify(result));
+  storage.set(`invicto.daily.${day}`, JSON.stringify(result));
 
-  const last = localStorage.getItem('invicto.lastDaily');
+  // A result for a day before the last scored one (yesterday's run finished in
+  // another tab after today's) is kept, but never moves the streak backwards.
+  const last = storage.get('invicto.lastDaily');
+  if (last && last > day) return;
   const streak = last === previousDayKey(day) ? currentStreak(day) + 1 : 1;
-  localStorage.setItem('invicto.streak', String(streak));
-  localStorage.setItem('invicto.lastDaily', day);
+  storage.set('invicto.streak', String(streak));
+  storage.set('invicto.lastDaily', day);
 }
 
 /** Streak as of a given day: alive if the last daily was that day or the day before. */
 export function currentStreak(today = todayKey()): number {
-  const last = localStorage.getItem('invicto.lastDaily');
+  const last = storage.get('invicto.lastDaily');
   if (!last) return 0;
   if (last !== today && last !== previousDayKey(today)) return 0; // streak broken
-  return Number(localStorage.getItem('invicto.streak') ?? '0');
+  return Number(storage.get('invicto.streak') ?? '0');
 }
 
 const OUTCOME_RANK: Outcome[] = ['eliminated-pool', 'eliminated-qf', 'eliminated-sf', 'subcampeon', 'campeon', 'invicto'];
@@ -90,13 +96,13 @@ export function saveBest(mode: Mode, result: StoredResult): void {
     !prev ||
     OUTCOME_RANK.indexOf(result.outcome) > OUTCOME_RANK.indexOf(prev.outcome) ||
     (result.outcome === prev.outcome && result.wins > prev.wins);
-  if (better) localStorage.setItem(`invicto.best.${mode}`, JSON.stringify(result));
+  if (better) storage.set(`invicto.best.${mode}`, JSON.stringify(result));
 }
 
 export function soundOn(): boolean {
-  return localStorage.getItem('invicto.sound') === 'on';
+  return storage.get('invicto.sound') === 'on';
 }
 
 export function setSound(on: boolean): void {
-  localStorage.setItem('invicto.sound', on ? 'on' : 'off');
+  storage.set('invicto.sound', on ? 'on' : 'off');
 }

@@ -1,12 +1,13 @@
-// Result poster screen: the screenshot moment. Saves scored results, fires
-// confetti, and offers share / copy / play-again.
+// Result poster screen: the screenshot moment. The run is already saved
+// (game/finish.ts, before the sim reveal); this shows it, sends scored dailies
+// to the global stats, fires confetti, and offers share / copy / play-again.
 
 import { SLOTS } from '../../engine/positions';
 import type { RunResult } from '../../engine/types';
 import { getLocale, t } from '../../i18n';
 import type { Session } from '../../game/session';
-import { evaluateBadges, recordBadges } from '../../game/badges';
-import { dailyNumber, saveBest, saveDailyResult } from '../../game/state';
+import type { BadgeId } from '../../game/badges';
+import { dailyNumber } from '../../game/state';
 import { percentileBeaten, rarestPick, submitResult, topSharePct } from '../../game/stats';
 import { setAccent } from '../accents';
 import { mountAd } from '../ads';
@@ -23,23 +24,14 @@ export interface ResultCallbacks {
   onHome: () => void;
 }
 
-export function renderResult(app: HTMLElement, session: Session, run: RunResult, cb: ResultCallbacks): void {
+/** newBadges: the badges this run earned for the first time (they pop). */
+export function renderResult(app: HTMLElement, session: Session, run: RunResult, newBadges: BadgeId[], cb: ResultCallbacks): void {
   clear(app);
   setAccent(null);
   const record = `${run.wins}-${run.losses}`;
   const tier: PosterData['tier'] =
     run.outcome === 'invicto' ? 'invicto' : run.outcome === 'campeon' ? 'campeon' : run.outcome === 'subcampeon' ? 'subcampeon' : 'out';
 
-  if (session.scored) {
-    const stored = { record, wins: run.wins, losses: run.losses, outcome: run.outcome };
-    // Keyed to the day the run was dealt, so a run that crosses midnight still
-    // counts for its own daily (and never blocks the next one).
-    if (session.mode === 'daily') saveDailyResult(stored, session.day);
-    saveBest(session.mode, stored);
-  }
-
-  // Badges: every finished run counts (practice included); only first-time earns pop.
-  const newBadges = recordBadges(evaluateBadges(session.state.lineup, run));
   // The tier line already announces INVICTO/CAMPEÓN, so the share line leads with the rarer badges.
   const badgeShareOrder = [...newBadges].sort(
     (a, b) => Number(a === 'invicto' || a === 'campeon') - Number(b === 'invicto' || b === 'campeon'),

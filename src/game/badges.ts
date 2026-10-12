@@ -2,6 +2,7 @@
 // that run); persistence is per-device localStorage, same as streaks.
 
 import type { LineupSlots, RunResult } from '../engine/types';
+import * as storage from './storage';
 
 export const BADGE_IDS = [
   'invicto',
@@ -40,9 +41,10 @@ export function evaluateBadges(lineup: LineupSlots, run: RunResult): BadgeId[] {
 
 /** Map of badge id → first-earned ISO date. */
 export function earnedBadges(): Partial<Record<BadgeId, string>> {
+  const raw = storage.get(STORE_KEY);
+  if (!raw) return {};
   try {
-    const raw = localStorage.getItem(STORE_KEY);
-    return raw ? (JSON.parse(raw) as Partial<Record<BadgeId, string>>) : {};
+    return JSON.parse(raw) as Partial<Record<BadgeId, string>>;
   } catch {
     return {};
   }
@@ -58,11 +60,7 @@ export function recordBadges(ids: BadgeId[]): BadgeId[] {
   const fresh = ids.filter((id) => !store[id]);
   if (fresh.length > 0) {
     for (const id of fresh) store[id] = new Date().toISOString();
-    try {
-      localStorage.setItem(STORE_KEY, JSON.stringify(store));
-    } catch {
-      // storage is best-effort
-    }
+    storage.set(STORE_KEY, JSON.stringify(store));
   }
   return fresh;
 }

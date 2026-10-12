@@ -1,0 +1,36 @@
+// Committing a finished run: the scored daily, the personal best and badges.
+// It runs as soon as the lineup is complete and the tournament is simulated,
+// before the 7-10 s reveal: a reload during the reveal finds the day already
+// played instead of an open daily to redo.
+
+import type { RunResult } from '../engine/types';
+import { evaluateBadges, recordBadges, type BadgeId } from './badges';
+import type { Session } from './session';
+import { dailyResult, saveBest, saveDailyResult, type StoredResult } from './state';
+
+function sameResult(a: StoredResult, b: StoredResult): boolean {
+  return a.record === b.record && a.wins === b.wins && a.losses === b.losses && a.outcome === b.outcome;
+}
+
+/** Save what the run earned; returns the badges earned for the first time. */
+export function recordRun(session: Session, run: RunResult): BadgeId[] {
+  const result: StoredResult = { record: `${run.wins}-${run.losses}`, wins: run.wins, losses: run.losses, outcome: run.outcome };
+
+  if (session.mode === 'daily' && session.scored) {
+    const saved = dailyResult(session.day);
+    // Another tab finished this daily first, so this run is practice. A replay
+    // of this same run (resumed after a reload during the reveal) finds its own
+    // result, identical because the sim is deterministic, and stays scored.
+    if (saved && !sameResult(saved, result)) session.scored = false;
+  }
+
+  if (session.scored) {
+    // Keyed to the day the run was dealt, so a run that crosses midnight still
+    // counts for its own daily (and never blocks the next one).
+    if (session.mode === 'daily') saveDailyResult(result, session.day);
+    saveBest(session.mode, result);
+  }
+
+  // Every finished run earns badges, practice included.
+  return recordBadges(evaluateBadges(session.state.lineup, run));
+}

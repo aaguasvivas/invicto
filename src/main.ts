@@ -3,12 +3,14 @@
 // The title renders immediately; the roster data (~1.3MB) loads in the
 // background and is only awaited when the player actually starts a run. A
 // failed load shows a retry instead of a blank screen. Runs autosave after
-// every pick so a reloaded tab can resume exactly where it was.
+// every pick so a reloaded tab can resume exactly where it was, and a finished
+// run is saved before the sim reveal, so a reload cannot reopen the daily.
 
 import './styles.css';
 import { applyMeta, getLang, t } from './i18n';
 import { loadData, type GameData } from './game/data';
 import { dailyResult, todayKey, type Mode } from './game/state';
+import { recordRun } from './game/finish';
 import { lineup, newSession, type Session } from './game/session';
 import { clearRun, loadRun, restoreSession, saveRun, snapshotSession, snapshotUsable, type RunSnapshot } from './game/resume';
 import { openSlots } from './engine/draft';
@@ -84,7 +86,7 @@ function showTitle(): void {
 
   const snap = loadRun();
   const resumable = snap && snapshotUsable(snap, todayKey()) ? snap : null;
-  if (snap && !resumable) clearRun(); // yesterday's daily, no longer meaningful
+  if (snap && !resumable) clearRun(); // an older daily, no longer meaningful
 
   renderTitle(app, {
     onRerender: showTitle,
@@ -123,10 +125,13 @@ async function resumeRun(snap: RunSnapshot): Promise<void> {
     showTitle();
     return;
   }
-  // A daily finished elsewhere in the meantime can only continue as practice.
-  if (session.mode === 'daily') session.scored = !dailyResult(session.day);
+  const complete = openSlots(session.state).length === 0;
+  // A daily finished elsewhere while this draft was open can only continue as
+  // practice. A complete lineup is past that point: it replays its own run,
+  // which was saved before the reload.
+  if (session.mode === 'daily' && !complete) session.scored = !dailyResult(session.day);
   enterGame();
-  if (openSlots(session.state).length === 0) runTournament(session);
+  if (complete) runTournament(session);
   else renderDraft(app, session, draftCallbacks(session));
 }
 
@@ -134,12 +139,15 @@ function runTournament(session: Session): void {
   resetScroll();
   const run = simulateRun(lineup(session), session.seed);
   // (lineup() returns the slot-keyed record; the engine gates pitching as its own category)
+  // Saved now, not on the result screen: a reload during the reveal must find
+  // the daily played. The same lineup and seed replay the same run.
+  const newBadges = recordRun(session, run);
   renderSim(app, run, session.data, session.state.lineup, () => {
     resetScroll();
     clearRun(); // the run is complete; nothing left to resume
     portalGameplayStop();
     if (run.outcome === 'invicto') portalHappytime();
-    renderResult(app, session, run, {
+    renderResult(app, session, run, newBadges, {
       onAgain: () => void startRun(session.mode), // one more run, zero friction
       onHome: showTitle,
     });

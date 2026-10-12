@@ -5,6 +5,7 @@
 // Brand nouns (INVICTO, CAMPEÓN) are deliberately NOT translated: they are the
 // game's tier names in every language, like a trophy engraving.
 
+import * as storage from '../game/storage';
 import es from './es.json';
 import en from './en.json';
 import ja from './ja.json';
@@ -29,7 +30,7 @@ export const REGISTRY: LanguageDef[] = [
 export type Lang = string;
 
 function detectLang(): LanguageDef {
-  const stored = localStorage.getItem('invicto.lang');
+  const stored = storage.get('invicto.lang');
   const fromStore = REGISTRY.find((l) => l.code === stored);
   if (fromStore) return fromStore;
   for (const pref of navigator.languages ?? [navigator.language]) {
@@ -60,7 +61,7 @@ export function setLang(code: Lang): void {
   const def = REGISTRY.find((l) => l.code === code);
   if (!def) return;
   current = def;
-  localStorage.setItem('invicto.lang', def.code);
+  storage.set('invicto.lang', def.code);
   document.documentElement.lang = def.code;
   applyMeta();
 }

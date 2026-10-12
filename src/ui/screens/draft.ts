@@ -133,12 +133,11 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
 
   const confirmPick = (p: EnginePlayer, slot: Slot) => {
     pick(session, p, slot);
-    if (draftDone(session)) {
-      cb.onDone();
-    } else {
-      cb.onChange?.();
-      drawRound(screen, session, cb, true);
-    }
+    // Autosave every pick, the 12th included: a reload during the sim then
+    // resumes the full lineup instead of reopening the last pick.
+    cb.onChange?.();
+    if (draftDone(session)) cb.onDone();
+    else drawRound(screen, session, cb, true);
   };
 
   const showSlotSheet = (p: EnginePlayer, slots: Slot[]) => {

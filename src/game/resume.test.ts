@@ -4,7 +4,9 @@
 // stale daily.
 
 import { describe, expect, test } from 'vitest';
-import { makePlayer } from '../engine/test-helpers';
+import { applyPick, openSlots } from '../engine/draft';
+import { lineupWithMeans, makePlayer } from '../engine/test-helpers';
+import type { EnginePlayer } from '../engine/types';
 import type { GameData } from './data';
 import { restoreSession, snapshotSession, snapshotUsable, type RunSnapshot } from './resume';
 import type { Session } from './session';
@@ -74,15 +76,74 @@ describe('snapshotSession / restoreSession', () => {
   });
 });
 
-describe('snapshotUsable', () => {
-  test('a daily run is only usable on the day it started', () => {
+describe('snapshotSession / restoreSession: a complete lineup', () => {
+  // The draft autosaves the 12th pick too, so a reload during the sim reveal
+  // resumes into the same (deterministic) tournament instead of the draft.
+  test('a 12-pick snapshot round-trips with no open slots and keeps scored', () => {
+    const lineup = lineupWithMeans(72, 70, 56, 58, 72, 70);
+    const players = Object.values(lineup) as EnginePlayer[];
+    const full: Session = {
+      ...midDraft(),
+      data: { ...data, players },
+      state: { lineup, draftedPersons: players.map((p) => p.personKey), round: 12, countryRerollUsed: true, editionRerollUsed: true },
+    };
+    const restored = restoreSession(snapshotSession(full), full.data)!;
+    expect(openSlots(restored.state)).toEqual([]);
+    expect(restored.scored).toBe(true);
+    expect(restored.state.round).toBe(12);
+    expect(Object.keys(restored.state.lineup)).toHaveLength(12);
+  });
+});
+
+describe('restoreSession: drafted persons', () => {
+  // A data deploy can merge two records into one person (new personKey). The
+  // stored key list would then miss the merged duplicate, so it is rebuilt from
+  // the restored players' current keys and never trusted.
+  test('stale draftedPersons are rebuilt from the lineup players', () => {
     const snap = snapshotSession(midDraft());
-    expect(snapshotUsable(snap, '2026-06-12')).toBe(true);
-    expect(snapshotUsable(snap, '2026-06-13')).toBe(false);
+    snap.draftedPersons = ['perez|?', 'santana|?'];
+    const restored = restoreSession(snap, data)!;
+    expect([...restored.state.draftedPersons].sort()).toEqual([p1.personKey, p2.personKey].sort());
+  });
+
+  test('a merged duplicate of a drafted player is then refused', () => {
+    const snap = snapshotSession(midDraft());
+    snap.draftedPersons = ['perez|?', 'santana|?'];
+    const restored = restoreSession(snap, data)!;
+    const sameManOtherEdition = makePlayer({ id: '2017-ven-perez', personKey: p1.personKey, positions: ['1B'] });
+    expect(() => applyPick(restored.state, sameManOtherEdition, '1B')).toThrow(/already on your team/);
+  });
+});
+
+describe('snapshotUsable', () => {
+  const HOUR = 3600 * 1000;
+
+  test('a daily run is usable all through the day it was dealt', () => {
+    const snap = snapshotSession(midDraft());
+    expect(snapshotUsable(snap, '2026-06-12', snap.savedAt + 20 * HOUR)).toBe(true);
+  });
+
+  test('a daily from yesterday is usable for a few hours after its last save', () => {
+    // started at 23:55, the phone reloaded the tab at 00:03
+    const snap = snapshotSession(midDraft());
+    expect(snapshotUsable(snap, '2026-06-13', snap.savedAt + 8 * 60 * 1000)).toBe(true);
+    expect(snapshotUsable(snap, '2026-06-13', snap.savedAt + 5.9 * HOUR)).toBe(true);
+  });
+
+  test('a daily from yesterday left overnight is not usable', () => {
+    const snap = snapshotSession(midDraft());
+    expect(snapshotUsable(snap, '2026-06-13', snap.savedAt + 6 * HOUR)).toBe(false);
+  });
+
+  test('a daily from two days ago is not usable', () => {
+    const snap = snapshotSession(midDraft());
+    expect(snapshotUsable(snap, '2026-06-14', snap.savedAt + 60 * 1000)).toBe(false);
   });
 
   test('free and hard runs stay usable across days', () => {
-    const snap = snapshotSession({ ...midDraft(), mode: 'free', seed: 'free-abc', scored: true });
-    expect(snapshotUsable(snap, '2026-07-01')).toBe(true);
+    const free = snapshotSession({ ...midDraft(), mode: 'free', seed: 'free-abc', scored: true });
+    const hard = snapshotSession({ ...midDraft(), mode: 'hard', seed: 'hard-abc', scored: true });
+    expect(snapshotUsable(free, '2026-07-01', free.savedAt + 400 * HOUR)).toBe(true);
+    expect(snapshotUsable(hard, '2026-07-01', hard.savedAt + 400 * HOUR)).toBe(true);
   });
 });

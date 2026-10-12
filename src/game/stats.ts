@@ -3,6 +3,8 @@
 // worker/index.ts). Everything here fails silently: the game never depends
 // on the network.
 
+import * as storage from './storage';
+
 export interface TodayStats {
   total: number;
   invictos: number;
@@ -46,16 +48,19 @@ export function rarestPick(picks: { id: string; n: number }[], total: number): {
 // ---------------------------------------------------------------------------
 // API client
 
-function clientId(): string {
-  let id = localStorage.getItem('invicto.clientId');
-  if (!id) {
-    id =
-      typeof crypto !== 'undefined' && 'randomUUID' in crypto
-        ? crypto.randomUUID()
-        : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
-    localStorage.setItem('invicto.clientId', id);
-  }
-  return id;
+let pageClientId: string | null = null;
+
+/** Anonymous id that dedupes daily submissions. Kept on the device; when
+    storage is unavailable it lasts for this page load only. */
+export function clientId(): string {
+  const stored = storage.get('invicto.clientId');
+  if (stored) return stored;
+  pageClientId ??=
+    typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+  storage.set('invicto.clientId', pageClientId);
+  return pageClientId;
 }
 
 async function api<T>(path: string, init?: RequestInit): Promise<T | null> {
