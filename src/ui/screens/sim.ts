@@ -1,6 +1,6 @@
 // Simulation screen: bracket cards flip one at a time, and the pacing escalates
-// with the stakes (tap anywhere skips everything, even mid-beat). A 6-0 team
-// gets a gold pre-reveal beat before the final: THE moment.
+// with the stakes (after a short guard, a tap anywhere skips everything, even
+// mid-beat). A 6-0 team gets a gold pre-reveal beat before the final: THE moment.
 
 import type { GameResult, HeroMoment, LineupSlots, RunResult, Stage } from '../../engine/types';
 import { countryName, flavor, t } from '../../i18n';
@@ -13,6 +13,8 @@ import { crowdRoar, vibrate } from '../sound';
 const REVEAL_MS = { pool: 600, qf: 750, sf: 950, final: 1300 } as const;
 const FINAL_BEAT_MS = 1800;
 const SF_BEAT_MS = 400;
+/** Taps this soon after the screen appears are the draft's last pick landing twice, not a skip. */
+const SKIP_GUARD_MS = 400;
 
 function heroLine(hero: HeroMoment, lineup: LineupSlots): string | null {
   const player = lineup[hero.slot];
@@ -125,12 +127,15 @@ export function renderSim(app: HTMLElement, run: RunResult, data: GameData, line
     next++;
     timer = window.setTimeout(step, next < run.games.length ? REVEAL_MS[stageOf(run.games[next].stage)] : REVEAL_MS.pool);
   };
+  let skippable = false;
   const skipAll = () => {
+    if (!skippable) return;
     window.clearTimeout(timer);
     clearBeat();
     while (next < run.games.length) revealCard(run.games[next++]);
     finish();
   };
   screen.addEventListener('click', skipAll);
+  window.setTimeout(() => { skippable = true; }, SKIP_GUARD_MS);
   timer = window.setTimeout(step, 500);
 }

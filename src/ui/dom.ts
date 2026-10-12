@@ -31,7 +31,7 @@ export function clear(el: HTMLElement): void {
 
 export function toast(message: string): void {
   document.querySelector('.toast')?.remove();
-  const el = h('div.toast', {}, message);
+  const el = h('div.toast', { role: 'status' }, message);
   document.body.append(el);
   setTimeout(() => el.remove(), 2600);
 }

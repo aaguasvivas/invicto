@@ -43,6 +43,11 @@
     "noEligible": "이 로스터엔 넣을 수 있는 선수가 없어요: 무료로 다시 뽑기 🎰",
     "practiceNote": "연습 플레이: 오늘의 챌린지와 같은 조합 🎯",
     "noResults": "\"{q}\" 검색 결과가 없어요",
+    "edition": "{year} WBC",
+    "oneEdition": "🗓️ {year}년만",
+    "minors": "{club} (마이너)",
+    "farm": "{club} (2군)",
+    "freeAgent": "FA (소속팀 없음)",
     "posGroups": { "C": "포수", "IF": "내야수", "OF": "외야수", "DH": "지명타자", "P": "투수" }
   },
   "sim": {

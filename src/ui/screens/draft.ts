@@ -12,9 +12,17 @@ import {
   canRerollCountry, canRerollEdition, currentRoster, draftDone, pick, rerollCountry, rerollEdition,
 } from '../../game/session';
 import { clear, h, toast } from '../dom';
+import { nameSearch } from '../search';
 
 const PITCHER_POS: Slot[] = ['SP', 'RP', 'CL'];
 const SPIN_MS = 700;
+
+/** Club names are proper nouns; only the English notes the data adds to them are translated. */
+function clubLabel(club: string): string {
+  if (club === 'Free agent') return t('draft.freeAgent');
+  const note = / \((minors|farm)\)$/.exec(club);
+  return note ? t(`draft.${note[1]}`, { club: club.slice(0, note.index) }) : club;
+}
 
 export interface DraftCallbacks {
   onDone: () => void;
@@ -41,7 +49,20 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
   // --- roll card ---
   const flagEl = h('span.roll-flag', {}, country.flag);
   const nameEl = h('div.roll-country.display', {}, countryName(country));
-  const editionEl = h('div.roll-edition', {}, `WBC ${session.roll.edition}`);
+  const editionEl = h('div.roll-edition', {}, t('draft.edition', { year: session.roll.edition }));
+  // A reroll redraws the round, so its click stops here: bubbling on to this
+  // (by then replaced) card would land the old spin showing the new roll.
+  const reroll = (apply: (s: Session) => void) => (e: Event) => {
+    e.stopPropagation();
+    apply(session);
+    cb.onChange?.();
+    drawRound(screen, session, cb, true);
+  };
+  const editionLabel = session.state.editionRerollUsed
+    ? `${t('draft.rerollEdition')} ×0`
+    : canRerollEdition(session)
+      ? `${t('draft.rerollEdition')} ×1`
+      : t('draft.oneEdition', { year: session.roll.edition }); // the country played a single Classic
   const rollCard = h(
     'div.roll-card',
     {},
@@ -54,24 +75,15 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
       {},
       h(
         'button.reroll-btn',
-        {
-          disabled: !canRerollCountry(session),
-          onclick: () => { rerollCountry(session); cb.onChange?.(); drawRound(screen, session, cb, true); },
-        },
+        { disabled: !canRerollCountry(session), onclick: reroll(rerollCountry) },
         `${t('draft.rerollCountry')} ${canRerollCountry(session) ? '×1' : '×0'}`,
       ),
-      h(
-        'button.reroll-btn',
-        {
-          disabled: !canRerollEdition(session),
-          onclick: () => { rerollEdition(session); cb.onChange?.(); drawRound(screen, session, cb, true); },
-        },
-        `${t('draft.rerollEdition')} ${!session.state.editionRerollUsed ? '×1' : '×0'}`,
-      ),
+      h('button.reroll-btn', { disabled: !canRerollEdition(session), onclick: reroll(rerollEdition) }, editionLabel),
     ),
   );
 
   // --- roster ---
+  const findPlayers = nameSearch(currentRoster(session));
   const search = h('input.search-box', {
     type: 'search',
     placeholder: t('draft.search'),
@@ -82,9 +94,16 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
 
   const renderRoster = () => {
     clear(rosterEl);
-    const q = search.value.trim().toLowerCase();
     const open = openSlots(session.state);
-    const players = currentRoster(session).filter((p) => !q || p.name.toLowerCase().includes(q));
+    const players = findPlayers(search.value);
+    const fit = new Set(
+      players
+        .filter((p) => !session.state.draftedPersons.includes(p.personKey) && eligibleSlots(p.positions, open).length > 0)
+        .map((p) => p.id),
+    );
+    const order = session.mode === 'hard'
+      ? (a: EnginePlayer, b: EnginePlayer) => a.name.localeCompare(b.name)
+      : (a: EnginePlayer, b: EnginePlayer) => b.rating - a.rating;
 
     const groups: { key: string; test: (p: EnginePlayer) => boolean }[] = [
       { key: 'C', test: (p) => p.positions.includes('C') },
@@ -94,17 +113,24 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
       { key: 'P', test: () => true }, // pure pitchers
     ];
     const seen = new Set<string>();
-    let shown = 0;
-    for (const group of groups) {
-      const members = players.filter((p) => !seen.has(p.id) && group.test(p));
-      members.forEach((p) => seen.add(p.id));
-      if (members.length === 0) continue;
-      shown += members.length;
-      members.sort(session.mode === 'hard' ? (a, b) => a.name.localeCompare(b.name) : (a, b) => b.rating - a.rating);
-      rosterEl.append(h('div.pos-group-label', {}, t(`draft.posGroups.${group.key}`)));
+    const sections = groups
+      .map((group) => {
+        const members = players.filter((p) => !seen.has(p.id) && group.test(p));
+        members.forEach((p) => seen.add(p.id));
+        // Who fits an open slot first: late in the draft they would otherwise
+        // sit under a screenful of greyed-out rows.
+        members.sort((a, b) => Number(fit.has(b.id)) - Number(fit.has(a.id)) || order(a, b));
+        return { key: group.key, members };
+      })
+      .filter((section) => section.members.length > 0);
+    // Groups with someone to pick lead; the rest keep their usual order (stable sort).
+    sections.sort((a, b) => Number(fit.has(b.members[0].id)) - Number(fit.has(a.members[0].id)));
+    for (const { key, members } of sections) {
+      rosterEl.append(h('div.pos-group-label', {}, t(`draft.posGroups.${key}`)));
       for (const p of members) rosterEl.append(playerRow(p, open));
     }
-    if (shown === 0 && q) rosterEl.append(h('div.roster-empty', {}, t('draft.noResults', { q: search.value.trim() })));
+    const q = search.value.trim();
+    if (sections.length === 0 && q) rosterEl.append(h('div.roster-empty', {}, t('draft.noResults', { q })));
   };
 
   const playerRow = (p: EnginePlayer, open: Slot[]): HTMLElement => {
@@ -125,7 +151,7 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
         'span.player-name',
         {},
         h('b', {}, taken ? `✓ ${p.name}` : p.name),
-        p.club ? h('span', {}, p.club) : null,
+        p.club ? h('span', {}, clubLabel(p.club)) : null,
       ),
       session.mode !== 'hard' ? h('span.rating-chip' + (chipClass ? `.${chipClass}` : ''), {}, String(p.rating)) : null,
     );
@@ -207,16 +233,17 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
       const random = all[Math.floor(Math.random() * all.length)];
       flagEl.textContent = random.flag;
       nameEl.textContent = countryName(random);
-      editionEl.textContent = `WBC ${years[Math.floor(Math.random() * years.length)]}`;
+      editionEl.textContent = t('draft.edition', { year: years[Math.floor(Math.random() * years.length)] });
     }, 70);
     const settle = () => {
       if (stopped) return;
       stopped = true;
       clearInterval(interval);
+      if (!rollCard.isConnected) return; // a reroll replaced this card mid-spin; the new card lands itself
       rollCard.classList.remove('spinning');
       flagEl.textContent = country.flag;
       nameEl.textContent = countryName(country);
-      editionEl.textContent = `WBC ${session.roll.edition}`;
+      editionEl.textContent = t('draft.edition', { year: session.roll.edition });
       setAccent(session.roll.country);
       if (POWERS.includes(session.roll.country)) {
         rollCard.classList.add('power-roll');

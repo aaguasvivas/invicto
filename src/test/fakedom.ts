@@ -23,6 +23,13 @@ export class FakeNode {
     return this.childNodes[0] ?? null;
   }
 
+  /** In the page: hangs under <html>. A screen that was cleared away is not. */
+  get isConnected(): boolean {
+    let root: FakeNode = this;
+    while (root.parentNode) root = root.parentNode;
+    return root instanceof FakeElement && root.tagName === 'html';
+  }
+
   get textContent(): string {
     return this.childNodes.map((c) => c.textContent).join('');
   }
@@ -195,6 +202,11 @@ export class FakeElement extends FakeNode {
   }
 
   select(): void {}
+
+  /** Canvas stand-in: tests never draw the share poster, so its PNG is empty. */
+  toBlob(done: (blob: Blob | null) => void, type = 'image/png'): void {
+    done(new Blob([], { type }));
+  }
 
   click(): void {
     if (this.disabled) return;

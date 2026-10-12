@@ -119,20 +119,28 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
     });
   }
 
-  const buttons = h(
-    'div.result-btns',
-    {},
-    h(
-      'button.btn.primary',
-      {
-        onclick: async () => {
+  // Disabled until the share settles: a second tap while the share sheet is
+  // open would fail over to the clipboard and toast 'Copied' behind the sheet.
+  const shareBtn = h(
+    'button.btn.primary',
+    {
+      onclick: async () => {
+        shareBtn.disabled = true;
+        try {
           const result = await sharePoster(posterForShare(), emojiCard(shareCtx, extraLines()));
           if (result === 'copied-image' || result === 'copied-text') toast(t('result.copied'));
           else if (result === 'failed') toast(t('result.shareFailed'));
-        },
+        } finally {
+          shareBtn.disabled = false;
+        }
       },
-      t('result.share'),
-    ),
+    },
+    t('result.share'),
+  ) as HTMLButtonElement;
+  const buttons = h(
+    'div.result-btns',
+    {},
+    shareBtn,
     h(
       'button.btn',
       {

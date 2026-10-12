@@ -43,6 +43,11 @@
     "noEligible": "このロースターに入れられる選手がいない：無料でもう一回転 🎰",
     "practiceNote": "練習プレイ：今日のチャレンジと同じ出目 🎯",
     "noResults": "「{q}」に一致する選手はいません",
+    "edition": "{year}年WBC",
+    "oneEdition": "🗓️ {year}年のみ",
+    "minors": "{club}（マイナー）",
+    "farm": "{club}（二軍）",
+    "freeAgent": "FA（所属なし）",
     "posGroups": { "C": "捕手", "IF": "内野手", "OF": "外野手", "DH": "指名打者", "P": "投手" }
   },
   "sim": {

@@ -43,6 +43,11 @@
     "noEligible": "Nadie de este roster entra en tu lineup: tirada gratis 🎰",
     "practiceNote": "Práctica: mismas tiradas del reto de hoy 🎯",
     "noResults": "Sin resultados para «{q}»",
+    "edition": "Clásico {year}",
+    "oneEdition": "🗓️ Solo {year}",
+    "minors": "{club} (menores)",
+    "farm": "{club} (menores)",
+    "freeAgent": "Agente libre",
     "posGroups": { "C": "Receptores", "IF": "Infielders", "OF": "Jardineros", "DH": "Bateadores designados", "P": "Lanzadores" }
   },
   "sim": {

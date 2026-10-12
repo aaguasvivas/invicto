@@ -43,6 +43,11 @@
     "noEligible": "Nobody on this roster fits your lineup: free roll 🎰",
     "practiceNote": "Practice: same rolls as today's challenge 🎯",
     "noResults": "No results for \"{q}\"",
+    "edition": "WBC {year}",
+    "oneEdition": "🗓️ Only {year}",
+    "minors": "{club} (minors)",
+    "farm": "{club} (farm)",
+    "freeAgent": "Free agent",
     "posGroups": { "C": "Catchers", "IF": "Infielders", "OF": "Outfielders", "DH": "Designated hitters", "P": "Pitchers" }
   },
   "sim": {
