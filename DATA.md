@@ -181,6 +181,55 @@ for every hitter in the engine.
   Ohtani **as a hitter**; VEN 2026 must contain Maikel García and Eugenio Suárez.
 - Prints the edition × country summary table and the hitter rating histogram.
 
+## Identity: one personKey per real player
+
+The draft refuses a player who is already on your team, and it checks `personKey` to decide.
+Record ids stay fixed (`2009-pur-carlos-beltran`), because saved runs and the daily stats
+table store them. The rating pass gives each record a provisional key `slug|dob`
+(`carlos-beltran|1977-04-24`, or `carlos-beltran|?` when the roster page lists no birth date).
+One player can hold several provisional keys: the 2006 Puerto Rico page has no birth dates,
+Korean and Taiwanese names appear in both orders (Oh Seung-hwan, Seunghwan Oh), some birth
+dates carry a typo or a teammate's date, and some players appear under a short name (Nori and
+Norichika Aoki).
+
+`scripts/lib/identity.ts` groups records into people with a union-find, in this order:
+
+| Rule | Two records become one person when |
+|---|---|
+| R0 | they share a provisional key |
+| R2 | the rating pass joined both to the same Lahman `playerID` |
+| R3 | an alias group in `data/curation/person-aliases.json` lists both |
+| R1 | they share the country and the sorted letters of the accent-folded name (spaces and hyphens removed), and their birth dates agree: equal, one of year, month and day different, or month and day swapped. A record without a birth date joins only when exactly one person fits and the age at that edition falls between 16 and 47. |
+
+Guards apply to every merge. Two records of one team-edition stay apart, two different Lahman
+ids stay apart, and a pair listed as `distinct` stays apart. R1 and R2 skip January 1 birth
+dates, which the Cuban rosters use as a placeholder; only an alias merges them. Aliases skip
+the birth-date checks and keep the other guards.
+
+A person's `personKey` is the provisional key of their earliest record with a birth date, or of
+their earliest record when none has one. A player who had a single key keeps it.
+
+`person-aliases.json` holds the reviewed decisions, each with a note and a source URL (usually
+the article that both roster rows link):
+
+- `aliases`: 23 groups of one person under two spellings, a nickname, or a mistyped or copied
+  birth date.
+- `distinct`: 5 pairs with the same country and name letters that are two people, such as the
+  pitcher Édgar González (2006) and the infielder Edgar Gonzalez (2009, 2013).
+- `wrongLahmanJoins`: rating-pass joins that identity ignores. The 2013 Carlos González row
+  carries Carlos Gómez's birth date, so the rating pass joins it to Gómez.
+
+The build stops when a curated id matches no record, an entry lacks a source, an alias breaks a
+guard, a `wrongLahmanJoins` entry no longer matches the rating pass, or two people share a
+country and name letters without a `distinct` entry. It prints the merges per rule and warns
+when one Lahman id joins records that cannot be one person (the Wells twins today).
+
+Current data: 3,175 records, 2,524 provisional keys, **2,304 distinct players**. The build
+merged 220 keys: 56 by Lahman id, 26 by alias, 138 by name letters. `src/game/data.test.ts`
+checks the shipped file: no key repeats within a team-edition, no two keys share sorted name
+letters and a birth date, no undated key shares slug and country with a dated key unless listed
+as distinct, every alias group shares one key, and the count in this paragraph matches the file.
+
 ## Known limitations (v1)
 
 - NPB/KBO/CPBL/Cuban stars without MLB careers rate as tier B regulars — their real stats

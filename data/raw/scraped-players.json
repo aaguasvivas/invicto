@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-06-11T19:42:32.656Z",
+ "generatedAt": "2026-10-12T00:36:06.453Z",
  "databank": "SABR Lahman Baseball Database, 1871–2025 comma-delimited version (https://sabr.org/lahman-database/)",
  "players": [
   {
@@ -4582,7 +4582,7 @@
   },
   {
    "id": "2006-rsa-barry-armitage",
-   "personKey": "barry-armitage|?",
+   "personKey": "barry-armitage|1979-05-11",
    "name": "Barry Armitage",
    "edition": 2006,
    "country": "RSA",
@@ -4634,7 +4634,7 @@
   },
   {
    "id": "2006-rsa-matthew-dancer",
-   "personKey": "matthew-dancer|?",
+   "personKey": "matthew-dancer|1983-10-08",
    "name": "Matthew Dancer",
    "edition": 2006,
    "country": "RSA",
@@ -4686,7 +4686,7 @@
   },
   {
    "id": "2006-rsa-shannon-ekermans",
-   "personKey": "shannon-ekermans|?",
+   "personKey": "shannon-ekermans|1987-06-05",
    "name": "Shannon Ekermans",
    "edition": 2006,
    "country": "RSA",
@@ -4712,7 +4712,7 @@
   },
   {
    "id": "2006-rsa-jared-elario",
-   "personKey": "jared-elario|?",
+   "personKey": "jared-elario|1988-10-14",
    "name": "Jared Elario",
    "edition": 2006,
    "country": "RSA",
@@ -4868,7 +4868,7 @@
   },
   {
    "id": "2006-rsa-darryn-smith",
-   "personKey": "darryn-smith|?",
+   "personKey": "darryn-smith|1975-08-02",
    "name": "Darryn Smith",
    "edition": 2006,
    "country": "RSA",
@@ -4894,7 +4894,7 @@
   },
   {
    "id": "2006-rsa-robert-verschuren",
-   "personKey": "robert-verschuren|?",
+   "personKey": "robert-verschuren|1984-05-31",
    "name": "Robert Verschuren",
    "edition": 2006,
    "country": "RSA",
@@ -4920,7 +4920,7 @@
   },
   {
    "id": "2006-rsa-kyle-botha",
-   "personKey": "kyle-botha|?",
+   "personKey": "kyle-botha|1988-08-07",
    "name": "Kyle Botha",
    "edition": 2006,
    "country": "RSA",
@@ -5124,7 +5124,7 @@
   },
   {
    "id": "2006-rsa-zaid-hendricks",
-   "personKey": "zaid-hendricks|?",
+   "personKey": "zaid-hendricks|1990-04-04",
    "name": "Zaid Hendricks",
    "edition": 2006,
    "country": "RSA",
@@ -5178,7 +5178,7 @@
   },
   {
    "id": "2006-rsa-jonathan-phillips",
-   "personKey": "jonathan-phillips|?",
+   "personKey": "jonathan-phillips|1986-04-16",
    "name": "Jonathan Phillips",
    "edition": 2006,
    "country": "RSA",
@@ -5205,7 +5205,7 @@
   },
   {
    "id": "2006-rsa-brett-willemburg",
-   "personKey": "brett-willemburg|?",
+   "personKey": "brett-willemburg|1984-07-02",
    "name": "Brett Willemburg",
    "edition": 2006,
    "country": "RSA",
@@ -5310,7 +5310,7 @@
   },
   {
    "id": "2006-rsa-gavin-ray",
-   "personKey": "gavin-ray|?",
+   "personKey": "gavin-ray|1985-03-01",
    "name": "Gavin Ray",
    "edition": 2006,
    "country": "RSA",
@@ -5336,7 +5336,7 @@
   },
   {
    "id": "2006-rsa-ashley-scott",
-   "personKey": "ashley-scott|?",
+   "personKey": "ashley-scott|1987-07-14",
    "name": "Ashley Scott",
    "edition": 2006,
    "country": "RSA",
@@ -6906,7 +6906,7 @@
   },
   {
    "id": "2006-ned-david-bergman",
-   "personKey": "david-bergman|?",
+   "personKey": "david-bergman|1981-08-16",
    "name": "David Bergman",
    "edition": 2006,
    "country": "NED",
@@ -6958,7 +6958,7 @@
   },
   {
    "id": "2006-ned-rob-cordemans",
-   "personKey": "rob-cordemans|?",
+   "personKey": "rob-cordemans|1974-10-31",
    "name": "Rob Cordemans",
    "edition": 2006,
    "country": "NED",
@@ -7036,7 +7036,7 @@
   },
   {
    "id": "2006-ned-jair-jurrjens",
-   "personKey": "jair-jurrjens|?",
+   "personKey": "jair-jurrjens|1986-01-29",
    "name": "Jair Jurrjens",
    "edition": 2006,
    "country": "NED",
@@ -7086,7 +7086,7 @@
   },
   {
    "id": "2006-ned-diego-markwell",
-   "personKey": "diego-markwell|?",
+   "personKey": "diego-markwell|1981-08-16",
    "name": "Diego Markwell",
    "edition": 2006,
    "country": "NED",
@@ -7112,7 +7112,7 @@
   },
   {
    "id": "2006-ned-shairon-martis",
-   "personKey": "shairon-martis|?",
+   "personKey": "shairon-martis|1987-03-30",
    "name": "Shairon Martis",
    "edition": 2006,
    "country": "NED",
@@ -7138,7 +7138,7 @@
   },
   {
    "id": "2006-ned-alexander-smit",
-   "personKey": "alexander-smit|?",
+   "personKey": "alexander-smit|1985-10-02",
    "name": "Alexander Smit",
    "edition": 2006,
    "country": "NED",
@@ -7216,7 +7216,7 @@
   },
   {
    "id": "2006-ned-michiel-van-kampen",
-   "personKey": "michiel-van-kampen|?",
+   "personKey": "michiel-van-kampen|1976-01-23",
    "name": "Michiel van Kampen",
    "edition": 2006,
    "country": "NED",
@@ -7290,7 +7290,7 @@
   },
   {
    "id": "2006-ned-sidney-de-jong",
-   "personKey": "sidney-de-jong|?",
+   "personKey": "sidney-de-jong|1979-04-14",
    "name": "Sidney de Jong",
    "edition": 2006,
    "country": "NED",
@@ -7314,7 +7314,7 @@
   },
   {
    "id": "2006-ned-sharnol-adriana",
-   "personKey": "sharnol-adriana|?",
+   "personKey": "sharnol-adriana|1970-11-13",
    "name": "Sharnol Adriana",
    "edition": 2006,
    "country": "NED",
@@ -7368,7 +7368,7 @@
   },
   {
    "id": "2006-ned-michael-duursma",
-   "personKey": "michael-duursma|?",
+   "personKey": "michael-duursma|1978-02-26",
    "name": "Michael Duursma",
    "edition": 2006,
    "country": "NED",
@@ -7449,7 +7449,7 @@
   },
   {
    "id": "2006-ned-randall-simon",
-   "personKey": "randall-simon|?",
+   "personKey": "randall-simon|1975-05-25",
    "name": "Randall Simon",
    "edition": 2006,
    "country": "NED",
@@ -7474,7 +7474,7 @@
   },
   {
    "id": "2006-ned-hainley-statia",
-   "personKey": "hainley-statia|?",
+   "personKey": "hainley-statia|1986-01-19",
    "name": "Hainley Statia",
    "edition": 2006,
    "country": "NED",
@@ -7501,7 +7501,7 @@
   },
   {
    "id": "2006-ned-johnny-balentina",
-   "personKey": "johnny-balentina|?",
+   "personKey": "johnny-balentina|1971-08-08",
    "name": "Johnny Balentina",
    "edition": 2006,
    "country": "NED",
@@ -7527,7 +7527,7 @@
   },
   {
    "id": "2006-ned-yurendell-decaster",
-   "personKey": "yurendell-decaster|?",
+   "personKey": "yurendell-de-caster|1979-09-26",
    "name": "Yurendell DeCaster",
    "edition": 2006,
    "country": "NED",
@@ -7553,7 +7553,7 @@
   },
   {
    "id": "2006-ned-andruw-jones",
-   "personKey": "andruw-jones|?",
+   "personKey": "andruw-jones|1977-04-23",
    "name": "Andruw Jones",
    "edition": 2006,
    "country": "NED",
@@ -7629,7 +7629,7 @@
   },
   {
    "id": "2006-ned-danny-rombley",
-   "personKey": "danny-rombley|?",
+   "personKey": "danny-rombley|1979-11-26",
    "name": "Danny Rombley",
    "edition": 2006,
    "country": "NED",
@@ -7655,7 +7655,7 @@
   },
   {
    "id": "2006-ned-dirk-van-t-klooster",
-   "personKey": "dirk-van-t-klooster|?",
+   "personKey": "dirk-van-klooster|1976-04-23",
    "name": "Dirk van 't Klooster",
    "edition": 2006,
    "country": "NED",
@@ -7757,7 +7757,7 @@
   },
   {
    "id": "2006-pan-bruce-chen",
-   "personKey": "bruce-chen|?",
+   "personKey": "bruce-chen|1977-06-19",
    "name": "Bruce Chen",
    "edition": 2006,
    "country": "PAN",
@@ -7782,7 +7782,7 @@
   },
   {
    "id": "2006-pan-manuel-corpas",
-   "personKey": "manuel-corpas|?",
+   "personKey": "manuel-corpas|1982-12-03",
    "name": "Manuel Corpas",
    "edition": 2006,
    "country": "PAN",
@@ -7808,7 +7808,7 @@
   },
   {
    "id": "2006-pan-jorge-cortez",
-   "personKey": "jorge-cortez|?",
+   "personKey": "jorge-cortez|1972-09-04",
    "name": "Jorge Cortéz",
    "edition": 2006,
    "country": "PAN",
@@ -7860,7 +7860,7 @@
   },
   {
    "id": "2006-pan-paolo-espino",
-   "personKey": "paolo-espino|?",
+   "personKey": "paolo-espino|1987-01-10",
    "name": "Paolo Espino",
    "edition": 2006,
    "country": "PAN",
@@ -7988,7 +7988,7 @@
   },
   {
    "id": "2006-pan-davis-romero",
-   "personKey": "davis-romero|?",
+   "personKey": "davis-romero|1983-03-30",
    "name": "Davis Romero",
    "edition": 2006,
    "country": "PAN",
@@ -8014,7 +8014,7 @@
   },
   {
    "id": "2006-pan-damaso-espino",
-   "personKey": "damaso-espino|?",
+   "personKey": "damaso-espino|1983-05-08",
    "name": "Damaso Espino",
    "edition": 2006,
    "country": "PAN",
@@ -8062,7 +8062,7 @@
   },
   {
    "id": "2006-pan-cesar-quintero",
-   "personKey": "cesar-quintero|?",
+   "personKey": "cesar-quintero|1982-11-16",
    "name": "César Quintero",
    "edition": 2006,
    "country": "PAN",
@@ -8086,7 +8086,7 @@
   },
   {
    "id": "2006-pan-carlos-ruiz",
-   "personKey": "carlos-ruiz|?",
+   "personKey": "carlos-ruiz|1979-01-22",
    "name": "Carlos Ruiz",
    "edition": 2006,
    "country": "PAN",
@@ -8110,7 +8110,7 @@
   },
   {
    "id": "2006-pan-javier-castillo",
-   "personKey": "javier-castillo|?",
+   "personKey": "javier-castillo|1983-08-29",
    "name": "Javier Castillo",
    "edition": 2006,
    "country": "PAN",
@@ -8243,7 +8243,7 @@
   },
   {
    "id": "2006-pan-earl-agnoly",
-   "personKey": "earl-agnoly|?",
+   "personKey": "earl-agnoly|1975-11-18",
    "name": "Earl Agnoly",
    "edition": 2006,
    "country": "PAN",
@@ -8269,7 +8269,7 @@
   },
   {
    "id": "2006-pan-audes-de-leon",
-   "personKey": "audes-de-leon|?",
+   "personKey": "audes-de-leon|1979-06-26",
    "name": "Audes de León",
    "edition": 2006,
    "country": "PAN",
@@ -8321,7 +8321,7 @@
   },
   {
    "id": "2006-pan-carlos-lee",
-   "personKey": "carlos-lee|?",
+   "personKey": "carlos-lee|1976-06-20",
    "name": "Carlos Lee",
    "edition": 2006,
    "country": "PAN",
@@ -8397,7 +8397,7 @@
   },
   {
    "id": "2006-pan-ruben-rivera",
-   "personKey": "ruben-rivera|?",
+   "personKey": "ruben-rivera|1973-11-14",
    "name": "Rubén Rivera",
    "edition": 2006,
    "country": "PAN",
@@ -8473,7 +8473,7 @@
   },
   {
    "id": "2006-pur-fernando-cabrera",
-   "personKey": "fernando-cabrera|?",
+   "personKey": "fernando-cabrera|1981-11-16",
    "name": "Fernando Cabrera",
    "edition": 2006,
    "country": "PUR",
@@ -8547,7 +8547,7 @@
   },
   {
    "id": "2006-pur-pedro-feliciano",
-   "personKey": "pedro-feliciano|?",
+   "personKey": "pedro-feliciano|1976-08-25",
    "name": "Pedro Feliciano",
    "edition": 2006,
    "country": "PUR",
@@ -8597,7 +8597,7 @@
   },
   {
    "id": "2006-pur-ivan-maldonado",
-   "personKey": "ivan-maldonado|?",
+   "personKey": "ivan-maldonado|1980-06-07",
    "name": "Iván Maldonado",
    "edition": 2006,
    "country": "PUR",
@@ -8623,7 +8623,7 @@
   },
   {
    "id": "2006-pur-josue-matos",
-   "personKey": "josue-matos|?",
+   "personKey": "josue-matos|1978-03-15",
    "name": "Josué Matos",
    "edition": 2006,
    "country": "PUR",
@@ -8673,7 +8673,7 @@
   },
   {
    "id": "2006-pur-joel-pineiro",
-   "personKey": "joel-pineiro|?",
+   "personKey": "joel-pineiro|1978-09-25",
    "name": "Joel Piñeiro",
    "edition": 2006,
    "country": "PUR",
@@ -8724,7 +8724,7 @@
   },
   {
    "id": "2006-pur-orlando-roman",
-   "personKey": "orlando-roman|?",
+   "personKey": "orlando-roman|1978-11-28",
    "name": "Orlando Román",
    "edition": 2006,
    "country": "PUR",
@@ -8750,7 +8750,7 @@
   },
   {
    "id": "2006-pur-j-c-romero",
-   "personKey": "j-c-romero|?",
+   "personKey": "j-c-romero|1976-06-04",
    "name": "J. C. Romero",
    "edition": 2006,
    "country": "PUR",
@@ -8798,7 +8798,7 @@
   },
   {
    "id": "2006-pur-javier-vazquez",
-   "personKey": "javier-vazquez|?",
+   "personKey": "javier-vazquez|1976-07-25",
    "name": "Javier Vázquez",
    "edition": 2006,
    "country": "PUR",
@@ -8848,7 +8848,7 @@
   },
   {
    "id": "2006-pur-yadier-molina",
-   "personKey": "yadier-molina|?",
+   "personKey": "yadier-molina|1982-07-13",
    "name": "Yadier Molina",
    "edition": 2006,
    "country": "PUR",
@@ -8872,7 +8872,7 @@
   },
   {
    "id": "2006-pur-ivan-rodriguez",
-   "personKey": "ivan-rodriguez|?",
+   "personKey": "ivan-rodriguez|1971-11-30",
    "name": "Iván Rodríguez",
    "edition": 2006,
    "country": "PUR",
@@ -8946,7 +8946,7 @@
   },
   {
    "id": "2006-pur-alex-cora",
-   "personKey": "alex-cora|?",
+   "personKey": "alex-cora|1975-10-18",
    "name": "Alex Cora",
    "edition": 2006,
    "country": "PUR",
@@ -8971,7 +8971,7 @@
   },
   {
    "id": "2006-pur-carlos-delgado",
-   "personKey": "carlos-delgado|?",
+   "personKey": "carlos-delgado|1972-06-25",
    "name": "Carlos Delgado",
    "edition": 2006,
    "country": "PUR",
@@ -9070,7 +9070,7 @@
   },
   {
    "id": "2006-pur-carlos-beltran",
-   "personKey": "carlos-beltran|?",
+   "personKey": "carlos-beltran|1977-04-24",
    "name": "Carlos Beltrán",
    "edition": 2006,
    "country": "PUR",
@@ -9170,7 +9170,7 @@
   },
   {
    "id": "2006-pur-alex-rios",
-   "personKey": "alex-rios|?",
+   "personKey": "alex-rios|1981-02-18",
    "name": "Alex Ríos",
    "edition": 2006,
    "country": "PUR",
@@ -9194,7 +9194,7 @@
   },
   {
    "id": "2006-pur-bernie-williams",
-   "personKey": "bernie-williams|?",
+   "personKey": "bernie-williams|1968-09-13",
    "name": "Bernie Williams",
    "edition": 2006,
    "country": "PUR",
@@ -9220,7 +9220,7 @@
   },
   {
    "id": "2006-aus-craig-anderson",
-   "personKey": "craig-anderson|?",
+   "personKey": "craig-anderson|1980-10-30",
    "name": "Craig Anderson",
    "edition": 2006,
    "country": "AUS",
@@ -9272,7 +9272,7 @@
   },
   {
    "id": "2006-aus-adam-bright",
-   "personKey": "adam-bright|?",
+   "personKey": "adam-bright|1984-08-11",
    "name": "Adam Bright",
    "edition": 2006,
    "country": "AUS",
@@ -9324,7 +9324,7 @@
   },
   {
    "id": "2006-aus-tristan-crawford",
-   "personKey": "tristan-crawford|?",
+   "personKey": "tristan-crawford|1982-07-22",
    "name": "Tristan Crawford",
    "edition": 2006,
    "country": "AUS",
@@ -9376,7 +9376,7 @@
   },
   {
    "id": "2006-aus-josh-hill",
-   "personKey": "josh-hill|?",
+   "personKey": "joshua-hill|1983-03-27",
    "name": "Josh Hill",
    "edition": 2006,
    "country": "AUS",
@@ -9428,7 +9428,7 @@
   },
   {
    "id": "2006-aus-paul-mildren",
-   "personKey": "paul-mildren|?",
+   "personKey": "paul-mildren|1984-05-03",
    "name": "Paul Mildren",
    "edition": 2006,
    "country": "AUS",
@@ -9454,7 +9454,7 @@
   },
   {
    "id": "2006-aus-damian-moss",
-   "personKey": "damian-moss|?",
+   "personKey": "damian-moss|1976-11-24",
    "name": "Damian Moss",
    "edition": 2006,
    "country": "AUS",
@@ -9479,7 +9479,7 @@
   },
   {
    "id": "2006-aus-peter-moylan",
-   "personKey": "peter-moylan|?",
+   "personKey": "peter-moylan|1978-12-02",
    "name": "Peter Moylan",
    "edition": 2006,
    "country": "AUS",
@@ -9503,7 +9503,7 @@
   },
   {
    "id": "2006-aus-ryan-rowland-smith",
-   "personKey": "ryan-rowland-smith|?",
+   "personKey": "ryan-rowland-smith|1983-01-26",
    "name": "Ryan Rowland-Smith",
    "edition": 2006,
    "country": "AUS",
@@ -9577,7 +9577,7 @@
   },
   {
    "id": "2006-aus-rich-thompson",
-   "personKey": "rich-thompson|?",
+   "personKey": "rich-thompson|1984-06-01",
    "name": "Rich Thompson",
    "edition": 2006,
    "country": "AUS",
@@ -9603,7 +9603,7 @@
   },
   {
    "id": "2006-aus-michael-collins",
-   "personKey": "michael-collins|?",
+   "personKey": "michael-collins|1984-07-18",
    "name": "Michael Collins",
    "edition": 2006,
    "country": "AUS",
@@ -9627,7 +9627,7 @@
   },
   {
    "id": "2006-aus-andrew-graham",
-   "personKey": "andrew-graham|?",
+   "personKey": "andrew-graham|1982-04-22",
    "name": "Andrew Graham",
    "edition": 2006,
    "country": "AUS",
@@ -9727,7 +9727,7 @@
   },
   {
    "id": "2006-aus-bradley-harman",
-   "personKey": "bradley-harman|?",
+   "personKey": "brad-harman|1985-11-19",
    "name": "Bradley Harman",
    "edition": 2006,
    "country": "AUS",
@@ -9754,7 +9754,7 @@
   },
   {
    "id": "2006-aus-justin-huber",
-   "personKey": "justin-huber|?",
+   "personKey": "justin-huber|1982-07-01",
    "name": "Justin Huber",
    "edition": 2006,
    "country": "AUS",
@@ -9779,7 +9779,7 @@
   },
   {
    "id": "2006-aus-luke-hughes",
-   "personKey": "luke-hughes|?",
+   "personKey": "luke-hughes|1984-08-02",
    "name": "Luke Hughes",
    "edition": 2006,
    "country": "AUS",
@@ -9940,7 +9940,7 @@
   },
   {
    "id": "2006-aus-trent-oeltjen",
-   "personKey": "trent-oeltjen|?",
+   "personKey": "trent-oeltjen|1983-02-28",
    "name": "Trent Oeltjen",
    "edition": 2006,
    "country": "AUS",
@@ -9966,7 +9966,7 @@
   },
   {
    "id": "2006-aus-brett-roneberg",
-   "personKey": "brett-roneberg|?",
+   "personKey": "brett-roneberg|1979-02-05",
    "name": "Brett Roneberg",
    "edition": 2006,
    "country": "AUS",
@@ -10837,7 +10837,7 @@
   },
   {
    "id": "2006-ita-lenny-dinardo",
-   "personKey": "lenny-dinardo|?",
+   "personKey": "lenny-dinardo|1979-09-19",
    "name": "Lenny DiNardo",
    "edition": 2006,
    "country": "ITA",
@@ -10910,7 +10910,7 @@
   },
   {
    "id": "2006-ita-jason-grilli",
-   "personKey": "jason-grilli|?",
+   "personKey": "jason-grilli|1976-11-11",
    "name": "Jason Grilli",
    "edition": 2006,
    "country": "ITA",
@@ -10986,7 +10986,7 @@
   },
   {
    "id": "2006-ita-alex-maestri",
-   "personKey": "alex-maestri|?",
+   "personKey": "alex-maestri|1985-06-01",
    "name": "Alex Maestri",
    "edition": 2006,
    "country": "ITA",
@@ -11213,7 +11213,7 @@
   },
   {
    "id": "2006-ita-davide-dallospedale",
-   "personKey": "davide-dallospedale|?",
+   "personKey": "davide-dallospedale|1977-09-12",
    "name": "Davide Dallospedale",
    "edition": 2006,
    "country": "ITA",
@@ -11373,7 +11373,7 @@
   },
   {
    "id": "2006-ita-jack-santora",
-   "personKey": "jack-santora|?",
+   "personKey": "jack-santora|1976-10-06",
    "name": "Jack Santora",
    "edition": 2006,
    "country": "ITA",
@@ -11453,7 +11453,7 @@
   },
   {
    "id": "2006-ita-frank-catalanotto",
-   "personKey": "frank-catalanotto|?",
+   "personKey": "frank-catalanotto|1974-04-27",
    "name": "Frank Catalanotto",
    "edition": 2006,
    "country": "ITA",
@@ -11504,7 +11504,7 @@
   },
   {
    "id": "2006-ita-val-pascucci",
-   "personKey": "val-pascucci|?",
+   "personKey": "valentino-pascucci|1978-11-17",
    "name": "Val Pascucci",
    "edition": 2006,
    "country": "ITA",
@@ -12358,7 +12358,7 @@
   },
   {
    "id": "2009-chn-chen-kun",
-   "personKey": "chen-kun|1980-03-05",
+   "personKey": "kun-chen|1980-03-05",
    "name": "Chen Kun",
    "edition": 2009,
    "country": "CHN",
@@ -12410,7 +12410,7 @@
   },
   {
    "id": "2009-chn-li-chenhao",
-   "personKey": "li-chenhao|1977-07-02",
+   "personKey": "chenhao-li|1977-07-02",
    "name": "Li Chenhao",
    "edition": 2009,
    "country": "CHN",
@@ -12566,7 +12566,7 @@
   },
   {
    "id": "2009-chn-zhang-li",
-   "personKey": "zhang-li|1980-02-03",
+   "personKey": "li-zhang|1980-02-03",
    "name": "Zhang Li",
    "edition": 2009,
    "country": "CHN",
@@ -13115,7 +13115,7 @@
   },
   {
    "id": "2009-tpe-po-hsuan-keng",
-   "personKey": "po-hsuan-keng|1984-10-15",
+   "personKey": "keng-po-hsuan|1984-10-15",
    "name": "Po-Hsuan Keng",
    "edition": 2009,
    "country": "TPE",
@@ -13345,7 +13345,7 @@
   },
   {
    "id": "2009-tpe-sung-wei-tseng",
-   "personKey": "sung-wei-tseng|1984-12-28",
+   "personKey": "tseng-sung-wei|1984-12-28",
    "name": "Sung-Wei Tseng",
    "edition": 2009,
    "country": "TPE",
@@ -13371,7 +13371,7 @@
   },
   {
    "id": "2009-tpe-chih-kang-kao",
-   "personKey": "chih-kang-kao|1981-02-27",
+   "personKey": "kao-chih-kang|1981-02-27",
    "name": "Chih-Kang Kao",
    "edition": 2009,
    "country": "TPE",
@@ -13632,7 +13632,7 @@
   },
   {
    "id": "2009-tpe-chih-yao-chan",
-   "personKey": "chih-yao-chan|1983-01-02",
+   "personKey": "chan-chih-yao|1983-01-02",
    "name": "Chih-Yao Chan",
    "edition": 2009,
    "country": "TPE",
@@ -13710,7 +13710,7 @@
   },
   {
    "id": "2009-tpe-wei-chu-lin",
-   "personKey": "wei-chu-lin|1979-01-22",
+   "personKey": "lin-wei-chu|1979-01-22",
    "name": "Wei-Chu Lin",
    "edition": 2009,
    "country": "TPE",
@@ -14351,7 +14351,7 @@
   },
   {
    "id": "2009-jpn-norichika-aoki",
-   "personKey": "norichika-aoki|1982-01-05",
+   "personKey": "nori-aoki|1982-01-05",
    "name": "Norichika Aoki",
    "edition": 2009,
    "country": "JPN",
@@ -16679,7 +16679,7 @@
   },
   {
    "id": "2009-mex-luis-ignacio-ayala",
-   "personKey": "luis-ignacio-ayala|?",
+   "personKey": "luis-ayala|1978-01-12",
    "name": "Luis Ignacio Ayala",
    "edition": 2009,
    "country": "MEX",
@@ -16730,7 +16730,7 @@
   },
   {
    "id": "2009-mex-francisco-campos",
-   "personKey": "francisco-campos|?",
+   "personKey": "francisco-campos|1972-08-12",
    "name": "Francisco Campos",
    "edition": 2009,
    "country": "MEX",
@@ -16756,7 +16756,7 @@
   },
   {
    "id": "2009-mex-david-cortes",
-   "personKey": "david-cortes|?",
+   "personKey": "david-cortes|1973-10-15",
    "name": "David Cortés",
    "edition": 2009,
    "country": "MEX",
@@ -16780,7 +16780,7 @@
   },
   {
    "id": "2009-mex-elmer-dessens",
-   "personKey": "elmer-dessens|?",
+   "personKey": "elmer-dessens|1971-01-13",
    "name": "Elmer Dessens",
    "edition": 2009,
    "country": "MEX",
@@ -16830,7 +16830,7 @@
   },
   {
    "id": "2009-mex-rodrigo-lopez",
-   "personKey": "rodrigo-lopez|?",
+   "personKey": "rodrigo-lopez|1975-12-14",
    "name": "Rodrigo López",
    "edition": 2009,
    "country": "MEX",
@@ -16855,7 +16855,7 @@
   },
   {
    "id": "2009-mex-pablo-ortega",
-   "personKey": "pablo-ortega|?",
+   "personKey": "pablo-ortega|1976-11-07",
    "name": "Pablo Ortega",
    "edition": 2009,
    "country": "MEX",
@@ -16881,7 +16881,7 @@
   },
   {
    "id": "2009-mex-oliver-perez",
-   "personKey": "oliver-perez|?",
+   "personKey": "oliver-perez|1981-08-15",
    "name": "Óliver Pérez",
    "edition": 2009,
    "country": "MEX",
@@ -16906,7 +16906,7 @@
   },
   {
    "id": "2009-mex-dennys-reyes",
-   "personKey": "dennys-reyes|?",
+   "personKey": "dennys-reyes|1977-04-19",
    "name": "Dennys Reyes",
    "edition": 2009,
    "country": "MEX",
@@ -16930,7 +16930,7 @@
   },
   {
    "id": "2009-mex-ricardo-rincon",
-   "personKey": "ricardo-rincon|?",
+   "personKey": "ricardo-rincon|1970-04-13",
    "name": "Ricardo Rincón",
    "edition": 2009,
    "country": "MEX",
@@ -16954,7 +16954,7 @@
   },
   {
    "id": "2009-mex-francisco-rodriguez",
-   "personKey": "francisco-rodriguez|?",
+   "personKey": "francisco-rodriguez|1983-02-26",
    "name": "Francisco Rodríguez",
    "edition": 2009,
    "country": "MEX",
@@ -16980,7 +16980,7 @@
   },
   {
    "id": "2009-mex-joakim-soria",
-   "personKey": "joakim-soria|?",
+   "personKey": "joakim-soria|1984-05-18",
    "name": "Joakim Soria",
    "edition": 2009,
    "country": "MEX",
@@ -17029,7 +17029,7 @@
   },
   {
    "id": "2009-mex-miguel-ojeda",
-   "personKey": "miguel-ojeda|?",
+   "personKey": "miguel-ojeda|1975-01-29",
    "name": "Miguel Ojeda",
    "edition": 2009,
    "country": "MEX",
@@ -17053,7 +17053,7 @@
   },
   {
    "id": "2009-mex-jorge-cantu",
-   "personKey": "jorge-cantu|?",
+   "personKey": "jorge-cantu|1982-01-30",
    "name": "Jorge Cantú",
    "edition": 2009,
    "country": "MEX",
@@ -17078,7 +17078,7 @@
   },
   {
    "id": "2009-mex-erubiel-durazo",
-   "personKey": "erubiel-durazo|?",
+   "personKey": "erubiel-durazo|1974-01-23",
    "name": "Erubiel Durazo",
    "edition": 2009,
    "country": "MEX",
@@ -17102,7 +17102,7 @@
   },
   {
    "id": "2009-mex-adrian-gonzalez",
-   "personKey": "adrian-gonzalez|?",
+   "personKey": "adrian-gonzalez|1982-05-08",
    "name": "Adrián González",
    "edition": 2009,
    "country": "MEX",
@@ -17126,7 +17126,7 @@
   },
   {
    "id": "2009-mex-edgar-gonzalez",
-   "personKey": "edgar-gonzalez|?",
+   "personKey": "edgar-gonzalez|1978-06-14",
    "name": "Edgar Gonzalez",
    "edition": 2009,
    "country": "MEX",
@@ -17313,7 +17313,7 @@
   },
   {
    "id": "2009-mex-alfredo-amezaga",
-   "personKey": "alfredo-amezaga|?",
+   "personKey": "alfredo-amezaga|1978-01-16",
    "name": "Alfredo Amezaga",
    "edition": 2009,
    "country": "MEX",
@@ -17338,7 +17338,7 @@
   },
   {
    "id": "2009-mex-karim-garcia",
-   "personKey": "karim-garcia|?",
+   "personKey": "karim-garcia|1975-10-29",
    "name": "Karim García",
    "edition": 2009,
    "country": "MEX",
@@ -17415,7 +17415,7 @@
   },
   {
    "id": "2009-mex-mario-valenzuela",
-   "personKey": "mario-valenzuela|?",
+   "personKey": "mario-valenzuela|1977-03-10",
    "name": "Mario Valenzuela",
    "edition": 2009,
    "country": "MEX",
@@ -18195,7 +18195,7 @@
   },
   {
    "id": "2009-can-chris-begg",
-   "personKey": "chris-begg|1979-06-12",
+   "personKey": "chris-begg|1979-09-12",
    "name": "Chris Begg",
    "edition": 2009,
    "country": "CAN",
@@ -21233,7 +21233,7 @@
   },
   {
    "id": "2009-dom-odalis-perez",
-   "personKey": "odalis-perez|1977-06-11",
+   "personKey": "odalis-perez|1977-06-07",
    "name": "Odalis Pérez",
    "edition": 2009,
    "country": "DOM",
@@ -21356,7 +21356,7 @@
   },
   {
    "id": "2009-dom-juan-brito",
-   "personKey": "juan-brito|1977-11-07",
+   "personKey": "juan-brito|1979-11-07",
    "name": "Juan Brito",
    "edition": 2009,
    "country": "DOM",
@@ -24607,7 +24607,7 @@
   },
   {
    "id": "2013-chn-tao-bu",
-   "personKey": "tao-bu|1983-01-15",
+   "personKey": "bu-tao|1983-01-15",
    "name": "Tao Bu",
    "edition": 2013,
    "country": "CHN",
@@ -24763,7 +24763,7 @@
   },
   {
    "id": "2013-chn-jiangang-lu",
-   "personKey": "jiangang-lu|1979-02-19",
+   "personKey": "lu-jiangang|1979-02-19",
    "name": "Jiangang Lu",
    "edition": 2013,
    "country": "CHN",
@@ -24919,7 +24919,7 @@
   },
   {
    "id": "2013-chn-dawei-zhu",
-   "personKey": "dawei-zhu|1988-07-25",
+   "personKey": "zhu-dawei|1988-07-25",
    "name": "Dawei Zhu",
    "edition": 2013,
    "country": "CHN",
@@ -24993,7 +24993,7 @@
   },
   {
    "id": "2013-chn-wei-wang",
-   "personKey": "wei-wang|1978-12-25",
+   "personKey": "wang-wei|1978-12-25",
    "name": "Wei Wang",
    "edition": 2013,
    "country": "CHN",
@@ -25071,7 +25071,7 @@
   },
   {
    "id": "2013-chn-fujia-chu",
-   "personKey": "fujia-chu|1989-09-10",
+   "personKey": "chu-fujia|1989-09-10",
    "name": "Fujia Chu",
    "edition": 2013,
    "country": "CHN",
@@ -25098,7 +25098,7 @@
   },
   {
    "id": "2013-chn-delong-jia",
-   "personKey": "delong-jia|1985-07-04",
+   "personKey": "jia-delong|1985-07-04",
    "name": "Delong Jia",
    "edition": 2013,
    "country": "CHN",
@@ -25152,7 +25152,7 @@
   },
   {
    "id": "2013-chn-lei-li",
-   "personKey": "lei-li|1984-06-24",
+   "personKey": "li-lei|1984-06-24",
    "name": "Lei Li",
    "edition": 2013,
    "country": "CHN",
@@ -25206,7 +25206,7 @@
   },
   {
    "id": "2013-chn-yufeng-zhang",
-   "personKey": "yufeng-zhang|1977-02-09",
+   "personKey": "zhang-yufeng|1977-02-09",
    "name": "Yufeng Zhang",
    "edition": 2013,
    "country": "CHN",
@@ -25570,7 +25570,7 @@
   },
   {
    "id": "2013-cub-yadier-pedroso",
-   "personKey": "yadier-pedroso|1986-06-09",
+   "personKey": "yadier-pedroso|1986-04-09",
    "name": "Yadier Pedroso",
    "edition": 2013,
    "country": "CUB",
@@ -25928,7 +25928,7 @@
   },
   {
    "id": "2013-cub-frederich-cepeda",
-   "personKey": "frederich-cepeda|1980-04-08",
+   "personKey": "frederich-cepeda|1980-04-13",
    "name": "Frederich Cepeda",
    "edition": 2013,
    "country": "CUB",
@@ -27351,7 +27351,7 @@
   },
   {
    "id": "2013-aus-mitch-dening",
-   "personKey": "mitch-dening|1988-08-17",
+   "personKey": "mitch-dening|1988-07-17",
    "name": "Mitch Dening",
    "edition": 2013,
    "country": "AUS",
@@ -27636,7 +27636,7 @@
   },
   {
    "id": "2013-tpe-wei-lun-pan",
-   "personKey": "wei-lun-pan|1982-03-05",
+   "personKey": "pan-wei-lun|1982-03-05",
    "name": "Wei-Lun Pan",
    "edition": 2013,
    "country": "TPE",
@@ -27791,7 +27791,7 @@
   },
   {
    "id": "2013-tpe-yao-hsun-yang",
-   "personKey": "yao-hsun-yang|1983-01-22",
+   "personKey": "yang-yao-hsun|1983-01-22",
    "name": "Yao-Hsun Yang",
    "edition": 2013,
    "country": "TPE",
@@ -27841,7 +27841,7 @@
   },
   {
    "id": "2013-tpe-chih-kang-kao",
-   "personKey": "chih-kang-kao|1981-02-07",
+   "personKey": "kao-chih-kang|1981-02-27",
    "name": "Chih-Kang Kao",
    "edition": 2013,
    "country": "TPE",
@@ -27916,7 +27916,7 @@
   },
   {
    "id": "2013-tpe-yung-chi-chen",
-   "personKey": "yung-chi-chen|1983-07-13",
+   "personKey": "chen-yung-chi|1983-07-13",
    "name": "Yung-Chi Chen",
    "edition": 2013,
    "country": "TPE",
@@ -27970,7 +27970,7 @@
   },
   {
    "id": "2013-tpe-chih-sheng-lin",
-   "personKey": "chih-sheng-lin|1982-01-01",
+   "personKey": "ngayaw-ake|1982-01-01",
    "name": "Chih-Sheng Lin",
    "edition": 2013,
    "country": "TPE",
@@ -27997,7 +27997,7 @@
   },
   {
    "id": "2013-tpe-han-lin",
-   "personKey": "han-lin|1985-01-25",
+   "personKey": "han-lin|1985-01-24",
    "name": "Han Lin",
    "edition": 2013,
    "country": "TPE",
@@ -28104,7 +28104,7 @@
   },
   {
    "id": "2013-tpe-chien-ming-chang",
-   "personKey": "chien-ming-chang|1980-07-27",
+   "personKey": "chang-chien-ming|1980-07-27",
    "name": "Chien-Ming Chang",
    "edition": 2013,
    "country": "TPE",
@@ -28415,7 +28415,7 @@
   },
   {
    "id": "2013-ned-diego-markwell",
-   "personKey": "diego-markwell|1980-08-07",
+   "personKey": "diego-markwell|1981-08-16",
    "name": "Diego Markwell",
    "edition": 2013,
    "country": "NED",
@@ -28643,7 +28643,7 @@
   },
   {
    "id": "2013-ned-yurendell-decaster",
-   "personKey": "yurendell-decaster|1979-09-26",
+   "personKey": "yurendell-de-caster|1979-09-26",
    "name": "Yurendell DeCaster",
    "edition": 2013,
    "country": "NED",
@@ -29034,7 +29034,7 @@
   },
   {
    "id": "2013-kor-taehyon-chong",
-   "personKey": "taehyon-chong|1978-11-10",
+   "personKey": "chong-tae-hyon|1978-11-10",
    "name": "Taehyon Chong",
    "edition": 2013,
    "country": "KOR",
@@ -29060,7 +29060,7 @@
   },
   {
    "id": "2013-kor-wonsam-jang",
-   "personKey": "wonsam-jang|1983-06-09",
+   "personKey": "jang-won-sam|1983-06-09",
    "name": "Wonsam Jang",
    "edition": 2013,
    "country": "KOR",
@@ -29112,7 +29112,7 @@
   },
   {
    "id": "2013-kor-seunghwan-oh",
-   "personKey": "seunghwan-oh|1982-07-15",
+   "personKey": "oh-seung-hwan|1982-07-15",
    "name": "Seunghwan Oh",
    "edition": 2013,
    "country": "KOR",
@@ -29163,7 +29163,7 @@
   },
   {
    "id": "2013-kor-jaeweong-seo",
-   "personKey": "jaeweong-seo|1977-05-24",
+   "personKey": "seo-jae-weong|1977-05-24",
    "name": "Jaeweong Seo",
    "edition": 2013,
    "country": "KOR",
@@ -29293,7 +29293,7 @@
   },
   {
    "id": "2013-kor-sukmin-yoon",
-   "personKey": "sukmin-yoon|1986-07-24",
+   "personKey": "yoon-suk-min|1986-07-24",
    "name": "Sukmin Yoon",
    "edition": 2013,
    "country": "KOR",
@@ -29319,7 +29319,7 @@
   },
   {
    "id": "2013-kor-kabyong-jin",
-   "personKey": "kabyong-jin|1974-05-08",
+   "personKey": "jin-kab-yong|1974-05-08",
    "name": "Kabyong Jin",
    "edition": 2013,
    "country": "KOR",
@@ -29343,7 +29343,7 @@
   },
   {
    "id": "2013-kor-minho-kang",
-   "personKey": "minho-kang|1985-08-18",
+   "personKey": "kang-min-ho|1985-08-18",
    "name": "Minho Kang",
    "edition": 2013,
    "country": "KOR",
@@ -29367,7 +29367,7 @@
   },
   {
    "id": "2013-kor-jeong-choi",
-   "personKey": "jeong-choi|1987-02-28",
+   "personKey": "choi-jeong|1987-02-28",
    "name": "Jeong Choi",
    "edition": 2013,
    "country": "KOR",
@@ -29394,7 +29394,7 @@
   },
   {
    "id": "2013-kor-keunwoo-jeong",
-   "personKey": "keunwoo-jeong|1982-10-02",
+   "personKey": "jeong-keun-woo|1982-10-02",
    "name": "Keunwoo Jeong",
    "edition": 2013,
    "country": "KOR",
@@ -29473,7 +29473,7 @@
   },
   {
    "id": "2013-kor-taekyun-kim",
-   "personKey": "taekyun-kim|1982-05-29",
+   "personKey": "kim-tae-kyun|1982-05-29",
    "name": "Taekyun Kim",
    "edition": 2013,
    "country": "KOR",
@@ -29500,7 +29500,7 @@
   },
   {
    "id": "2013-kor-daeho-lee",
-   "personKey": "daeho-lee|1982-06-21",
+   "personKey": "lee-dae-ho|1982-06-21",
    "name": "Daeho Lee",
    "edition": 2013,
    "country": "KOR",
@@ -29524,7 +29524,7 @@
   },
   {
    "id": "2013-kor-seungyeop-lee",
-   "personKey": "seungyeop-lee|1976-08-18",
+   "personKey": "lee-seung-yeop|1976-08-18",
    "name": "Seungyeop Lee",
    "edition": 2013,
    "country": "KOR",
@@ -29630,7 +29630,7 @@
   },
   {
    "id": "2013-kor-jinyoung-lee",
-   "personKey": "jinyoung-lee|1980-06-15",
+   "personKey": "lee-jin-young|1980-06-15",
    "name": "Jinyoung Lee",
    "edition": 2013,
    "country": "KOR",
@@ -29656,7 +29656,7 @@
   },
   {
    "id": "2013-kor-yongkyu-lee",
-   "personKey": "yongkyu-lee|1985-08-26",
+   "personKey": "lee-yong-kyu|1985-08-26",
    "name": "Yongkyu Lee",
    "edition": 2013,
    "country": "KOR",
@@ -30211,7 +30211,7 @@
   },
   {
    "id": "2013-dom-hanley-ramirez",
-   "personKey": "hanley-ramirez|1983-12-22",
+   "personKey": "hanley-ramirez|1983-12-23",
    "name": "Hanley Ramírez",
    "edition": 2013,
    "country": "DOM",
@@ -30388,7 +30388,7 @@
   },
   {
    "id": "2013-pur-giancarlo-alvarado",
-   "personKey": "giancarlo-alvarado|1978-01-25",
+   "personKey": "giancarlo-alvarado|1978-01-24",
    "name": "Giancarlo Alvarado",
    "edition": 2013,
    "country": "PUR",
@@ -31974,7 +31974,7 @@
   },
   {
    "id": "2013-ven-ramon-a-ramirez",
-   "personKey": "ramon-a-ramirez|1982-09-16",
+   "personKey": "ramon-ramirez|1982-09-16",
    "name": "Ramón A. Ramírez",
    "edition": 2013,
    "country": "VEN",
@@ -32694,7 +32694,7 @@
   },
   {
    "id": "2013-can-chris-leroux",
-   "personKey": "chris-leroux|1984-04-14",
+   "personKey": "christopher-leroux|1984-04-14",
    "name": "Chris Leroux",
    "edition": 2013,
    "country": "CAN",
@@ -34220,7 +34220,7 @@
   },
   {
    "id": "2013-mex-oscar-villarreal",
-   "personKey": "oscar-villarreal|1981-11-22",
+   "personKey": "oscar-villareal|1981-11-22",
    "name": "Óscar Villarreal",
    "edition": 2013,
    "country": "MEX",
@@ -34571,7 +34571,7 @@
   },
   {
    "id": "2013-mex-luis-a-garcia",
-   "personKey": "luis-a-garcia|1978-05-11",
+   "personKey": "luis-a-garcia|1978-11-05",
    "name": "Luis A. García",
    "edition": 2013,
    "country": "MEX",
@@ -35314,7 +35314,7 @@
   },
   {
    "id": "2017-kor-chang-won-jun",
-   "personKey": "chang-won-jun|1985-07-31",
+   "personKey": "wonjun-jang|1985-07-31",
    "name": "Chang Won-jun",
    "edition": 2017,
    "country": "KOR",
@@ -35443,7 +35443,7 @@
   },
   {
    "id": "2017-kor-park-hee-soo",
-   "personKey": "park-hee-soo|1983-07-13",
+   "personKey": "heesoo-park|1983-07-13",
    "name": "Park Hee-soo",
    "edition": 2017,
    "country": "KOR",
@@ -35961,7 +35961,7 @@
   },
   {
    "id": "2017-kor-son-ah-seop",
-   "personKey": "son-ah-seop|1988-03-18",
+   "personKey": "ahseop-son|1988-03-18",
    "name": "Son Ah-seop",
    "edition": 2017,
    "country": "KOR",
@@ -35987,7 +35987,7 @@
   },
   {
    "id": "2017-tpe-chen-hung-wen",
-   "personKey": "chen-hung-wen|1986-02-03",
+   "personKey": "hung-wen-chen|1986-02-03",
    "name": "Chen Hung-wen",
    "edition": 2017,
    "country": "TPE",
@@ -36273,7 +36273,7 @@
   },
   {
    "id": "2017-tpe-ni-fu-te",
-   "personKey": "ni-fu-te|1982-11-14",
+   "personKey": "fu-te-ni|1982-11-14",
    "name": "Ni Fu-te",
    "edition": 2017,
    "country": "TPE",
@@ -36403,7 +36403,7 @@
   },
   {
    "id": "2017-tpe-wang-chien-ming",
-   "personKey": "wang-chien-ming|1980-03-31",
+   "personKey": "chien-ming-wang|1980-03-31",
    "name": "Wang Chien-ming",
    "edition": 2017,
    "country": "TPE",
@@ -36427,7 +36427,7 @@
   },
   {
    "id": "2017-tpe-wang-ching-ming",
-   "personKey": "wang-ching-ming|1986-01-16",
+   "personKey": "ching-ming-wang|1986-01-16",
    "name": "Wang Ching-ming",
    "edition": 2017,
    "country": "TPE",
@@ -36529,7 +36529,7 @@
   },
   {
    "id": "2017-tpe-cheng-da-hung",
-   "personKey": "cheng-da-hung|1981-01-12",
+   "personKey": "ta-hung-cheng|1981-01-12",
    "name": "Cheng Da-hung",
    "edition": 2017,
    "country": "TPE",
@@ -36553,7 +36553,7 @@
   },
   {
    "id": "2017-tpe-lin-kun-sheng",
-   "personKey": "lin-kun-sheng|1987-03-08",
+   "personKey": "kun-sheng-lin|1987-03-08",
    "name": "Lin Kun-sheng",
    "edition": 2017,
    "country": "TPE",
@@ -36604,7 +36604,7 @@
   },
   {
    "id": "2017-tpe-chiang-chih-hsien",
-   "personKey": "chiang-chih-hsien|1988-02-21",
+   "personKey": "chih-hsien-chiang|1988-02-21",
    "name": "Chiang Chih-hsien",
    "edition": 2017,
    "country": "TPE",
@@ -36685,7 +36685,7 @@
   },
   {
    "id": "2017-tpe-lin-chih-sheng",
-   "personKey": "lin-chih-sheng|1982-01-01",
+   "personKey": "ngayaw-ake|1982-01-01",
    "name": "Lin Chih-sheng",
    "edition": 2017,
    "country": "TPE",
@@ -36712,7 +36712,7 @@
   },
   {
    "id": "2017-tpe-lin-yi-chuan",
-   "personKey": "lin-yi-chuan|1985-11-11",
+   "personKey": "yi-chuan-lin|1985-11-11",
    "name": "Lin Yi-chuan",
    "edition": 2017,
    "country": "TPE",
@@ -36739,7 +36739,7 @@
   },
   {
    "id": "2017-tpe-wang-sheng-wei",
-   "personKey": "wang-sheng-wei|1984-04-01",
+   "personKey": "sheng-wei-wang|1984-04-01",
    "name": "Wang Sheng-wei",
    "edition": 2017,
    "country": "TPE",
@@ -36766,7 +36766,7 @@
   },
   {
    "id": "2017-tpe-chang-cheng-wei",
-   "personKey": "chang-cheng-wei|1986-08-05",
+   "personKey": "cheng-wei-chang|1986-08-05",
    "name": "Chang Cheng-wei",
    "edition": 2017,
    "country": "TPE",
@@ -36818,7 +36818,7 @@
   },
   {
    "id": "2017-tpe-hu-chin-lung",
-   "personKey": "hu-chin-lung|1984-02-02",
+   "personKey": "chin-lung-hu|1984-02-02",
    "name": "Hu Chin-lung",
    "edition": 2017,
    "country": "TPE",
@@ -36870,7 +36870,7 @@
   },
   {
    "id": "2017-tpe-lin-che-hsuan",
-   "personKey": "lin-che-hsuan|1988-09-21",
+   "personKey": "che-hsuan-lin|1988-09-21",
    "name": "Lin Che-hsuan",
    "edition": 2017,
    "country": "TPE",
@@ -37181,7 +37181,7 @@
   },
   {
    "id": "2017-ned-diego-markwell",
-   "personKey": "diego-markwell|1980-08-08",
+   "personKey": "diego-markwell|1981-08-16",
    "name": "Diego Markwell",
    "edition": 2017,
    "country": "NED",
@@ -37539,7 +37539,7 @@
   },
   {
    "id": "2017-ned-yurendell-decaster",
-   "personKey": "yurendell-decaster|1979-09-26",
+   "personKey": "yurendell-de-caster|1979-09-26",
    "name": "Yurendell DeCaster",
    "edition": 2017,
    "country": "NED",
@@ -37800,7 +37800,7 @@
   },
   {
    "id": "2017-ned-randolph-oduber",
-   "personKey": "randolph-oduber|1989-03-15",
+   "personKey": "randolph-oduber|1989-03-18",
    "name": "Randolph Oduber",
    "edition": 2017,
    "country": "NED",
@@ -39052,7 +39052,7 @@
   },
   {
    "id": "2017-jpn-masahiko-morifuku",
-   "personKey": "masahiko-morifuku|1986-07-29",
+   "personKey": "masahiko-morifuku|1986-06-29",
    "name": "Masahiko Morifuku",
    "edition": 2017,
    "country": "JPN",
@@ -40238,7 +40238,7 @@
   },
   {
    "id": "2017-aus-allan-de-san-miguel",
-   "personKey": "allan-de-san-miguel|1984-12-13",
+   "personKey": "allan-de-san-miguel|1988-02-01",
    "name": "Allan de San Miguel",
    "edition": 2017,
    "country": "AUS",
@@ -40475,7 +40475,7 @@
   },
   {
    "id": "2017-aus-mitch-dening",
-   "personKey": "mitch-dening|1988-08-17",
+   "personKey": "mitch-dening|1988-07-17",
    "name": "Mitch Dening",
    "edition": 2017,
    "country": "AUS",
@@ -40604,7 +40604,7 @@
   },
   {
    "id": "2017-chn-chen-kun",
-   "personKey": "chen-kun|1980-03-05",
+   "personKey": "kun-chen|1980-03-05",
    "name": "Chen Kun",
    "edition": 2017,
    "country": "CHN",
@@ -40734,7 +40734,7 @@
   },
   {
    "id": "2017-chn-li-xin",
-   "personKey": "li-xin|1992-04-17",
+   "personKey": "li-xin|1992-04-10",
    "name": "Li Xin",
    "edition": 2017,
    "country": "CHN",
@@ -40760,7 +40760,7 @@
   },
   {
    "id": "2017-chn-liu-yu",
-   "personKey": "liu-yu|1991-09-15",
+   "personKey": "yu-liu|1991-09-15",
    "name": "Liu Yu",
    "edition": 2017,
    "country": "CHN",
@@ -40838,7 +40838,7 @@
   },
   {
    "id": "2017-chn-luo-xia",
-   "personKey": "luo-xia|1992-07-14",
+   "personKey": "xia-luo|1992-07-14",
    "name": "Luo Xia",
    "edition": 2017,
    "country": "CHN",
@@ -40966,7 +40966,7 @@
   },
   {
    "id": "2017-chn-meng-weiqiang",
-   "personKey": "meng-weiqiang|1989-05-31",
+   "personKey": "weiqiang-meng|1989-05-31",
    "name": "Meng Weiqiang",
    "edition": 2017,
    "country": "CHN",
@@ -41203,7 +41203,7 @@
   },
   {
    "id": "2017-chn-lu-zhenhong",
-   "personKey": "lu-zhenhong|1991-04-15",
+   "personKey": "zhenhong-lu|1991-04-15",
    "name": "Lu Zhenhong",
    "edition": 2017,
    "country": "CHN",
@@ -41281,7 +41281,7 @@
   },
   {
    "id": "2017-chn-yang-yanyong",
-   "personKey": "yang-yanyong|1994-05-05",
+   "personKey": "yanyong-yang|1994-05-05",
    "name": "Yang Yanyong",
    "edition": 2017,
    "country": "CHN",
@@ -42114,7 +42114,7 @@
   },
   {
    "id": "2017-cub-frederich-cepeda",
-   "personKey": "frederich-cepeda|1980-04-08",
+   "personKey": "frederich-cepeda|1980-04-13",
    "name": "Frederich Cepeda",
    "edition": 2017,
    "country": "CUB",
@@ -43237,7 +43237,7 @@
   },
   {
    "id": "2017-can-chris-leroux",
-   "personKey": "chris-leroux|1984-04-14",
+   "personKey": "christopher-leroux|1984-04-14",
    "name": "Chris Leroux",
    "edition": 2017,
    "country": "CAN",
@@ -45655,7 +45655,7 @@
   },
   {
    "id": "2017-mex-luis-mendoza",
-   "personKey": "luis-mendoza|1983-08-31",
+   "personKey": "luis-mendoza|1983-10-31",
    "name": "Luis Mendoza",
    "edition": 2017,
    "country": "MEX",
@@ -45806,7 +45806,7 @@
   },
   {
    "id": "2017-mex-sergio-romo",
-   "personKey": "sergio-romo|1983-03-04",
+   "personKey": "sergio-romo|1982-03-04",
    "name": "Sergio Romo",
    "edition": 2017,
    "country": "MEX",
@@ -46570,7 +46570,7 @@
   },
   {
    "id": "2017-ita-alessandro-maestri",
-   "personKey": "alessandro-maestri|1985-06-01",
+   "personKey": "alex-maestri|1985-06-01",
    "name": "Alessandro Maestri",
    "edition": 2017,
    "country": "ITA",
@@ -46725,7 +46725,7 @@
   },
   {
    "id": "2017-ita-pat-venditte",
-   "personKey": "pat-venditte|1985-10-30",
+   "personKey": "pat-venditte|1985-06-30",
    "name": "Pat Venditte",
    "edition": 2017,
    "country": "ITA",
@@ -48783,7 +48783,7 @@
   },
   {
    "id": "2017-ven-carlos-gonzalez",
-   "personKey": "carlos-gonzalez|1985-10-17",
+   "personKey": "carlos-gonzalez|1985-12-04",
    "name": "Carlos González",
    "edition": 2017,
    "country": "VEN",
@@ -48855,7 +48855,7 @@
   },
   {
    "id": "2023-tpe-yen-ching-lu",
-   "personKey": "yen-ching-lu|1996-03-10",
+   "personKey": "lu-yen-ching|1996-03-10",
    "name": "Yen-Ching Lu",
    "edition": 2023,
    "country": "TPE",
@@ -48881,7 +48881,7 @@
   },
   {
    "id": "2023-tpe-wei-chung-wang",
-   "personKey": "wei-chung-wang|1992-04-25",
+   "personKey": "wang-wei-chung|1992-04-25",
    "name": "Wei-Chung Wang",
    "edition": 2023,
    "country": "TPE",
@@ -48931,7 +48931,7 @@
   },
   {
    "id": "2023-tpe-c-c-lee",
-   "personKey": "c-c-lee|1986-10-21",
+   "personKey": "cheng-chang-lee|1986-10-21",
    "name": "C. C. Lee",
    "edition": 2023,
    "country": "TPE",
@@ -49137,7 +49137,7 @@
   },
   {
    "id": "2023-tpe-shao-ching-chiang",
-   "personKey": "shao-ching-chiang|1993-11-10",
+   "personKey": "chiang-shao-ching|1993-11-10",
    "name": "Shao-Ching Chiang",
    "edition": 2023,
    "country": "TPE",
@@ -49964,7 +49964,7 @@
   },
   {
    "id": "2023-cub-yoennis-yera",
-   "personKey": "yoennis-yera|1989-10-18",
+   "personKey": "yoanni-yera|1989-10-18",
    "name": "Yoennis Yera",
    "edition": 2023,
    "country": "CUB",
@@ -50116,7 +50116,7 @@
   },
   {
    "id": "2023-cub-yurisbel-gracial",
-   "personKey": "yurisbel-gracial|1985-10-14",
+   "personKey": "yurisbel-gracial|1985-08-14",
    "name": "Yurisbel Gracial",
    "edition": 2023,
    "country": "CUB",
@@ -52855,7 +52855,7 @@
   },
   {
    "id": "2023-pan-ruben-tejada",
-   "personKey": "ruben-tejada|1989-10-27",
+   "personKey": "ruben-tejada|1989-09-01",
    "name": "Rubén Tejada",
    "edition": 2023,
    "country": "PAN",
@@ -53065,7 +53065,7 @@
   },
   {
    "id": "2023-aus-tim-atherton",
-   "personKey": "tim-atherton|1989-11-07",
+   "personKey": "tim-atherton|1991-09-14",
    "name": "Tim Atherton",
    "edition": 2023,
    "country": "AUS",
@@ -53195,7 +53195,7 @@
   },
   {
    "id": "2023-aus-jon-kennedy",
-   "personKey": "jon-kennedy|1994-09-20",
+   "personKey": "jon-kennedy|1995-09-20",
    "name": "Jon Kennedy",
    "edition": 2023,
    "country": "AUS",
@@ -53403,7 +53403,7 @@
   },
   {
    "id": "2023-aus-todd-van-steensel",
-   "personKey": "todd-van-steensel|1991-01-14",
+   "personKey": "todd-van-steensel|1991-11-14",
    "name": "Todd Van Steensel",
    "edition": 2023,
    "country": "AUS",
@@ -54775,7 +54775,7 @@
   },
   {
    "id": "2023-kor-kim-kwang-hyun",
-   "personKey": "kim-kwang-hyun|1988-07-22",
+   "personKey": "kim-kwang-hyun|1988-07-02",
    "name": "Kim Kwang-hyun",
    "edition": 2023,
    "country": "KOR",
@@ -55318,7 +55318,7 @@
   },
   {
    "id": "2023-kor-kim-hyun-soo",
-   "personKey": "kim-hyun-soo|1988-01-12",
+   "personKey": "hyun-soo-kim|1988-01-02",
    "name": "Kim Hyun-soo",
    "edition": 2023,
    "country": "KOR",
@@ -55472,7 +55472,7 @@
   },
   {
    "id": "2023-chn-hai-cheng-gong",
-   "personKey": "hai-cheng-gong|1998-12-28",
+   "personKey": "gong-haicheng|1998-12-28",
    "name": "Hai-Cheng Gong",
    "edition": 2023,
    "country": "CHN",
@@ -59529,7 +59529,7 @@
   },
   {
    "id": "2023-col-adrian-sanchez",
-   "personKey": "adrian-sanchez|1994-09-06",
+   "personKey": "adrian-sanchez|1990-08-16",
    "name": "Adrián Sánchez",
    "edition": 2023,
    "country": "COL",
@@ -59556,7 +59556,7 @@
   },
   {
    "id": "2023-col-gio-urshela",
-   "personKey": "gio-urshela|1991-10-11",
+   "personKey": "giovanny-urshela|1991-10-11",
    "name": "Gio Urshela",
    "edition": 2023,
    "country": "COL",
@@ -65539,7 +65539,7 @@
   },
   {
    "id": "2023-dom-nelson-cruz",
-   "personKey": "nelson-cruz|1980-06-01",
+   "personKey": "nelson-cruz|1980-07-01",
    "name": "Nelson Cruz",
    "edition": 2023,
    "country": "DOM",
@@ -66942,7 +66942,7 @@
   },
   {
    "id": "2026-cub-yariel-rodriguez",
-   "personKey": "yariel-rodriguez|1997-10-03",
+   "personKey": "yariel-rodriguez|1997-03-10",
    "name": "Yariel Rodríguez",
    "edition": 2026,
    "country": "CUB",
@@ -67020,7 +67020,7 @@
   },
   {
    "id": "2026-cub-roel-santos",
-   "personKey": "roel-santos|1987-05-22",
+   "personKey": "roel-santos|1987-09-15",
    "name": "Roel Santos",
    "edition": 2026,
    "country": "CUB",
@@ -68084,7 +68084,7 @@
   },
   {
    "id": "2026-pan-jose-caballero",
-   "personKey": "jose-caballero|1996-02-10",
+   "personKey": "jose-caballero|1996-08-30",
    "name": "José Caballero",
    "edition": 2026,
    "country": "PAN",
@@ -68291,7 +68291,7 @@
   },
   {
    "id": "2026-pan-james-gonzalez",
-   "personKey": "james-gonzalez|2000-09-05",
+   "personKey": "james-gonzalez|2000-09-15",
    "name": "James González",
    "edition": 2026,
    "country": "PAN",
@@ -68317,7 +68317,7 @@
   },
   {
    "id": "2026-pan-severino-gonzalez",
-   "personKey": "severino-gonzalez|1992-09-28",
+   "personKey": "severino-gonzalez|1992-09-29",
    "name": "Severino González",
    "edition": 2026,
    "country": "PAN",
@@ -68600,7 +68600,7 @@
   },
   {
    "id": "2026-pan-ruben-tejada",
-   "personKey": "ruben-tejada|1989-10-27",
+   "personKey": "ruben-tejada|1989-09-01",
    "name": "Rubén Tejada",
    "edition": 2026,
    "country": "PAN",
@@ -69297,7 +69297,7 @@
   },
   {
    "id": "2026-col-gio-urshela",
-   "personKey": "gio-urshela|1991-10-11",
+   "personKey": "giovanny-urshela|1991-10-11",
    "name": "Gio Urshela",
    "edition": 2026,
    "country": "COL",
@@ -69371,7 +69371,7 @@
   },
   {
    "id": "2026-col-guillo-zuniga",
-   "personKey": "guillo-zuniga|1998-10-10",
+   "personKey": "guillermo-zuniga|1998-10-10",
    "name": "Guillo Zuñiga",
    "edition": 2026,
    "country": "COL",
@@ -70686,7 +70686,7 @@
   },
   {
    "id": "2026-mex-roel-ramirez",
-   "personKey": "roel-ramirez|1995-05-01",
+   "personKey": "roel-ramirez|1995-05-26",
    "name": "Roel Ramírez",
    "edition": 2026,
    "country": "MEX",
@@ -70861,7 +70861,7 @@
   },
   {
    "id": "2026-mex-alexis-wilson",
-   "personKey": "alexis-wilson|1996-08-31",
+   "personKey": "alexis-wilson|1996-08-13",
    "name": "Alexis Wilson",
    "edition": 2026,
    "country": "MEX",
@@ -72202,7 +72202,7 @@
   },
   {
    "id": "2026-gbr-bj-murray",
-   "personKey": "bj-murray|2000-01-05",
+   "personKey": "b-j-murray|2000-01-05",
    "name": "BJ Murray",
    "edition": 2026,
    "country": "GBR",
@@ -74436,7 +74436,7 @@
   },
   {
    "id": "2026-aus-sam-holland",
-   "personKey": "sam-holland|1994-02-20",
+   "personKey": "samuel-holland|1994-02-20",
    "name": "Sam Holland",
    "edition": 2026,
    "country": "AUS",
@@ -74462,7 +74462,7 @@
   },
   {
    "id": "2026-aus-jon-kennedy",
-   "personKey": "jon-kennedy|1994-09-20",
+   "personKey": "jon-kennedy|1995-09-20",
    "name": "Jon Kennedy",
    "edition": 2026,
    "country": "AUS",
@@ -74720,7 +74720,7 @@
   },
   {
    "id": "2026-aus-todd-van-steensel",
-   "personKey": "todd-van-steensel|1991-01-14",
+   "personKey": "todd-van-steensel|1991-11-14",
    "name": "Todd Van Steensel",
    "edition": 2026,
    "country": "AUS",
@@ -74980,7 +74980,7 @@
   },
   {
    "id": "2026-kor-gwak-been",
-   "personKey": "gwak-been|1998-05-28",
+   "personKey": "gwak-been|1999-05-28",
    "name": "Gwak Been",
    "edition": 2026,
    "country": "KOR",
@@ -75369,7 +75369,7 @@
   },
   {
    "id": "2026-kor-noh-kyung-eun",
-   "personKey": "noh-kyung-eun|1984-03-11",
+   "personKey": "kyungeun-noh|1984-03-11",
    "name": "Noh Kyung-eun",
    "edition": 2026,
    "country": "KOR",
@@ -75498,7 +75498,7 @@
   },
   {
    "id": "2026-kor-ryu-hyun-jin",
-   "personKey": "ryu-hyun-jin|1987-12-25",
+   "personKey": "ryu-hyun-jin|1987-03-25",
    "name": "Ryu Hyun-jin",
    "edition": 2026,
    "country": "KOR",
@@ -75885,7 +75885,7 @@
   },
   {
    "id": "2026-cze-william-escala",
-   "personKey": "william-escala|1998-12-11",
+   "personKey": "willie-escala|1998-12-11",
    "name": "William Escala",
    "edition": 2026,
    "country": "CZE",
@@ -76413,7 +76413,7 @@
   },
   {
    "id": "2026-cze-boris-vecerka",
-   "personKey": "boris-vecerka|2003-08-22",
+   "personKey": "boris-vecerka|2003-08-11",
    "name": "Boris Večerka",
    "edition": 2026,
    "country": "CZE",
@@ -76672,7 +76672,7 @@
   },
   {
    "id": "2026-tpe-chen-chieh-hsien",
-   "personKey": "chen-chieh-hsien|1994-01-07",
+   "personKey": "chieh-hsien-chen|1994-01-07",
    "name": "Chen Chieh-hsien",
    "edition": 2026,
    "country": "TPE",
@@ -76774,7 +76774,7 @@
   },
   {
    "id": "2026-tpe-giljegiljaw-kungkuan",
-   "personKey": "giljegiljaw-kungkuan|1994-03-13",
+   "personKey": "kungkuan-giljegiljaw|1994-03-13",
    "name": "Giljegiljaw Kungkuan",
    "edition": 2026,
    "country": "TPE",
@@ -77640,7 +77640,7 @@
   },
   {
    "id": "2026-ven-andres-machado",
-   "personKey": "andres-machado|2000-07-06",
+   "personKey": "andres-machado|1993-04-22",
    "name": "Andrés Machado",
    "edition": 2026,
    "country": "VEN",
@@ -78877,7 +78877,7 @@
   },
   {
    "id": "2026-ned-ray-patrick-didder",
-   "personKey": "ray-patrick-didder|1994-10-01",
+   "personKey": "ray-patrick-didder|1994-01-10",
    "name": "Ray-Patrick Didder",
    "edition": 2026,
    "country": "NED",
@@ -79447,7 +79447,7 @@
   },
   {
    "id": "2026-ned-chadwick-tromp",
-   "personKey": "chadwick-tromp|1995-03-21",
+   "personKey": "chadwick-tromp|1993-04-26",
    "name": "Chadwick Tromp",
    "edition": 2026,
    "country": "NED",
@@ -80522,7 +80522,7 @@
   },
   {
    "id": "2026-nca-brandon-leyton",
-   "personKey": "brandon-leyton|1998-12-17",
+   "personKey": "steven-leyton|1998-12-17",
    "name": "Brandon Leyton",
    "edition": 2026,
    "country": "NCA",
@@ -80935,7 +80935,7 @@
   },
   {
    "id": "2026-nca-carlos-teller",
-   "personKey": "carlos-teller|1986-10-03",
+   "personKey": "carlos-teller|1986-11-03",
    "name": "Carlos Teller",
    "edition": 2026,
    "country": "NCA",
