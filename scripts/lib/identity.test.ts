@@ -3,7 +3,7 @@ import { normalizeName } from './databank';
 import { resolveIdentities, typoClose, type IdentityRow, type PersonAliases } from './identity';
 
 const SOURCE = 'https://en.wikipedia.org/wiki/2009_World_Baseball_Classic_rosters';
-const NONE: PersonAliases = { aliases: [], distinct: [], wrongLahmanJoins: [] };
+const NONE: PersonAliases = { aliases: [], distinct: [] };
 
 /** A roster row as the rating pass emits it: provisional personKey = slug|dob. */
 function row(edition: number, country: string, name: string, dob: string | null, lahmanId: string | null = null, suffix = ''): IdentityRow {
@@ -195,7 +195,6 @@ describe('resolveIdentities: curation file checks', () => {
     const curation: PersonAliases = {
       aliases: [{ ids: [a.id, '2017-ita-nobody'], note: 'x', source: SOURCE }],
       distinct: [{ ids: [a.id, '2023-ita-nobody'], note: 'x', source: SOURCE }],
-      wrongLahmanJoins: [],
     };
     const { errors } = keysOf([a], curation);
     expect(errors.join('\n')).toContain('2017-ita-nobody');
@@ -207,27 +206,5 @@ describe('resolveIdentities: curation file checks', () => {
     const b = row(2017, 'ITA', 'Alessandro Maestri', '1985-06-01');
     const curation: PersonAliases = { ...NONE, aliases: [{ ids: [a.id, b.id], note: 'x', source: '' }] };
     expect(keysOf([a, b], curation).errors.join('\n')).toContain('source');
-  });
-
-  test('a wrong Lahman join is ignored for identity', () => {
-    const a = row(2013, 'VEN', 'Carlos González', '1985-12-04', 'gomezca01');
-    const b = row(2017, 'VEN', 'Carlos González', '1985-10-17', 'gonzaca01');
-    const curation: PersonAliases = {
-      ...NONE,
-      aliases: [{ ids: [a.id, b.id], note: 'same article', source: SOURCE }],
-      wrongLahmanJoins: [{ id: a.id, lahmanId: 'gomezca01', note: 'roster DOB is another player', source: SOURCE }],
-    };
-    const { key, errors } = keysOf([a, b], curation);
-    expect(key(b)).toBe(key(a));
-    expect(errors).toEqual([]);
-  });
-
-  test('a wrong-join entry fails once the rating join has changed', () => {
-    const a = row(2013, 'VEN', 'Carlos González', '1985-10-17', 'gonzaca01');
-    const curation: PersonAliases = {
-      ...NONE,
-      wrongLahmanJoins: [{ id: a.id, lahmanId: 'gomezca01', note: 'x', source: SOURCE }],
-    };
-    expect(keysOf([a], curation).errors.join('\n')).toMatch(/gomezca01.*gonzaca01|gonzaca01.*gomezca01/);
   });
 });

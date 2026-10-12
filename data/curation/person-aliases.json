@@ -17,7 +17,7 @@
     { "ids": ["2017-cub-yoanni-yera", "2023-cub-yoennis-yera"], "note": "Same birth date (1989-10-18). The Yoennis Yera article redirects to Yoanni Yera, who played the 2017 and 2023 Classics.", "source": "https://en.wikipedia.org/wiki/Yoanni_Yera" },
     { "ids": ["2017-aus-tim-atherton", "2023-aus-tim-atherton"], "note": "Both rows link the same article: born 1989-11-07, played the 2017 and 2023 Classics. The 2017 row carries 1991-09-14.", "source": "https://en.wikipedia.org/wiki/Tim_Atherton" },
     { "ids": ["2009-pan-ruben-tejada", "2023-pan-ruben-tejada", "2026-pan-ruben-tejada"], "note": "All rows link the same article. The 2009 birth date (1989-09-01) is a typo of 1989-10-27 (Lahman tejadru01).", "source": "https://en.wikipedia.org/wiki/Rubén_Tejada" },
-    { "ids": ["2013-ven-carlos-gonzalez", "2017-ven-carlos-gonzalez"], "note": "Both rows link the same article. The 2013 row carries 1985-12-04, the birth date of Carlos Gómez (see wrongLahmanJoins).", "source": "https://en.wikipedia.org/wiki/Carlos_González_(baseball)" },
+    { "ids": ["2013-ven-carlos-gonzalez", "2017-ven-carlos-gonzalez"], "note": "Both rows link the same article. The 2013 row carries 1985-12-04, the birth date of Carlos Gómez; lahman-fixes.json pins its Lahman join.", "source": "https://en.wikipedia.org/wiki/Carlos_González_(baseball)" },
     { "ids": ["2017-col-adrian-sanchez", "2023-col-adrian-sanchez"], "note": "Both rows link the same article. The 2023 birth date (1994-09-06) is copied from teammate Harold Ramírez.", "source": "https://en.wikipedia.org/wiki/Adrián_Sánchez_(baseball)" },
     { "ids": ["2023-ned-chadwick-tromp", "2026-ned-chadwick-tromp"], "note": "Both rows link the same article; catcher both years. The 2023 birth date (1993-04-26) differs from 1995-03-21 (Lahman trompch01).", "source": "https://en.wikipedia.org/wiki/Chadwick_Tromp" },
     { "ids": ["2023-pan-jose-caballero", "2026-pan-jose-caballero"], "note": "Both rows link the same article. The 2026 birth date (1996-02-10) differs from 1996-08-30 (Lahman cabaljo01).", "source": "https://en.wikipedia.org/wiki/José_Caballero_(baseball)" },
@@ -30,8 +30,5 @@
     { "ids": ["2023-pur-edwin-diaz", "2023-pur-edwin-diaz-2"], "note": "Co-rostered in 2023: the closer (born 1994-03-22) and an infielder (born 1995-08-25).", "source": "https://en.wikipedia.org/wiki/2023_World_Baseball_Classic_rosters" },
     { "ids": ["2023-chn-chen-chen", "2023-chn-chen-chen-2"], "note": "Co-rostered in 2023: a catcher and an infielder.", "source": "https://en.wikipedia.org/wiki/2023_World_Baseball_Classic_rosters" },
     { "ids": ["2017-cub-jose-rodriguez", "2023-cub-jose-rodriguez"], "note": "Not verified either way. The 2017 date is a Jan-1 placeholder and the two rows link different missing articles, so they stay apart.", "source": "https://en.wikipedia.org/wiki/2023_World_Baseball_Classic_rosters" }
-  ],
-  "wrongLahmanJoins": [
-    { "id": "2013-ven-carlos-gonzalez", "lahmanId": "gomezca01", "note": "The roster row carries Carlos Gómez's birth date (1985-12-04), so the rating pass joins it to his Lahman id. Identity ignores this join; the rating is unchanged.", "source": "https://en.wikipedia.org/wiki/Carlos_González_(baseball)" }
   ]
 }

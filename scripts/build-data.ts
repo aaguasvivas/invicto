@@ -13,13 +13,15 @@ import { loadCuration, verifyCuration, TIER_VALUES } from './lib/curation.js';
 import { DATABANK_SOURCE, loadDatabank, normalizeName } from './lib/databank.js';
 import {
   bestMlbPitching, bestMlbSeason, buildClubLeagueMap, classifyLeague, clamp99, compositeToRating,
-  defenseRating, matchPlayer, pitcherRoles, refinePositions, relScoreToRating, seededRng,
-  speedScoreToRating, type Position, type RatedPlayer, type RatingMethod,
+  defenseRating, loadLahmanFixes, matchRoster, pitcherRoles, refinePositions, relScoreToRating, seededRng,
+  speedScoreToRating, withRecordIds, type OffenseResult, type Position, type RatedPlayer, type RatingMethod,
 } from './lib/ratings.js';
 import { loadPersonAliases, resolveIdentities, type IdentityRow } from './lib/identity.js';
 import { EDITIONS, loadPage, parseEdition, type ScrapedPlayer } from './lib/wikipedia.js';
 
 const LEAGUE_MULT: Record<string, number> = { mlb: 1.0, npb: 0.92, kbo: 0.85, cpbl: 0.78, cuba: 0.8, milb: 0.75, other: 0.7 };
+/** Top foreign leagues: a player matched to Lahman keeps his roster league's multiplier on the heuristic path. */
+const FOREIGN_LEAGUES = new Set(['npb', 'kbo', 'cpbl', 'cuba']);
 const TIER_COMPOSITE = { A: 125, B: 100, C: 85 } as const;
 const TWO_WAY_PA = 200; // a "pitcher" with a ≥200 PA MLB season near the edition bats (Ohtani rule)
 /** Positional offense adjustment (OPS+-scale points): premium positions get bat credit. */
@@ -61,17 +63,19 @@ async function main() {
   const curationLifts: string[] = [];
   console.log(`Curation: ${curation.length} cited entries verified\n`);
 
-  const usedIds = new Set<string>();
+  const roster = withRecordIds(scraped);
+  const { matches, errors: matchErrors } = matchRoster(roster, db, loadLahmanFixes());
+  const joinCount: Record<string, number> = {};
+  for (const m of matches.values()) joinCount[m?.method ?? 'unmatched'] = (joinCount[m?.method ?? 'unmatched'] ?? 0) + 1;
+  console.log(`Lahman joins: ${JSON.stringify(joinCount)}\n`);
+
   const methodCount: Record<string, number> = {};
   const identityRows: IdentityRow[] = [];
-  const rated: RatedPlayer[] = scraped.map((p) => {
+  const rated: RatedPlayer[] = roster.map(({ id, player: p }) => {
     const slug = normalizeName(p.name).replace(/ /g, '-');
-    let id = `${p.edition}-${p.country.toLowerCase()}-${slug}`;
-    for (let i = 2; usedIds.has(id); i++) id = `${p.edition}-${p.country.toLowerCase()}-${slug}-${i}`;
-    usedIds.add(id);
     const rng = seededRng(id);
 
-    const match = matchPlayer(p, db);
+    const match = matches.get(id) ?? null;
     const personKey = `${slug}|${p.dob ?? '?'}`; // provisional; the identity step below settles it
     const lahmanId = match?.person.playerID ?? null;
     identityRows.push({ id, personKey, name: p.name, edition: p.edition, country: p.country, dob: p.dob, lahmanId });
@@ -83,20 +87,28 @@ async function main() {
     const rosterLeague = classifyLeague(p, db, clubLeagues); // league at the time, from the roster row
     const rng2 = rng; // alias for readability below
 
+    // Heuristic baseline: tier by age x league. A matched player without usable MLB seasons
+    // counts as MiLB depth, unless his roster league is a top foreign league.
+    const age = p.dob ? p.edition - Number(p.dob.slice(0, 4)) : 27;
+    const tier = age >= 23 && age <= 34 ? 'B' : 'C';
+    const heuristicLeague = match && !FOREIGN_LEAGUES.has(rosterLeague) ? 'milb' : rosterLeague;
+    const heuristicComposite = TIER_COMPOSITE[tier] * (LEAGUE_MULT[heuristicLeague] ?? LEAGUE_MULT.other);
+    // MLB seasons decide, except a decayed nearest season that rates a regular of a top
+    // foreign league below that league's baseline (2006 Randall Simon at Orix).
+    const usesMlb = (r: OffenseResult | null): r is OffenseResult =>
+      r !== null && !(r.method === 'mlb-nearest' && FOREIGN_LEAGUES.has(rosterLeague) && heuristicComposite > r.composite);
+
     if (isPitcher && !isTwoWay) {
       // -------------------- pitcher path --------------------
       const pitching = match ? bestMlbPitching(match.person, p.edition, db) : null;
       const roles = match ? (pitcherRoles(match.person, p.edition, db) ?? ALL_PITCHER_ROLES) : ALL_PITCHER_ROLES;
       let composite: number;
       let method: RatingMethod;
-      if (pitching) {
+      if (usesMlb(pitching)) {
         composite = pitching.composite;
         method = pitching.method;
       } else {
-        const cls = match ? 'milb' : rosterLeague;
-        const age = p.dob ? p.edition - Number(p.dob.slice(0, 4)) : 27;
-        const tier = age >= 23 && age <= 34 ? 'B' : 'C';
-        composite = TIER_COMPOSITE[tier] * (LEAGUE_MULT[cls] ?? LEAGUE_MULT.other);
+        composite = heuristicComposite;
         method = 'heuristic';
       }
       const curationKey = `${p.edition}|${p.country}|${p.name}`;
@@ -137,17 +149,14 @@ async function main() {
     let composite: number;
     let method: RatingMethod;
     let contact: number, power: number, speed: number;
-    if (offense) {
+    if (usesMlb(offense)) {
       composite = offense.composite;
       method = offense.method;
       contact = relScoreToRating(offense.contactScore);
       power = relScoreToRating(offense.powerScore);
       speed = speedScoreToRating(offense.speedScore);
     } else {
-      const cls = match ? 'milb' : rosterLeague; // matched but never batted ≥100 PA ≈ org depth
-      const age = p.dob ? p.edition - Number(p.dob.slice(0, 4)) : 27;
-      const tier = age >= 23 && age <= 34 ? 'B' : 'C';
-      composite = TIER_COMPOSITE[tier] * (LEAGUE_MULT[cls] ?? LEAGUE_MULT.other);
+      composite = heuristicComposite;
       method = 'heuristic';
       const base = compositeToRating(composite);
       contact = clamp99(Math.round(base - 2 + (rng() - 0.5) * 16));
@@ -224,8 +233,8 @@ async function main() {
     if (h.positions.length === 0) errors.push(`${h.id}: player with no positions`);
     if (h.rating < 1 || h.rating > 99) errors.push(`${h.id}: rating ${h.rating} out of range`);
   }
-  if (usedIds.size !== rated.length) errors.push('duplicate IDs detected');
-  errors.push(...identity.errors);
+  if (new Set(rated.map((r) => r.id)).size !== rated.length) errors.push('duplicate IDs detected');
+  errors.push(...matchErrors, ...identity.errors);
   for (const [key] of curationIndex) {
     if (!curationUsed.has(key)) errors.push(`curation entry matched no scraped player: ${key.replace(/\|/g, ' ')}`);
   }

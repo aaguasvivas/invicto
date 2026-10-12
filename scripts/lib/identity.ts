@@ -7,7 +7,7 @@
 // "already on your team" holds across editions. Record ids never change.
 
 import { readFileSync } from 'node:fs';
-import { normalizeName } from './databank.js';
+import { nameLetters } from './databank.js';
 
 export interface IdentityRow {
   id: string;
@@ -25,8 +25,6 @@ export interface PersonAliases {
   aliases: { ids: string[]; note: string; source: string }[];
   /** Two rows with the same country and name letters that are different people. */
   distinct: { ids: string[]; note: string; source: string }[];
-  /** Rating-pass Lahman joins known to be wrong. Identity ignores them; ratings do not. */
-  wrongLahmanJoins: { id: string; lahmanId: string; note: string; source: string }[];
 }
 
 export interface IdentityResult {
@@ -55,8 +53,6 @@ export function typoClose(a: string, b: string): boolean {
   return differing <= 1 || (ya === yb && ma === db && da === mb);
 }
 
-/** Sorted letters of the accent-folded name: "Seunghwan Oh" and "Oh Seung-hwan" agree. */
-const nameLetters = (name: string) => [...normalizeName(name).replace(/ /g, '')].sort().join('');
 const isJan1 = (dob: string | null) => dob !== null && dob.endsWith('-01-01');
 /** Rows with a birth date first, then by edition and id. A person's first row gives their personKey. */
 const datedFirst = (a: IdentityRow, b: IdentityRow) =>
@@ -81,7 +77,6 @@ export function resolveIdentities(rows: IdentityRow[], curation: PersonAliases):
   const entries = [
     ...curation.aliases.map((e) => ({ list: 'aliases', ids: e.ids, source: e.source })),
     ...curation.distinct.map((e) => ({ list: 'distinct', ids: e.ids, source: e.source })),
-    ...curation.wrongLahmanJoins.map((e) => ({ list: 'wrongLahmanJoins', ids: [e.id], source: e.source })),
   ];
   for (const { list, ids, source } of entries) {
     if (!/^https:\/\/\S+$/.test(source)) errors.push(`person-aliases ${list} [${ids.join(', ')}]: missing source URL`);
@@ -91,14 +86,6 @@ export function resolveIdentities(rows: IdentityRow[], curation: PersonAliases):
     if (d.ids.length !== 2) errors.push(`person-aliases distinct [${d.ids.join(', ')}]: needs exactly two ids`);
   }
 
-  const lahmanOf = new Map(rows.map((r) => [r.id, r.lahmanId]));
-  for (const w of curation.wrongLahmanJoins) {
-    const actual = byId.get(w.id)?.lahmanId;
-    if (actual === undefined) continue;
-    if (actual !== w.lahmanId) {
-      errors.push(`person-aliases wrongLahmanJoins: ${w.id} is joined to ${actual ?? 'nothing'}, not ${w.lahmanId}; remove the entry`);
-    } else lahmanOf.set(w.id, null);
-  }
   const distinctPairs = new Set(curation.distinct.flatMap(({ ids: [a, b] }) => [`${a}|${b}`, `${b}|${a}`]));
 
   // Union-find. R0: rows that share a provisional key start as one person.
@@ -119,9 +106,7 @@ export function resolveIdentities(rows: IdentityRow[], curation: PersonAliases):
     for (const a of A) {
       for (const b of B) {
         if (a.edition === b.edition && a.country === b.country) return 'co-rostered';
-        const la = lahmanOf.get(a.id);
-        const lb = lahmanOf.get(b.id);
-        if (la && lb && la !== lb) return 'different Lahman ids';
+        if (a.lahmanId && b.lahmanId && a.lahmanId !== b.lahmanId) return 'different Lahman ids';
         if (distinctPairs.has(`${a.id}|${b.id}`)) return 'listed as distinct';
         if (rule === 'R3 alias') continue;
         if (isJan1(a.dob) || isJan1(b.dob)) return 'Jan-1 birth date';
@@ -152,7 +137,7 @@ export function resolveIdentities(rows: IdentityRow[], curation: PersonAliases):
   }
 
   // R2: one Lahman id is one person. A refusal means the rating join itself needs review.
-  for (const [lahmanId, group] of groupBy(rows, (r) => lahmanOf.get(r.id) ?? null)) {
+  for (const [lahmanId, group] of groupBy(rows, (r) => r.lahmanId)) {
     const refused = new Set(group.slice(1).map((r) => union(group[0].id, r.id, 'R2 same Lahman id')).filter(Boolean));
     if (refused.size > 0) {
       warnings.push(`Lahman id ${lahmanId} is joined to rows that cannot be one person (${[...refused].join(', ')}): ${group.map((r) => r.id).join(', ')}`);

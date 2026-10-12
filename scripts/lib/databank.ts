@@ -52,6 +52,7 @@ export interface Person {
   nameLast: string;
   birthDate: string | null; // YYYY-MM-DD
   birthYear: number | null;
+  birthCountry: string | null; // as Lahman writes it: "D.R.", "Venezuela", "South Korea"
   debutYear: number | null;
   finalYear: number | null;
 }
@@ -123,9 +124,30 @@ export function normalizeName(s: string): string {
     .trim();
 }
 
-export interface Databank {
+/** Sorted letters of the accent-folded name: "Seunghwan Oh" and "Oh Seung-hwan" agree. */
+export function nameLetters(name: string): string {
+  return [...normalizeName(name).replace(/ /g, '')].sort().join('');
+}
+
+/** The People.csv indexes that roster matching reads. */
+export interface PeopleIndex {
+  peopleById: Map<string, Person>;
   peopleByDob: Map<string, Person[]>;
-  peopleByName: Map<string, Person[]>;
+  peopleByLetters: Map<string, Person[]>; // key: nameLetters(first + last)
+}
+
+export function indexPeople(people: Person[]): PeopleIndex {
+  const index: PeopleIndex = { peopleById: new Map(), peopleByDob: new Map(), peopleByLetters: new Map() };
+  const add = (map: Map<string, Person[]>, key: string, person: Person) => (map.get(key) ?? map.set(key, []).get(key)!).push(person);
+  for (const person of people) {
+    index.peopleById.set(person.playerID, person);
+    if (person.birthDate) add(index.peopleByDob, person.birthDate, person);
+    add(index.peopleByLetters, nameLetters(`${person.nameFirst} ${person.nameLast}`), person);
+  }
+  return index;
+}
+
+export interface Databank extends PeopleIndex {
   battingByPlayer: Map<string, SeasonBatting[]>;
   leagueRates: Map<string, LeagueRates>; // `${year}-${lg}`
   appearancesByPlayer: Map<string, PositionGames[]>;
@@ -138,12 +160,9 @@ export interface Databank {
 const n = (v: string): number => (v === '' ? 0 : Number(v));
 
 export function loadDatabank(): Databank {
-  const people = load('People');
-  const peopleByDob = new Map<string, Person[]>();
-  const peopleByName = new Map<string, Person[]>();
-  for (const r of people) {
+  const people: Person[] = load('People').map((r) => {
     const by = r.birthYear ? Number(r.birthYear) : null;
-    const person: Person = {
+    return {
       playerID: r.playerID,
       nameFirst: r.nameFirst,
       nameLast: r.nameLast,
@@ -152,19 +171,11 @@ export function loadDatabank(): Databank {
           ? `${r.birthYear}-${r.birthMonth.padStart(2, '0')}-${r.birthDay.padStart(2, '0')}`
           : null,
       birthYear: by,
+      birthCountry: r.birthCountry || null,
       debutYear: r.debut ? Number(r.debut.slice(0, 4)) : null,
       finalYear: r.finalGame ? Number(r.finalGame.slice(0, 4)) : null,
     };
-    if (person.birthDate) {
-      const arr = peopleByDob.get(person.birthDate) ?? [];
-      arr.push(person);
-      peopleByDob.set(person.birthDate, arr);
-    }
-    const full = normalizeName(`${r.nameFirst} ${r.nameLast}`);
-    const arr = peopleByName.get(full) ?? [];
-    arr.push(person);
-    peopleByName.set(full, arr);
-  }
+  });
 
   // Batting: aggregate stints per player-year; league rate sums per year+lg.
   const battingByPlayer = new Map<string, SeasonBatting[]>();
@@ -231,7 +242,7 @@ export function loadDatabank(): Databank {
     for (const [pos, col] of cols) a.byPos[pos] = (a.byPos[pos] ?? 0) + n(r[col]);
   }
 
-  // Fielding: totals per player-year (all positions combined — used only for a small quality adj).
+  // Fielding: totals per player-year (all positions combined; used only for a small quality adj).
   const fieldingByPlayer = new Map<string, SeasonFielding[]>();
   const fldKey = new Map<string, SeasonFielding>();
   for (const r of load('Fielding')) {
@@ -287,5 +298,5 @@ export function loadDatabank(): Databank {
     if (Number(r.yearID) >= 1990 && r.name) mlbClubNames.add(normalizeName(r.name));
   }
 
-  return { peopleByDob, peopleByName, battingByPlayer, leagueRates, appearancesByPlayer, fieldingByPlayer, pitchingByPlayer, leaguePitchingRates, mlbClubNames };
+  return { ...indexPeople(people), battingByPlayer, leagueRates, appearancesByPlayer, fieldingByPlayer, pitchingByPlayer, leaguePitchingRates, mlbClubNames };
 }

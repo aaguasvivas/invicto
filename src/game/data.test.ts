@@ -6,7 +6,9 @@ import { describe, expect, test } from 'vitest';
 import type { EnginePlayer } from '../engine/types';
 
 const readJson = (path: string) => JSON.parse(readFileSync(new URL(`../../${path}`, import.meta.url), 'utf-8'));
-const players: EnginePlayer[] = readJson('public/data/players.json').players;
+/** A shipped record: the engine fields plus how the rating was made (DATA.md "Ratings"). */
+type ShippedPlayer = EnginePlayer & { ratingMethod: string };
+const players: ShippedPlayer[] = readJson('public/data/players.json').players;
 const curation: { aliases: { ids: string[] }[]; distinct: { ids: string[] }[] } = readJson('data/curation/person-aliases.json');
 
 const byId = new Map(players.map((p) => [p.id, p]));
@@ -93,5 +95,43 @@ describe('person identity in players.json', () => {
     const doc = readFileSync(new URL('../../DATA.md', import.meta.url), 'utf-8');
     const cited = doc.match(/([\d,]+) distinct players/)?.[1];
     expect(cited?.replace(/,/g, '')).toBe(String(rowsByKey().size));
+  });
+});
+
+// Records the 2026-10 rating refresh fixed (DATA.md "Data refresh log"). A rebuild that brings
+// back a wrong Lahman join, a lost join or the minor-league rate for a foreign-league regular
+// fails here.
+describe('rating spot checks in players.json', () => {
+  const record = (id: string) => {
+    const p = byId.get(id);
+    expect(p, id).toBeDefined();
+    return p!;
+  };
+
+  test.each([
+    ['2023-usa-jeff-mcneil', 70], // 2022 NL batting champion; the roster carries a teammate's birth date
+    ['2009-pur-ivan-rodriguez', 55], // birth-date typo on the roster
+    ['2013-dom-hanley-ramirez', 85], // birth-date typo on the roster
+  ])('%s rates from his MLB seasons (at least %i)', (id, min) => {
+    expect(record(id).ratingMethod).toBe('mlb-window');
+    expect(record(id).rating).toBeGreaterThanOrEqual(min);
+  });
+
+  test('2013 Carlos González has his own stats, not Carlos Gómez’s', () => {
+    expect(record('2013-ven-carlos-gonzalez').positions).toEqual(['LF']);
+  });
+
+  test('2006 Panama Ramón Ramírez no longer carries a Dominican reliever’s stats', () => {
+    expect(record('2006-pan-ramon-ramirez').ratingMethod).toBe('heuristic');
+  });
+
+  test('Lachlan Wells keeps his own pitcher roles, not his twin’s', () => {
+    expect(record('2017-aus-lachlan-wells').positions).toContain('CL');
+    expect(record('2026-aus-lachlan-wells').positions).toContain('CL');
+  });
+
+  test('a foreign-league regular with an old MLB stint is not rated as a minor leaguer', () => {
+    expect(record('2006-ned-randall-simon').rating).toBeGreaterThan(45); // Orix 2006
+    expect(record('2017-jpn-shintaro-fujinami').rating).toBeGreaterThan(50); // Hanshin 2017
   });
 });
