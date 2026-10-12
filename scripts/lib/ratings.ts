@@ -1,15 +1,18 @@
-// Rating computation. Full methodology is documented in DATA.md — keep the two in sync.
+// Rating computation. Full methodology is documented in DATA.md; keep the two in sync.
 //
 // Pipeline per scraped player:
-//   1. Match against Lahman People (DOB+name first, then unique-name fallback).
+//   1. Match against Lahman People: a pinned join, else exact DOB with agreeing names,
+//      else a unique same-name person whose DOB differs only by a known kind of error.
 //   2. MLB-matched: best season (PA ≥ 100) within edition ±1 year → approximate OPS+
 //      composite. No season in window but one nearby: nearest season decayed 5%/yr
 //      ("mlb-nearest"). Otherwise fall through to the heuristic path.
 //   3. Unmatched: league-quality multiplier × tier baseline ("heuristic").
 //   4. Composite → 1–99 rating through fixed anchors (not percentile), so a 99 stays rare.
 
-import type { Databank, Person, SeasonBatting, SeasonPitching } from './databank.js';
-import { normalizeName } from './databank.js';
+import { readFileSync } from 'node:fs';
+import type { Databank, PeopleIndex, Person, SeasonBatting, SeasonPitching } from './databank.js';
+import { nameLetters, normalizeName } from './databank.js';
+import { typoClose } from './identity.js';
 import type { PosGroup, ScrapedPlayer } from './wikipedia.js';
 
 export type Position = 'C' | '1B' | '2B' | '3B' | 'SS' | 'LF' | 'CF' | 'RF' | 'DH' | 'SP' | 'RP' | 'CL';
@@ -83,49 +86,160 @@ export function classifyLeague(p: ScrapedPlayer, db: Databank, clubLeagues?: Map
 }
 
 // ---------------------------------------------------------------------------
-// Matching
+// Matching roster rows to Lahman people (DATA.md "Matching roster names to Lahman IDs")
 
 export interface Match {
   person: Person;
-  method: 'dob+name' | 'name-unique';
+  method: 'dob+name' | 'name' | 'pinned';
 }
 
-function nameTokens(name: string): Set<string> {
-  return new Set(normalizeName(name).split(' ').filter((t) => t.length > 1));
+/** A scraped roster row with its record id. */
+export interface RosterRow {
+  id: string;
+  player: ScrapedPlayer;
 }
 
-function tokensOverlap(a: Set<string>, b: Set<string>): number {
-  let hits = 0;
-  for (const t of a) if (b.has(t)) hits++;
-  return hits;
+/** data/curation/lahman-fixes.json: reviewed joins the matcher cannot make, by record id. */
+export interface LahmanFix {
+  id: string;
+  lahmanId: string | null; // null: the row stays unmatched
+  note: string;
+  source: string;
 }
 
-export function matchPlayer(p: ScrapedPlayer, db: Databank): Match | null {
-  const scraped = nameTokens(p.name);
-  if (p.dob) {
-    const candidates = db.peopleByDob.get(p.dob) ?? [];
-    const scored = candidates
-      .map((person) => ({
-        person,
-        overlap: tokensOverlap(scraped, nameTokens(`${person.nameFirst} ${person.nameLast}`)),
-      }))
-      .filter((c) => c.overlap >= 1)
-      .sort((a, b) => b.overlap - a.overlap);
-    if (scored.length === 1 || (scored.length > 1 && scored[0].overlap > scored[1].overlap)) {
-      return { person: scored[0].person, method: 'dob+name' };
-    }
-    if (scored.length > 1) return null; // ambiguous same-DOB same-name: refuse to guess
-  }
-  // Name-unique fallback (also catches DOB typos between sources).
-  const byName = db.peopleByName.get(normalizeName(p.name)) ?? [];
-  const plausible = byName.filter((person) => {
-    if (p.dob && person.birthDate) return false; // DOB known on both sides but didn't match above
-    const debut = person.debutYear ?? 0;
-    const final = person.finalYear ?? 9999;
-    return debut <= p.edition + 1 && final >= p.edition - 25;
+export function loadLahmanFixes(): LahmanFix[] {
+  return JSON.parse(readFileSync('data/curation/lahman-fixes.json', 'utf-8')) as LahmanFix[];
+}
+
+/**
+ * Record ids: `<edition>-<country>-<name slug>`, then -2, -3 for namesakes on one roster.
+ * Saved runs and the daily stats store them, so the scheme never changes.
+ */
+export function withRecordIds(players: ScrapedPlayer[]): RosterRow[] {
+  const used = new Set<string>();
+  return players.map((player) => {
+    const slug = normalizeName(player.name).replace(/ /g, '-');
+    const base = `${player.edition}-${player.country.toLowerCase()}-${slug}`;
+    let id = base;
+    for (let i = 2; used.has(id); i++) id = `${base}-${i}`;
+    used.add(id);
+    return { id, player };
   });
-  if (plausible.length === 1) return { person: plausible[0], method: 'name-unique' };
-  return null;
+}
+
+const NICKNAMES: Record<string, string> = { mike: 'michael', manny: 'manuel', bill: 'william', willie: 'william', bob: 'robert', bobby: 'robert', tony: 'anthony', jim: 'james' };
+const nicknameOf = (a: string, b: string) => NICKNAMES[a] === b || NICKNAMES[b] === a;
+const nameTokens = (name: string) => normalizeName(name).split(' ').filter((t) => t.length > 1);
+
+function levenshtein(a: string, b: string): number {
+  let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const row = [i];
+    for (let j = 1; j <= b.length; j++) row[j] = Math.min(prev[j] + 1, row[j - 1] + 1, prev[j - 1] + Number(a[i - 1] !== b[j - 1]));
+    prev = row;
+  }
+  return prev[b.length];
+}
+
+/**
+ * Do a roster name and a Lahman person name the same player? The surname must agree
+ * (one letter of slack from five letters up: Villareal, Villarreal) and so must the given
+ * name: equal, the same first three letters, or a known nickname. On an exact birth-date
+ * join the same first initial is enough. A name without given names ("C. C. Lee") passes.
+ */
+export function namesAgree(rosterName: string, person: Pick<Person, 'nameFirst' | 'nameLast'>, exactDob: boolean): boolean {
+  const roster = nameTokens(rosterName);
+  const surname = nameTokens(person.nameLast).join('');
+  if (!surname) return false;
+  const nearSurname = (t: string) => surname.length >= 5 && levenshtein(t, surname) <= 1;
+  if (!roster.join('').includes(surname) && !roster.some(nearSurname)) return false;
+  const given = roster.filter((t) => !surname.includes(t) && !nearSurname(t) && t !== 'jr');
+  const first = nameTokens(person.nameFirst);
+  if (first.length === 0 || given.length === 0) return true;
+  return first.some((f) =>
+    given.some((g) => g === f || g.slice(0, 3) === f.slice(0, 3) || nicknameOf(g, f) || (exactDob && g[0] === f[0])),
+  );
+}
+
+/** Lahman birthCountry for teams whose players are born in the country (no heritage rosters). */
+const HOME_BIRTH_COUNTRY: Record<string, string> = {
+  PAN: 'Panama', DOM: 'D.R.', VEN: 'Venezuela', CUB: 'Cuba', JPN: 'Japan',
+  KOR: 'South Korea', TPE: 'Taiwan', COL: 'Colombia', NCA: 'Nicaragua', CHN: 'China',
+};
+
+interface TeamContext {
+  dobs: Map<string, number>; // roster birth date -> rows of this team-edition that carry it
+  joined: Set<string>; // Lahman ids joined in pass 1 to a row of this team-edition
+}
+
+/** A roster birth date that differs from Lahman is still the same player when it is a known kind of error. */
+function birthDateExplained(p: ScrapedPlayer, person: Person, team: TeamContext): boolean {
+  if (!p.dob || !person.birthDate) return true;
+  return (
+    typoClose(p.dob, person.birthDate) || // one field off, or month and day swapped
+    (team.dobs.get(p.dob) ?? 0) > 1 || // the roster copied a teammate's date
+    team.dobs.has(person.birthDate) // the player's real date sits on a teammate's row
+  );
+}
+
+/**
+ * Join every roster row to a Lahman person in two passes, because the fallback needs to
+ * know what the rest of the roster joined.
+ *   1. A pin from lahman-fixes.json, else the one person with the exact birth date whose
+ *      name agrees. Two such people: refuse to guess.
+ *   2. Rows still open take the unique person with the same name letters (either name
+ *      order) whose names agree, whose career overlaps the edition, who is not joined to a
+ *      teammate, and whose birth date matches or differs by a known kind of error. A row
+ *      without a birth date on a home-born team also needs the same birth country.
+ */
+export function matchRoster(rows: RosterRow[], people: PeopleIndex, fixes: LahmanFix[]): { matches: Map<string, Match | null>; errors: string[] } {
+  const errors: string[] = [];
+  const ids = new Set(rows.map((r) => r.id));
+  for (const fix of fixes) {
+    if (!ids.has(fix.id)) errors.push(`lahman-fixes: no record ${fix.id}`);
+    if (fix.lahmanId && !people.peopleById.has(fix.lahmanId)) errors.push(`lahman-fixes: ${fix.id} pins unknown Lahman id ${fix.lahmanId}`);
+    if (!/^https:\/\/\S+$/.test(fix.source)) errors.push(`lahman-fixes: ${fix.id} has no source URL`);
+  }
+  const pins = new Map(fixes.map((f) => [f.id, f.lahmanId]));
+
+  const teams = new Map<string, TeamContext>();
+  const teamOf = (p: ScrapedPlayer) => {
+    const key = `${p.edition}-${p.country}`;
+    return teams.get(key) ?? teams.set(key, { dobs: new Map(), joined: new Set() }).get(key)!;
+  };
+  const matches = new Map<string, Match | null>();
+
+  for (const { id, player: p } of rows) {
+    const team = teamOf(p);
+    if (p.dob) team.dobs.set(p.dob, (team.dobs.get(p.dob) ?? 0) + 1);
+    if (pins.has(id)) {
+      const pinned = people.peopleById.get(pins.get(id) ?? '');
+      matches.set(id, pinned ? { person: pinned, method: 'pinned' } : null);
+    } else if (p.dob) {
+      const fits = (people.peopleByDob.get(p.dob) ?? []).filter((person) => namesAgree(p.name, person, true));
+      if (fits.length === 1) matches.set(id, { person: fits[0], method: 'dob+name' });
+      else if (fits.length > 1) matches.set(id, null);
+    }
+    const joined = matches.get(id);
+    if (joined) team.joined.add(joined.person.playerID);
+  }
+
+  for (const { id, player: p } of rows) {
+    if (matches.has(id)) continue;
+    const team = teamOf(p);
+    const home = HOME_BIRTH_COUNTRY[p.country];
+    const fits = (people.peopleByLetters.get(nameLetters(p.name)) ?? []).filter(
+      (person) =>
+        namesAgree(p.name, person, false) &&
+        !team.joined.has(person.playerID) &&
+        (person.debutYear ?? 0) <= p.edition + 1 &&
+        (person.finalYear ?? 9999) >= p.edition - 25 &&
+        birthDateExplained(p, person, team) &&
+        (p.dob !== null || !home || person.birthCountry === home),
+    );
+    matches.set(id, fits.length === 1 ? { person: fits[0], method: 'name' } : null);
+  }
+  return { matches, errors };
 }
 
 // ---------------------------------------------------------------------------
@@ -152,7 +266,7 @@ function scoreSeason(s: SeasonBatting, db: Databank): SeasonScore | null {
   const kRate = s.PA > 0 ? s.SO / s.PA : lg.kRate;
   const rawOpsPlus = 100 * (obp / lg.obp + slg / lg.slg - 1);
   // Reliability shrinkage: a hot 140-PA stint shouldn't rate like a full elite
-  // season — deviations from league average shrink by PA/(PA+100).
+  // season, so deviations from league average shrink by PA/(PA+100).
   const reliability = s.PA / (s.PA + 100);
   return {
     year: s.year,
@@ -211,7 +325,7 @@ function scorePitchingSeason(s: SeasonPitching, db: Databank): number | null {
   const kbbPlus = lg.kbbRate > 0 ? (100 * ((s.SO - s.BB) / s.BFP)) / lg.kbbRate : 100;
   const raw = 0.65 * eraPlus + 0.35 * kbbPlus;
   // 70 elite relief innings are real but not ace-season real: shrink hard by
-  // innings, then discount relief deviations — rate stats in short stints
+  // innings, then discount relief deviations: rate stats in short stints
   // overstate value vs starters (a 99 should be Skenes, not a setup man).
   const reliability = s.IPouts / (s.IPouts + 250);
   const isRelief = s.GS < Math.max(3, 0.2 * s.G);
@@ -259,7 +373,7 @@ export function pitcherRoles(person: Person, edition: number, db: Databank): Pos
     if (SV >= 8) roles.push('CL');
     return roles;
   }
-  return null; // unknown usage — caller grants full flexibility
+  return null; // unknown usage: the caller grants full flexibility
 }
 
 // ---------------------------------------------------------------------------
@@ -316,7 +430,7 @@ const GROUP_POSITIONS: Record<PosGroup, Position[]> = {
 export function refinePositions(p: ScrapedPlayer, match: Match | null, db: Databank): Position[] {
   if (match) {
     const apps = db.appearancesByPlayer.get(match.person.playerID) ?? [];
-    // Window then widen — but never the full career: a 2006 edition shouldn't
+    // Window then widen, but never the full career: a 2006 edition shouldn't
     // inherit positions a player only took up in MLB a decade later.
     const windows = [
       apps.filter((a) => Math.abs(a.year - p.edition) <= 1),
@@ -371,7 +485,7 @@ export function clamp99(v: number): number {
 }
 
 // Map relative offensive scores (1.0 = league average) to 1–99 subratings.
-// Anchored piecewise so the top compresses — 99 should be a couple dozen players, not a hundred.
+// Anchored piecewise so the top compresses: 99 should be a couple dozen players, not a hundred.
 const REL_ANCHORS: [number, number][] = [
   [0.4, 15], [0.6, 30], [0.8, 45], [1.0, 62], [1.3, 80], [1.6, 90], [2.0, 96], [2.6, 99],
 ];

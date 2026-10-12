@@ -1,10 +1,12 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 import {
-  POWERS, applyPick, canEditionReroll, isComplete, markCountryReroll, markEditionReroll,
+  POWERS, applyPick, canEditionReroll, hasLegalPick, isComplete, markCountryReroll, markEditionReroll,
   newDraft, openSlots, rollBase, rollCountryReroll, rollEditionReroll, rollRedraw,
 } from './draft';
+import { isEligible } from './positions';
 import { makePlayer } from './test-helpers';
-import type { EditionTeams } from './types';
+import type { EditionTeams, EnginePlayer } from './types';
 
 // Mirrors the real editions.json shape: edition year → country codes that played it.
 const TEAMS: EditionTeams = {
@@ -56,6 +58,22 @@ describe('rerolls', () => {
     expect(a.country).toBe('VEN');
     expect(a.edition).not.toBe(2023);
     expect(TEAMS[a.edition]).toContain('VEN');
+  });
+
+  // The strategy guides tell players the edition reroll gives "another Venezuela year at random".
+  test('edition reroll lands on every other edition of the country, about evenly', () => {
+    const six: EditionTeams = { 2006: ['VEN'], 2009: ['VEN'], 2013: ['VEN'], 2017: ['VEN'], 2023: ['VEN'], 2026: ['VEN'] };
+    const n = 5000;
+    const counts = new Map<number, number>();
+    for (let i = 0; i < n; i++) {
+      const { edition } = rollEditionReroll(`spread-${i}`, i % 12, { country: 'VEN', edition: 2026 }, six);
+      counts.set(edition, (counts.get(edition) ?? 0) + 1);
+    }
+    expect([...counts.keys()].sort()).toEqual([2006, 2009, 2013, 2017, 2023]);
+    for (const count of counts.values()) {
+      expect(count / n).toBeGreaterThan(0.17);
+      expect(count / n).toBeLessThan(0.23);
+    }
   });
 
   test('edition reroll is unavailable for single-edition countries', () => {
@@ -115,5 +133,45 @@ describe('draft state', () => {
     }
     expect(isComplete(state)).toBe(true);
     expect(openSlots(state)).toEqual([]);
+  });
+});
+
+// A roster with no legal pick is redrawn for free (session.ts ensureLegal), so the strategy
+// guides tell players a reroll is never needed for a roster where nobody fits.
+describe('hasLegalPick', () => {
+  const catcher = makePlayer({ personKey: 'catcher', positions: ['C'] });
+  // C and DH filled: a pure catcher has nowhere left to go (DH takes any hitter while open).
+  const withCatcherAndDh = applyPick(applyPick(newDraft(), catcher, 'C'), makePlayer({ positions: ['1B'] }), 'DH');
+
+  test('is true when an undrafted player fits an open slot', () => {
+    expect(hasLegalPick(newDraft(), [catcher])).toBe(true);
+    expect(hasLegalPick(withCatcherAndDh, [makePlayer({ positions: ['C'] }), makePlayer({ positions: ['SS'] })])).toBe(true);
+  });
+
+  test('is false when every player is already drafted or fits only filled slots', () => {
+    expect(hasLegalPick(withCatcherAndDh, [makePlayer({ positions: ['C'] })])).toBe(false);
+    expect(hasLegalPick(withCatcherAndDh, [makePlayer({ personKey: 'catcher', positions: ['1B'] })])).toBe(false);
+    expect(hasLegalPick(withCatcherAndDh, [])).toBe(false);
+  });
+});
+
+describe('the same person on real data', () => {
+  const players: EnginePlayer[] = JSON.parse(
+    readFileSync(new URL('../../public/data/players.json', import.meta.url), 'utf-8'),
+  ).players;
+  const byId = new Map(players.map((p) => [p.id, p]));
+  const firstOpenSlot = (state: ReturnType<typeof newDraft>, p: EnginePlayer) =>
+    openSlots(state).find((slot) => isEligible(p.positions, slot));
+
+  test.each([
+    ['2006-pur-carlos-beltran', '2009-pur-carlos-beltran'],
+    ['2013-kor-seunghwan-oh', '2017-kor-oh-seung-hwan'],
+  ])('%s then %s into a second slot throws', (firstId, secondId) => {
+    const first = byId.get(firstId)!;
+    const second = byId.get(secondId)!;
+    const state = applyPick(newDraft(), first, firstOpenSlot(newDraft(), first)!);
+    const slot = firstOpenSlot(state, second);
+    expect(slot).toBeDefined();
+    expect(() => applyPick(state, second, slot!)).toThrow(/already on your team/);
   });
 });

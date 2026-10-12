@@ -71,6 +71,14 @@ a { color: var(--gold-2); }
 .page ul, .page ol { padding-left: 22px; }
 .page li { margin: 4px 0; }
 .page .lead { font-size: 18px; color: var(--text); }
+.page .status-code {
+  margin: 28px 0 0;
+  font-size: 64px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: var(--gold);
+}
 .page .lang-label {
   display: inline-block;
   font-size: 12px;

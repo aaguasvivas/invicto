@@ -13,20 +13,23 @@ import { loadCuration, verifyCuration, TIER_VALUES } from './lib/curation.js';
 import { DATABANK_SOURCE, loadDatabank, normalizeName } from './lib/databank.js';
 import {
   bestMlbPitching, bestMlbSeason, buildClubLeagueMap, classifyLeague, clamp99, compositeToRating,
-  defenseRating, matchPlayer, pitcherRoles, refinePositions, relScoreToRating, seededRng,
-  speedScoreToRating, type Position, type RatedPlayer, type RatingMethod,
+  defenseRating, loadLahmanFixes, matchRoster, pitcherRoles, refinePositions, relScoreToRating, seededRng,
+  speedScoreToRating, withRecordIds, type OffenseResult, type Position, type RatedPlayer, type RatingMethod,
 } from './lib/ratings.js';
+import { loadPersonAliases, resolveIdentities, type IdentityRow } from './lib/identity.js';
 import { EDITIONS, loadPage, parseEdition, type ScrapedPlayer } from './lib/wikipedia.js';
 
 const LEAGUE_MULT: Record<string, number> = { mlb: 1.0, npb: 0.92, kbo: 0.85, cpbl: 0.78, cuba: 0.8, milb: 0.75, other: 0.7 };
+/** Top foreign leagues: a player matched to Lahman keeps his roster league's multiplier on the heuristic path. */
+const FOREIGN_LEAGUES = new Set(['npb', 'kbo', 'cpbl', 'cuba']);
 const TIER_COMPOSITE = { A: 125, B: 100, C: 85 } as const;
 const TWO_WAY_PA = 200; // a "pitcher" with a ≥200 PA MLB season near the edition bats (Ohtani rule)
-/** Positional offense adjustment (OPS+-scale points) — premium positions get bat credit. */
+/** Positional offense adjustment (OPS+-scale points): premium positions get bat credit. */
 const POS_ADJ: Record<Position, number> = { C: 12, SS: 7, CF: 6, '2B': 4, '3B': 4, RF: 0, LF: 0, '1B': -3, DH: -6, SP: 0, RP: 0, CL: 0 };
 const ALL_PITCHER_ROLES: Position[] = ['SP', 'RP', 'CL'];
 
 async function main() {
-  console.log('— Invicto data build —\n');
+  console.log('Invicto data build\n');
 
   // 1) Scrape
   const scraped: ScrapedPlayer[] = [];
@@ -37,7 +40,7 @@ async function main() {
     const { html, url, retrievedAt } = await loadPage(year);
     const source = { url, retrievedAt };
     const { players, teams, warnings: w } = parseEdition(year, html, source);
-    if (teams.size < 16) throw new Error(`${year}: parsed only ${teams.size} teams — page structure changed, refusing to continue`);
+    if (teams.size < 16) throw new Error(`${year}: parsed only ${teams.size} teams; page structure changed, refusing to continue`);
     scraped.push(...players);
     editionTeams.set(year, teams);
     editionSources.set(year, source);
@@ -60,16 +63,22 @@ async function main() {
   const curationLifts: string[] = [];
   console.log(`Curation: ${curation.length} cited entries verified\n`);
 
-  const usedIds = new Set<string>();
+  const roster = withRecordIds(scraped);
+  const { matches, errors: matchErrors } = matchRoster(roster, db, loadLahmanFixes());
+  const joinCount: Record<string, number> = {};
+  for (const m of matches.values()) joinCount[m?.method ?? 'unmatched'] = (joinCount[m?.method ?? 'unmatched'] ?? 0) + 1;
+  console.log(`Lahman joins: ${JSON.stringify(joinCount)}\n`);
+
   const methodCount: Record<string, number> = {};
-  const rated: RatedPlayer[] = scraped.map((p) => {
+  const identityRows: IdentityRow[] = [];
+  const rated: RatedPlayer[] = roster.map(({ id, player: p }) => {
     const slug = normalizeName(p.name).replace(/ /g, '-');
-    let id = `${p.edition}-${p.country.toLowerCase()}-${slug}`;
-    for (let i = 2; usedIds.has(id); i++) id = `${p.edition}-${p.country.toLowerCase()}-${slug}-${i}`;
-    usedIds.add(id);
     const rng = seededRng(id);
 
-    const match = matchPlayer(p, db);
+    const match = matches.get(id) ?? null;
+    const personKey = `${slug}|${p.dob ?? '?'}`; // provisional; the identity step below settles it
+    const lahmanId = match?.person.playerID ?? null;
+    identityRows.push({ id, personKey, name: p.name, edition: p.edition, country: p.country, dob: p.dob, lahmanId });
     const isPitcher = p.posGroups.includes('P');
     const isTwoWay =
       isPitcher && match
@@ -78,20 +87,28 @@ async function main() {
     const rosterLeague = classifyLeague(p, db, clubLeagues); // league at the time, from the roster row
     const rng2 = rng; // alias for readability below
 
+    // Heuristic baseline: tier by age x league. A matched player without usable MLB seasons
+    // counts as MiLB depth, unless his roster league is a top foreign league.
+    const age = p.dob ? p.edition - Number(p.dob.slice(0, 4)) : 27;
+    const tier = age >= 23 && age <= 34 ? 'B' : 'C';
+    const heuristicLeague = match && !FOREIGN_LEAGUES.has(rosterLeague) ? 'milb' : rosterLeague;
+    const heuristicComposite = TIER_COMPOSITE[tier] * (LEAGUE_MULT[heuristicLeague] ?? LEAGUE_MULT.other);
+    // MLB seasons decide, except a decayed nearest season that rates a regular of a top
+    // foreign league below that league's baseline (2006 Randall Simon at Orix).
+    const usesMlb = (r: OffenseResult | null): r is OffenseResult =>
+      r !== null && !(r.method === 'mlb-nearest' && FOREIGN_LEAGUES.has(rosterLeague) && heuristicComposite > r.composite);
+
     if (isPitcher && !isTwoWay) {
       // -------------------- pitcher path --------------------
       const pitching = match ? bestMlbPitching(match.person, p.edition, db) : null;
       const roles = match ? (pitcherRoles(match.person, p.edition, db) ?? ALL_PITCHER_ROLES) : ALL_PITCHER_ROLES;
       let composite: number;
       let method: RatingMethod;
-      if (pitching) {
+      if (usesMlb(pitching)) {
         composite = pitching.composite;
         method = pitching.method;
       } else {
-        const cls = match ? 'milb' : rosterLeague;
-        const age = p.dob ? p.edition - Number(p.dob.slice(0, 4)) : 27;
-        const tier = age >= 23 && age <= 34 ? 'B' : 'C';
-        composite = TIER_COMPOSITE[tier] * (LEAGUE_MULT[cls] ?? LEAGUE_MULT.other);
+        composite = heuristicComposite;
         method = 'heuristic';
       }
       const curationKey = `${p.edition}|${p.country}|${p.name}`;
@@ -108,7 +125,7 @@ async function main() {
       const rating = clamp99(compositeToRating(composite));
       methodCount[method] = (methodCount[method] ?? 0) + 1;
       return {
-        id, personKey: `${slug}|${p.dob ?? '?'}`, name: p.name, edition: p.edition, country: p.country,
+        id, personKey, name: p.name, edition: p.edition, country: p.country,
         posGroup: p.posRaw, positions: roles,
         rating,
         contact: clamp99(Math.round(22 + rng2() * 16)),
@@ -132,17 +149,14 @@ async function main() {
     let composite: number;
     let method: RatingMethod;
     let contact: number, power: number, speed: number;
-    if (offense) {
+    if (usesMlb(offense)) {
       composite = offense.composite;
       method = offense.method;
       contact = relScoreToRating(offense.contactScore);
       power = relScoreToRating(offense.powerScore);
       speed = speedScoreToRating(offense.speedScore);
     } else {
-      const cls = match ? 'milb' : rosterLeague; // matched but never batted ≥100 PA ≈ org depth
-      const age = p.dob ? p.edition - Number(p.dob.slice(0, 4)) : 27;
-      const tier = age >= 23 && age <= 34 ? 'B' : 'C';
-      composite = TIER_COMPOSITE[tier] * (LEAGUE_MULT[cls] ?? LEAGUE_MULT.other);
+      composite = heuristicComposite;
       method = 'heuristic';
       const base = compositeToRating(composite);
       contact = clamp99(Math.round(base - 2 + (rng() - 0.5) * 16));
@@ -151,7 +165,7 @@ async function main() {
       speed = clamp99(Math.round(prior + (rng() - 0.5) * 20));
     }
 
-    // Curated tier lift: max(computed, tier × league multiplier) — never lowers.
+    // Curated tier lift: max(computed, tier × league multiplier). It never lowers.
     const curationKey = `${p.edition}|${p.country}|${p.name}`;
     const curated = curationIndex.get(curationKey);
     if (curated) {
@@ -162,7 +176,7 @@ async function main() {
         composite = curatedComposite;
         method = 'curated';
         // Computed subratings reflect the path that lost (bad MLB stint or flat
-        // heuristic) — resynthesize them around the curated level instead.
+        // heuristic), so resynthesize them around the curated level instead.
         const base = compositeToRating(curatedComposite);
         contact = clamp99(Math.round(base - 2 + (rng() - 0.5) * 16));
         power = clamp99(Math.round(base - 8 + (rng() - 0.5) * 20));
@@ -181,17 +195,24 @@ async function main() {
     methodCount[method] = (methodCount[method] ?? 0) + 1;
 
     return {
-      id, personKey: `${slug}|${p.dob ?? '?'}`, name: p.name, edition: p.edition, country: p.country,
+      id, personKey, name: p.name, edition: p.edition, country: p.country,
       posGroup: p.posRaw, positions, rating, contact, power, speed, defense, clutch,
       club: p.club, ratingMethod: method, excludedFromV1: false, source: p.source,
     };
   });
 
+  // 3) Identity: one personKey per real player (DATA.md "Identity") ----------
+  const identity = resolveIdentities(identityRows, loadPersonAliases());
+  for (const r of rated) r.personKey = identity.personKeys.get(r.id)!;
+  const rules = Object.entries(identity.unions).map(([rule, n]) => `${rule}: ${n}`).join(', ');
+  console.log(`\nIdentity: ${identity.persons} distinct players; ${identity.merged} personKeys merged (${rules})`);
+  for (const w of identity.warnings) console.log(`  IDENTITY WARN ${w}`);
+
   const isPitcherOnly = (r: RatedPlayer) => r.positions.length > 0 && r.positions.every((pos) => pos === 'SP' || pos === 'RP' || pos === 'CL');
   const hitters = rated.filter((r) => !r.excludedFromV1 && !isPitcherOnly(r));
   const pitchers = rated.filter((r) => !r.excludedFromV1 && isPitcherOnly(r));
 
-  // 3) Validation ----------------------------------------------------------
+  // 4) Validation ----------------------------------------------------------
   const errors: string[] = [];
   const flagged: string[] = [];
 
@@ -205,14 +226,15 @@ async function main() {
     else if (list.length < 26 || list.length > 31) flagged.push(`${key}: ${list.length} players (outside 26–31)`);
     const teamHitters = list.filter((r) => !r.excludedFromV1 && !isPitcherOnly(r));
     const teamPitchers = list.filter((r) => !r.excludedFromV1 && isPitcherOnly(r));
-    if (teamHitters.length < 9) errors.push(`${key}: only ${teamHitters.length} hitters — not draftable`);
-    if (teamPitchers.length < 3) errors.push(`${key}: only ${teamPitchers.length} pitchers — not draftable`);
+    if (teamHitters.length < 9) errors.push(`${key}: only ${teamHitters.length} hitters, not draftable`);
+    if (teamPitchers.length < 3) errors.push(`${key}: only ${teamPitchers.length} pitchers, not draftable`);
   }
   for (const h of [...hitters, ...pitchers]) {
     if (h.positions.length === 0) errors.push(`${h.id}: player with no positions`);
     if (h.rating < 1 || h.rating > 99) errors.push(`${h.id}: rating ${h.rating} out of range`);
   }
-  if (usedIds.size !== rated.length) errors.push('duplicate IDs detected');
+  if (new Set(rated.map((r) => r.id)).size !== rated.length) errors.push('duplicate IDs detected');
+  errors.push(...matchErrors, ...identity.errors);
   for (const [key] of curationIndex) {
     if (!curationUsed.has(key)) errors.push(`curation entry matched no scraped player: ${key.replace(/\|/g, ' ')}`);
   }
@@ -231,15 +253,15 @@ async function main() {
     }
   }
 
-  // 4) Report --------------------------------------------------------------
-  console.log('=== Summary: players per team-edition — total(hitters) ===\n');
+  // 5) Report --------------------------------------------------------------
+  console.log('=== Summary: players per team-edition: total(hitters) ===\n');
   const header = ['Country', ...EDITIONS.map(String)];
   const rows: string[][] = [];
   for (const c of COUNTRIES) {
     const row = [c.code];
     for (const year of EDITIONS) {
       const list = byTeam.get(`${year}-${c.code}`);
-      row.push(list ? `${list.length}(${list.filter((r) => !r.excludedFromV1).length})` : '—');
+      row.push(list ? `${list.length}(${list.filter((r) => !r.excludedFromV1).length})` : '-');
     }
     rows.push(row);
   }
@@ -249,7 +271,7 @@ async function main() {
   console.log(widths.map((w) => '-'.repeat(w)).join('  '));
   for (const r of rows) console.log(fmt(r));
 
-  console.log(`\nTotals: ${rated.length} players — ${hitters.length} hitters + ${pitchers.length} pitchers in the pool`);
+  console.log(`\nTotals: ${rated.length} players: ${hitters.length} hitters + ${pitchers.length} pitchers in the pool`);
   console.log(`Rating methods: ${JSON.stringify(methodCount)}`);
 
   console.log('\n=== Hitter rating histogram ===\n');
@@ -282,13 +304,13 @@ async function main() {
     for (const f of flagged) console.log(`  ${f}`);
   }
   if (errors.length) {
-    console.error('\n=== VALIDATION ERRORS — BUILD FAILED ===');
+    console.error('\n=== VALIDATION ERRORS: BUILD FAILED ===');
     for (const e of errors) console.error(`  ✗ ${e}`);
     process.exit(1);
   }
-  console.log('\n✓ Validation passed (sizes within review bounds, positions present, IDs unique, spot checks OK)');
+  console.log('\n✓ Validation passed (sizes within review bounds, positions present, IDs unique, identities consistent, spot checks OK)');
 
-  // 5) Write outputs -------------------------------------------------------
+  // 6) Write outputs -------------------------------------------------------
   mkdirSync('public/data', { recursive: true });
   mkdirSync('data/raw', { recursive: true });
   const publicPlayers = [...hitters, ...pitchers].map(({ excludedFromV1: _e, ...rest }) => rest);

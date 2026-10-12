@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemap.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://invictobaseball.com/</loc></url>
   <url><loc>https://invictobaseball.com/en/</loc></url>
   <url><loc>https://invictobaseball.com/ja/</loc></url>
   <url><loc>https://invictobaseball.com/ko/</loc></url>
-  <url><loc>https://invictobaseball.com/how-to-play</loc></url>
   <url><loc>https://invictobaseball.com/about</loc></url>
+  <url><loc>https://invictobaseball.com/contact</loc></url>
   <url><loc>https://invictobaseball.com/faq</loc></url>
+  <url><loc>https://invictobaseball.com/how-to-play</loc></url>
   <url><loc>https://invictobaseball.com/privacy</loc></url>
   <url><loc>https://invictobaseball.com/terms</loc></url>
-  <url><loc>https://invictobaseball.com/contact</loc></url>
   <url><loc>https://invictobaseball.com/articles/como-quedar-invicto</loc></url>
   <url><loc>https://invictobaseball.com/articles/dominicana-2013</loc></url>
   <url><loc>https://invictobaseball.com/articles/los-mejores-del-clasico</loc></url>
-  <url><loc>https://invictobaseball.com/en/articles/how-to-run-the-table</loc></url>
-  <url><loc>https://invictobaseball.com/en/articles/dominican-republic-2013</loc></url>
   <url><loc>https://invictobaseball.com/en/articles/best-classic-players-by-the-data</loc></url>
+  <url><loc>https://invictobaseball.com/en/articles/dominican-republic-2013</loc></url>
+  <url><loc>https://invictobaseball.com/en/articles/how-to-run-the-table</loc></url>
   <url><loc>https://invictobaseball.com/rosters/</loc></url>
   <url><loc>https://invictobaseball.com/rosters/wbc-2006</loc></url>
   <url><loc>https://invictobaseball.com/rosters/wbc-2009</loc></url>

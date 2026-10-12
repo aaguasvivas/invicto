@@ -1,8 +1,8 @@
 // Parses cached Wikipedia "<year> World Baseball Classic rosters" pages into raw player rows.
 //
-// Integrity rule: every row comes straight from the fetched page — nothing is invented
+// Integrity rule: every row comes straight from the fetched page. Nothing is invented
 // or filled in from memory. If a page can't be parsed into plausible rosters, the build
-// stops and reports it (see validate.ts).
+// stops and reports it (see build-data.ts).
 //
 // Page shape (all six editions): h2 "Pool A".. "Pool D" → h3 team name → roster table.
 // Two table formats appear, sometimes both on the same page (2023):
@@ -123,7 +123,23 @@ function cleanName(raw: string): string {
     .trim();
 }
 
-const DOB_RE = /\((\d{4}-\d{2}-\d{2})\)/;
+const ISO_DOB_RE = /\((\d{4}-\d{2}-\d{2})\)/;
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const TEXT_DOB_RE = new RegExp(`\\b(${MONTHS.join('|')}) (\\d{1,2}), (\\d{4})\\b`);
+
+/**
+ * Birth date from a DOB cell: the hidden "(YYYY-MM-DD)" sort key when present, else the
+ * visible "Month D, YYYY" text (the 2006 Australia, Italy and South Africa tables and the
+ * 2009 Mexico table have no sort key).
+ */
+export function parseDob(cell: string): string | null {
+  const iso = ISO_DOB_RE.exec(cell);
+  if (iso) return iso[1];
+  const text = TEXT_DOB_RE.exec(cell);
+  if (!text) return null;
+  const [, month, day, year] = text;
+  return `${year}-${String(MONTHS.indexOf(month) + 1).padStart(2, '0')}-${day.padStart(2, '0')}`;
+}
 
 export function parseEdition(
   year: number,
@@ -185,7 +201,7 @@ export function parseEdition(
         warnings.push({ edition: year, country, message: `Unknown position "${posRaw}" for "${name}"` });
         continue;
       }
-      const dobMatch = dobIdx >= 0 ? DOB_RE.exec(row[dobIdx] ?? '') : null;
+      const dob = dobIdx >= 0 ? parseDob(row[dobIdx] ?? '') : null;
       players.push({
         edition: year,
         country,
@@ -193,7 +209,7 @@ export function parseEdition(
         name,
         posRaw,
         posGroups,
-        dob: dobMatch ? dobMatch[1] : null,
+        dob,
         club: clubIdx >= 0 ? (row[clubIdx] ?? '').replace(/\[[^\]]*\]/g, '').replace(/\s+/g, ' ').trim() || null : null,
         leagueRaw: leagueIdx >= 0 ? (row[leagueIdx] ?? '').trim() || null : null,
         source,

@@ -48,17 +48,25 @@ data on load (`src/game/resume.ts`); a snapshot that no longer matches is droppe
 
 ## Content pages
 
-Beyond the game, `public/` holds crawlable static pages: how to play, FAQ, about, privacy,
-terms, contact, per-country roster reference pages (`public/rosters/`) and articles. Spanish is
-the source; English mirrors live under `public/en/`, and the in-game links pick the right tree
-for the current language (Japanese and Korean fall back to English). `sitemap.xml` lists every
-page with hreflang pairs. The roster pages are generated from `public/data/players.json` (the
-generator is not in the repo yet).
+Beyond the game, `public/` holds crawlable static pages. How to play, FAQ, about, privacy,
+terms and contact are bilingual: Spanish first, then the English half in
+`<section lang="en" id="en">`, which English links open at `#en`. The roster reference pages
+(`public/rosters/`: an index, one page per edition and one per country) and the articles have a
+Spanish tree and an English mirror under `public/en/`. The in-game links pick the right tree for
+the current language (Japanese and Korean fall back to English). Each Spanish and English pair
+links the other with hreflang tags, and `sitemap.xml` lists every page.
+
+The roster pages, the top-30 table of the two "best players" articles and `sitemap.xml` are
+generated from `public/data/*.json` and the history paragraphs in
+`data/curation/roster-editorial.json`. Edit the copy in `scripts/build-rosters.ts`, never the
+HTML, and regenerate with `npm run build-rosters`. A test fails while the checked-in pages
+differ from what the generator makes.
 
 ## Rebuilding the data
 
 ```sh
 npm run build-data
+npm run build-rosters   # regenerate the roster pages, article tables and sitemap from the new data
 ```
 
 Wikipedia roster pages are fetched (and cached in `data-cache/wikipedia/`) automatically. The
