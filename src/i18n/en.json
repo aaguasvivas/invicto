@@ -3,7 +3,9 @@
   "title": {
     "daily": "Daily Challenge",
     "dailyNum": "Daily Challenge #{n}",
+    "dailySub": "Same rolls for everyone. Only your first try counts.",
     "free": "Free play",
+    "freeSub": "New rolls every run",
     "hard": "Hard Mode 🔥",
     "hardSub": "No ratings: pure memory",
     "howto": "How to play",
@@ -16,23 +18,33 @@
     "nextDaily": "⏳ Next challenge in {h}h {m}m",
     "resume": "▶️ Resume run"
   },
-  "howto": [
-    {
-      "icon": "🎰",
-      "title": "Draft your squad",
-      "body": "12 rounds, 12 positions. Each round rolls a random country and WBC edition. Pick one player from that roster for your lineup; each player can only be drafted once."
-    },
-    {
-      "icon": "🔁",
-      "title": "Two lifelines",
-      "body": "You get 1 country reroll (same edition) and 1 edition reroll (same country) per run. Spend them wisely: live with China 2009, or burn the reroll?"
-    },
-    {
-      "icon": "🏆",
-      "title": "Run the table",
-      "body": "4 pool games, quarters, semis, the final. Win the tournament and you're CAMPEÓN 🏆. Win it all 7-0… that's INVICTO ⭐, the perfect run."
-    }
-  ],
+  "howto": {
+    "next": "Next",
+    "back": "Back",
+    "step": "Step {n} of {total}",
+    "panels": [
+      {
+        "icon": "🎰",
+        "title": "Draft your squad",
+        "body": "12 rounds, 12 positions. Each round rolls a random country and WBC edition. Pick one player from that roster for your lineup. A player can only be in your lineup once, even if he played several Classics."
+      },
+      {
+        "icon": "🧤",
+        "title": "Who plays where",
+        "body": "LF and RF are interchangeable, and a center fielder can cover either one. Any hitter can DH. RP takes any pitcher, but SP and CL need a true starter and a true closer. Grayed out: no open spot for him (✓ = already on your team)."
+      },
+      {
+        "icon": "🔁",
+        "title": "Two lifelines",
+        "body": "You get one “New country” (same edition) and one “New edition” (same country) per run. Spend them wisely: live with China 2009, or roll again?"
+      },
+      {
+        "icon": "🏆",
+        "title": "Run the table",
+        "body": "4 pool games: win 3 to reach the quarters. Then quarters, semis and the final, where one loss sends you home. Win the tournament and you're CAMPEÓN 🏆. Win it all 7-0… that's INVICTO ⭐, the perfect run."
+      }
+    ]
+  },
   "draft": {
     "round": "Round {n} of 12",
     "search": "Search for a player…",
@@ -248,13 +260,15 @@
     "disclaimer": "Invicto is not affiliated with, endorsed by, or sponsored by the World Baseball Classic, WBCI, MLB, NPB, or any team or players' association. Player names and historical statistics are used as factual references.",
     "about": "About",
     "aboutText": "Invicto is a tribute to the perfect-season game genre (the NBA's 82-0, MLB's 162-0). Roster data: Wikipedia. Stats: SABR Lahman Baseball Database. Made with love for Caribbean baseball fandom and the whole baseball world.",
-    "close": "Close",
     "howto": "How to play",
     "rosters": "Rosters",
     "faq": "FAQ",
     "privacy": "Privacy",
     "terms": "Terms",
     "contact": "Contact"
+  },
+  "dialog": {
+    "close": "Close"
   },
   "meta": {
     "title": "Invicto: Can you run the table at the World Baseball Classic?",

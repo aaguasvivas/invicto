@@ -15,7 +15,7 @@ import es from './i18n/es.json';
 import ja from './i18n/ja.json';
 import ko from './i18n/ko.json';
 import { COUNTRY_ACCENTS } from './ui/accents';
-import { installDom, installStorage, type FakeDom, type FakeElement, type StorageFault } from './test/fakedom';
+import { activeElement, installDom, installStorage, pressKey, type FakeDom, type FakeElement, type StorageFault } from './test/fakedom';
 
 const dataFile = (name: string): unknown => JSON.parse(readFileSync(new URL(`../public/data/${name}`, import.meta.url), 'utf8'));
 const DATA: Record<string, unknown> = { 'players.json': dataFile('players.json'), 'editions.json': dataFile('editions.json') };
@@ -84,7 +84,7 @@ function draft(picks: number): void {
     const row = page.app.querySelectorAll('button.player-row').find((b) => !b.classList.contains('taken') && !b.classList.contains('ineligible'));
     if (!row) throw new Error(`no legal pick in round ${i + 1}`);
     row.click();
-    page.body.querySelector('.sheet-overlay')?.querySelector('button.slot-option')?.click();
+    page.body.querySelector('dialog.sheet')?.querySelector('button.slot-option')?.click();
   }
 }
 
@@ -199,7 +199,7 @@ describe('storage that fails', () => {
   test.each(['blocked', 'full'] as const)('with %s storage the title renders and a run reaches the result screen', async (fault) => {
     await load(fault);
     expect(page.app.querySelector('.title-screen')).not.toBeNull();
-    await tap(`⚾ ${en.title.free}`);
+    await tap(en.title.free);
     draft(12);
     await skipSim();
   });
@@ -378,5 +378,184 @@ describe('result screen', () => {
     expect(button.disabled).toBe(false);
     expect(toasts()).not.toContain(en.result.copied);
     expect(toasts()).not.toContain(en.result.shareFailed);
+  });
+});
+
+describe('title buttons', () => {
+  test('Daily and Free play say how they differ; the Daily line goes once today is played', async () => {
+    await load();
+    expect(find('button', DAILY).querySelector('span.sub')!.textContent).toBe(en.title.dailySub);
+    expect(find('button', en.title.free).querySelector('span.sub')!.textContent).toBe(en.title.freeSub);
+
+    await tap(DAILY);
+    draft(12);
+    await skipSim();
+    await goHome();
+    expect(find('button', en.title.dailyPractice).querySelector('span.sub')).toBeNull();
+    expect(page.app.textContent).not.toContain(en.title.dailySub);
+    expect(find('button', en.title.free).querySelector('span.sub')!.textContent).toBe(en.title.freeSub);
+  });
+});
+
+describe('dialogs', () => {
+  /** Focus a control and activate it, as Tab then Enter does. */
+  async function press(el: FakeElement): Promise<void> {
+    el.focus();
+    el.click();
+    await vi.advanceTimersByTimeAsync(0);
+  }
+
+  const openDialog = () => page.body.querySelectorAll('dialog').filter((d) => d.open);
+
+  describe('How to play', () => {
+    async function openHowto() {
+      await load();
+      const opener = find('button', en.title.howto);
+      await press(opener);
+      const [dialog] = openDialog();
+      const strip = dialog.querySelector('.howto-panels')!;
+      // No layout in the fake: lay the panels out as a 327 px strip with a 16 px gap would.
+      dialog.querySelectorAll('.howto-panel').forEach((panel, i) => (panel.offsetLeft = i * 343));
+      return {
+        opener,
+        dialog,
+        strip,
+        back: dialog.querySelector('button.howto-back')!,
+        next: dialog.querySelector('button.howto-next')!,
+        dots: dialog.querySelectorAll('button.howto-dot'),
+      };
+    }
+    const step = (dots: FakeElement[]) => dots.findIndex((d) => d.getAttribute('aria-current') === 'step');
+
+    test('opens on panel 1 of 4, named by its heading, with focus on Next and no Back', async () => {
+      const { dialog, back, next, dots } = await openHowto();
+      expect(dialog.classList.contains('howto')).toBe(true);
+      const heading = dialog.querySelector('h2')!;
+      expect(heading.textContent).toBe(en.title.howto);
+      expect(dialog.getAttribute('aria-labelledby')).toBe(heading.id);
+      expect(dialog.querySelectorAll('.howto-panel').map((p) => p.querySelector('h3')!.textContent)).toEqual(en.howto.panels.map((p) => p.title));
+      expect(dots.map((d) => d.getAttribute('aria-label'))).toEqual([1, 2, 3, 4].map((n) => `Step ${n} of 4`));
+      expect(step(dots)).toBe(0);
+      expect(activeElement()).toBe(next);
+      expect(next.textContent).toContain(en.howto.next);
+      expect(back.classList.contains('off')).toBe(true);
+    });
+
+    test.each([
+      ['the Next button', (c: Awaited<ReturnType<typeof openHowto>>) => c.next.click()],
+      ['the second dot', (c: Awaited<ReturnType<typeof openHowto>>) => c.dots[1].click()],
+      ['ArrowRight', () => pressKey('ArrowRight')],
+    ])('%s reaches panel 2 and scrolls the strip to that panel', async (_, act) => {
+      const c = await openHowto();
+      act(c);
+      expect(step(c.dots)).toBe(1);
+      expect(c.strip.scrollLeft).toBe(343); // the panel's offsetLeft, gap included
+      expect(c.back.classList.contains('off')).toBe(false);
+    });
+
+    test('Back and ArrowLeft step back, and neither end overshoots', async () => {
+      const c = await openHowto();
+      pressKey('ArrowLeft');
+      expect(step(c.dots)).toBe(0);
+      c.dots[3].click();
+      pressKey('ArrowRight');
+      expect(step(c.dots)).toBe(3);
+      c.back.click();
+      expect(step(c.dots)).toBe(2);
+      pressKey('ArrowLeft');
+      expect(step(c.dots)).toBe(1);
+    });
+
+    test('Next becomes Close on the last panel and closes it; focus returns to How to play', async () => {
+      const c = await openHowto();
+      for (let i = 0; i < 3; i++) c.next.click();
+      expect(step(c.dots)).toBe(3);
+      expect(c.next.textContent).toBe(en.dialog.close);
+      c.next.click();
+      expect(openDialog()).toHaveLength(0);
+      expect(activeElement()).toBe(c.opener);
+    });
+
+    test('a swipe updates the dots once the strip settles', async () => {
+      const c = await openHowto();
+      c.strip.scrollLeft = 686;
+      c.strip.dispatch('scroll');
+      await vi.advanceTimersByTimeAsync(200);
+      expect(step(c.dots)).toBe(2);
+    });
+
+    test('Escape closes it and focus returns to How to play', async () => {
+      const c = await openHowto();
+      pressKey('Escape');
+      expect(openDialog()).toHaveLength(0);
+      expect(activeElement()).toBe(c.opener);
+    });
+  });
+
+  test('About: named by its heading; Escape closes it and focus returns to the link', async () => {
+    await load();
+    const link = find('a', en.footer.about);
+    await press(link);
+    const [dialog] = openDialog();
+    expect(dialog.querySelector('h2')!.textContent).toBe(en.footer.about);
+    expect(dialog.getAttribute('aria-labelledby')).toBe(dialog.querySelector('h2')!.id);
+    expect(dialog.textContent).toContain(en.footer.aboutText);
+    pressKey('Escape');
+    expect(openDialog()).toHaveLength(0);
+    expect(activeElement()).toBe(link);
+  });
+
+  test('slot picker: Enter on a multi-position row opens it on the first slot; Escape returns to the row', async () => {
+    await load();
+    await tap(DAILY);
+    page.app.querySelector('.roll-card')!.click();
+    // Round 1: every slot is open, so the first legal row fits at least two (its position and DH, or SP and RP).
+    const row = page.app.querySelectorAll('button.player-row').find((b) => !b.classList.contains('taken') && !b.classList.contains('ineligible'))!;
+    await press(row);
+    const [dialog] = openDialog();
+    expect(dialog.classList.contains('sheet')).toBe(true);
+    const heading = dialog.querySelector('h2')!;
+    expect(heading.textContent).toBe(en.draft.pickSlot.replace('{name}', row.querySelector('b')!.textContent));
+    expect(dialog.getAttribute('aria-labelledby')).toBe(heading.id);
+    const slots = dialog.querySelectorAll('button.slot-option');
+    expect(slots.length).toBeGreaterThanOrEqual(2);
+    expect(activeElement()).toBe(slots[0]); // no Tabs needed to reach a slot
+
+    pressKey('Escape');
+    expect(openDialog()).toHaveLength(0);
+    expect(activeElement()).toBe(row);
+    expect(page.app.querySelector('.roll-round')!.textContent).toBe(en.draft.round.replace('{n}', '1')); // nothing picked
+
+    await press(row);
+    openDialog()[0].querySelector('button.slot-option')!.click();
+    expect(openDialog()).toHaveLength(0);
+    expect(page.app.querySelector('.roll-round')!.textContent).toBe(en.draft.round.replace('{n}', '2'));
+  });
+
+  test('load error: opens with focus on Retry; Escape returns to the button tapped; Retry loads again', async () => {
+    vi.stubGlobal('fetch', async () => {
+      throw new TypeError('offline (test stub)');
+    });
+    await load();
+    const free = find('button', en.title.free);
+    await press(free);
+    const [dialog] = openDialog();
+    expect(dialog.classList.contains('load-error')).toBe(true);
+    expect(dialog.getAttribute('aria-labelledby')).toBe(dialog.querySelector('p')!.id);
+    expect(dialog.querySelector('p')!.textContent).toBe(en.boot.error);
+    expect(activeElement().textContent).toBe(en.boot.retry);
+
+    pressKey('Escape');
+    expect(openDialog()).toHaveLength(0);
+    expect(activeElement()).toBe(free);
+
+    await press(free); // the load still failed: the same dialog, not two
+    expect(openDialog()).toHaveLength(1);
+    vi.stubGlobal('fetch', async (url: string) => ({ ok: true, json: async () => DATA[Object.keys(DATA).find((name) => url.endsWith(`/data/${name}`))!] }));
+    find('button', en.boot.retry).click();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(openDialog()).toHaveLength(0);
+    await tap(en.title.free);
+    expect(page.app.querySelector('.draft-screen')).not.toBeNull();
   });
 });

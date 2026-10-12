@@ -11,6 +11,7 @@ import type { Session } from '../../game/session';
 import {
   canRerollCountry, canRerollEdition, currentRoster, draftDone, pick, rerollCountry, rerollEdition,
 } from '../../game/session';
+import { openDialog } from '../dialog';
 import { clear, h, toast } from '../dom';
 import { nameSearch } from '../search';
 
@@ -166,18 +167,13 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
     else drawRound(screen, session, cb, true);
   };
 
+  // Opens with focus on the first slot, so a keyboard pick is Enter, Enter.
   const showSlotSheet = (p: EnginePlayer, slots: Slot[]) => {
-    const overlay = h(
-      'div.sheet-overlay',
-      { onclick: (e: Event) => { if (e.target === overlay) overlay.remove(); } },
-      h(
-        'div.sheet',
-        {},
-        h('h3', {}, t('draft.pickSlot', { name: p.name })),
-        h('div.slot-options', {}, ...slots.map((slot) => h('button.slot-option', { onclick: () => { overlay.remove(); confirmPick(p, slot); } }, slot))),
-      ),
+    const heading = h('h2.dialog-title', {}, t('draft.pickSlot', { name: p.name }));
+    const options = slots.map((slot) =>
+      h('button.slot-option', { type: 'button', onclick: () => { dialog.close(); confirmPick(p, slot); } }, slot),
     );
-    document.body.append(overlay);
+    const dialog = openDialog({ variant: 'sheet', heading, content: [heading, h('div.slot-options', {}, ...options)] });
   };
 
   // --- lineup tray ---

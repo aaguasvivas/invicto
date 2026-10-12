@@ -1,11 +1,14 @@
 // A minimal browser for tests: just enough DOM for the h()/clear()/toast()
-// screens, plus a localStorage that can be made to fail the two ways real
-// browsers fail. Test-only; nothing in the game imports it, so it adds nothing
-// to the bundle. Clicks bubble along the path computed at dispatch time, like
-// the real DOM.
+// screens and the <dialog> helper, plus a localStorage that can be made to fail
+// the two ways real browsers fail. Test-only; nothing in the game imports it,
+// so it adds nothing to the bundle. Events bubble along the path computed at
+// dispatch time, like the real DOM. There is no layout: offsetLeft and
+// scrollLeft are plain numbers a test can set.
 
 export interface FakeEvent {
   type: string;
+  /** keydown only */
+  key?: string;
   target: FakeElement;
   currentTarget: FakeElement;
   defaultPrevented: boolean;
@@ -101,10 +104,14 @@ class FakeStyle {
   }
 }
 
+/** What has focus: document.activeElement reads it, element.focus() sets it. */
+let focused: FakeElement | null = null;
+
 export class FakeElement extends FakeNode {
   className = '';
   readonly classList = new FakeClassList(this);
   readonly dataset: Record<string, string> = {};
+  id = '';
   disabled = false;
   value = '';
   type = '';
@@ -113,6 +120,10 @@ export class FakeElement extends FakeNode {
   target = '';
   rel = '';
   lang = '';
+  /** <dialog> only */
+  open = false;
+  offsetLeft = 0;
+  scrollLeft = 0;
   private readonly styleDecl = new FakeStyle();
   private readonly attrs = new Map<string, string>();
   private readonly listeners = new Map<string, { fn: Listener; once: boolean }[]>();
@@ -167,6 +178,10 @@ export class FakeElement extends FakeNode {
     return this.attrs.get(name) ?? null;
   }
 
+  removeAttribute(name: string): void {
+    this.attrs.delete(name);
+  }
+
   addEventListener(type: string, fn: Listener, opts?: { once?: boolean }): void {
     const list = this.listeners.get(type) ?? [];
     list.push({ fn, once: opts?.once ?? false });
@@ -203,6 +218,27 @@ export class FakeElement extends FakeNode {
 
   select(): void {}
 
+  focus(): void {
+    focused = this;
+  }
+
+  /** Jumps at once: the fake has no smooth scrolling and fires no scroll event. */
+  scrollTo(options: { left?: number }): void {
+    if (options.left !== undefined) this.scrollLeft = options.left;
+  }
+
+  /** <dialog>: the fake has no top layer; open is what the tests read. */
+  showModal(): void {
+    this.open = true;
+  }
+
+  /** <dialog>: closes and fires close (a queued task in browsers, at once here). */
+  close(): void {
+    if (!this.open) return;
+    this.open = false;
+    this.dispatch('close');
+  }
+
   /** Canvas stand-in: tests never draw the share poster, so its PNG is empty. */
   toBlob(done: (blob: Blob | null) => void, type = 'image/png'): void {
     done(new Blob([], { type }));
@@ -210,11 +246,17 @@ export class FakeElement extends FakeNode {
 
   click(): void {
     if (this.disabled) return;
+    this.dispatch('click');
+  }
+
+  /** Fire an event here and bubble it to the root; returns it so callers can read defaultPrevented. */
+  dispatch(type: string, key?: string): FakeEvent {
     const path: FakeElement[] = [];
     for (let n: FakeElement | null = this; n; n = n.parentNode) path.push(n);
     let stopped = false;
     const event: FakeEvent = {
-      type: 'click',
+      type,
+      key,
       target: this,
       currentTarget: this,
       defaultPrevented: false,
@@ -227,13 +269,31 @@ export class FakeElement extends FakeNode {
     };
     for (const el of path) {
       event.currentTarget = el;
-      for (const l of [...(el.listeners.get('click') ?? [])]) {
-        if (l.once) el.removeEventListener('click', l.fn);
+      for (const l of [...(el.listeners.get(type) ?? [])]) {
+        if (l.once) el.removeEventListener(type, l.fn);
         l.fn(event);
       }
       if (stopped) break;
     }
+    return event;
   }
+}
+
+/** The focused element, or <body> when nothing (still in the page) has focus. */
+export function activeElement(): FakeElement {
+  return focused?.isConnected ? focused : (document.body as unknown as FakeElement);
+}
+
+/**
+ * A key press on the focused element. Escape then does what a browser does
+ * with an open modal dialog: fire cancel at the topmost one and, unless that
+ * was prevented, close it.
+ */
+export function pressKey(key: string): void {
+  const down = activeElement().dispatch('keydown', key);
+  if (key !== 'Escape' || down.defaultPrevented) return;
+  const top = (document.body as unknown as FakeElement).querySelectorAll('dialog').filter((d) => d.open).pop();
+  if (top && !top.dispatch('cancel').defaultPrevented) top.close();
 }
 
 export interface FakeDom {
@@ -251,10 +311,14 @@ export function installDom(languages: string[] = ['en-US']): FakeDom {
   const app = new FakeElement('div');
   documentElement.append(head, body);
   body.append(app);
+  focused = null;
   const doc = {
     documentElement,
     head,
     body,
+    get activeElement() {
+      return activeElement();
+    },
     title: '',
     createElement: (tag: string) => new FakeElement(tag),
     createTextNode: (text: string) => new FakeText(text),

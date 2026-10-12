@@ -106,9 +106,9 @@ export function flavor(key: string, variant: number, params: Record<string, stri
   return interpolate(String(list[variant % list.length]), params);
 }
 
-/** The three how-to-play panels. */
+/** The How to play panels, in order. */
 export function howtoPanels(): { icon: string; title: string; body: string }[] {
-  return lookup('howto') as { icon: string; title: string; body: string }[];
+  return lookup('howto.panels') as { icon: string; title: string; body: string }[];
 }
 
 /** Localized country display name; falls back to the English name from the data. */

@@ -22,8 +22,15 @@ function keyTree(node: unknown, prefix = ''): string[] {
   return [prefix];
 }
 
+type Panel = { icon: string; title: string; body: string };
+const howtoPanels = (table: unknown): Panel[] => (table as { howto: { panels: Panel[] } }).howto.panels;
+
 describe('language tables', () => {
   const esTree = keyTree(es).sort();
+
+  test('How to play has four panels: the draft, who plays where, the rerolls, the tournament', () => {
+    expect(howtoPanels(es).map((p) => p.icon)).toEqual(['🎰', '🧤', '🔁', '🏆']);
+  });
 
   for (const [code, table] of LANGS) {
     test(`${code} mirrors the Spanish key tree`, () => {
@@ -38,6 +45,16 @@ describe('language tables', () => {
       expect(keys).toHaveLength(12); // win/loss × mercy/shutout/blowout/walkoff/close/normal
       for (const key of keys) {
         expect(flavors[key].length, `${code} flavor.${key}`).toBeGreaterThanOrEqual(8);
+      }
+    });
+
+    test(`${code} has the How to play panels of the Spanish table, in its order`, () => {
+      // The parity test above sees an array as one key, so a missing panel would pass it.
+      const panels = howtoPanels(table);
+      expect(panels.map((p) => p.icon)).toEqual(howtoPanels(es).map((p) => p.icon));
+      for (const p of panels) {
+        expect(p.title.trim(), `${code} ${p.icon} title`).not.toBe('');
+        expect(p.body.trim(), `${code} ${p.icon} body`).not.toBe('');
       }
     });
 
