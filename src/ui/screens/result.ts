@@ -156,11 +156,11 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
     });
   }
 
-  // Today's daily again is practice; once the dealt day is over (a run that
-  // crossed midnight, or midnight while this screen is up), the same button
-  // deals the new day's scored daily, and says so.
+  // The button deals today's daily. Once today's is played it is practice;
+  // until then (a run that crossed midnight, midnight while this screen is up,
+  // or a comparison of a past daily) it is the new day's scored daily, and says so.
   const againLabel = () =>
-    !daily ? t('result.again') : session.day === todayKey() ? t('result.practiceAgain') : `⭐ ${t('title.dailyNum', { n: dailyNumber() })}`;
+    !daily ? t('result.again') : session.day === todayKey() || dailyResult() ? t('result.practiceAgain') : `⭐ ${t('title.dailyNum', { n: dailyNumber() })}`;
   const againBtn = h('button.btn', { onclick: cb.onAgain }, againLabel());
 
   // The challenge: this run's card, the dare and its link (no link in a

@@ -658,6 +658,30 @@ describe('challenge links', () => {
     expect(page.body.querySelector('.toast')?.textContent).not.toBe(en.draft.practiceNote);
   });
 
+  test("a past daily compared after today's daily is done: the next button says practice, and it deals practice", async () => {
+    const ana = await challengeFrom(DAILY, 'first', 'Ana');
+    const ben = await challengeFrom(DAILY, 'last', 'Ben');
+    vi.setSystemTime(new Date(2026, 9, 13, 12, 0));
+    store = new Map(); // Luis answers Ana's link two days later, as practice, then plays today's daily
+    await load('none', undefined, fragment(ana.link));
+    await tap(en.challenge.accept);
+    draft(12);
+    await skipSim();
+    await goHome();
+    await tap(DAILY);
+    draft(12);
+    await skipSim();
+    await goHome();
+    expect(dailyResult('2026-10-13')).not.toBeNull();
+
+    await load('none', undefined, fragment(ben.link));
+    await tap(en.challenge.accept);
+    expect(page.app.querySelector('.vs-card')).not.toBeNull();
+    await tap(en.result.practiceAgain);
+    expect(page.app.querySelector('.draft-screen')).not.toBeNull();
+    expect(toasts()).toContain(en.draft.practiceNote);
+  });
+
   test('a deal played here whose lineup the rosters no longer hold is dealt afresh, and the card says so before Accept', async () => {
     const ana = await challengeFrom(DAILY, 'last', 'Ana');
     store = new Map(); // Luis played today's daily; a roster rebuild then retired one of his picks
