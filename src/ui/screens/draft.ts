@@ -1,11 +1,18 @@
 // Draft screen: roll reveal with slot-machine spin, searchable roster grouped by
-// position, reroll buttons, pinned lineup tray. Ratings hidden in hard mode. A
-// run dealt by a challenge link names the rival on the round line.
+// position, reroll buttons, pinned lineup tray. A run dealt by a challenge link
+// names the rival on the round line.
+//
+// Outside Hard Mode the tray shows the lineup's six category values with the
+// gate (the lowest, which caps the team) in red, and each hitter row adds his
+// value at the gate, so the weak spot can be fixed while drafting. Hard Mode
+// shows no numbers at all.
 
-import { eligibleSlots, SLOTS } from '../../engine/positions';
+import { eligibleSlots, HITTER_SLOTS, PITCHER_SLOTS, SLOTS } from '../../engine/positions';
 import { openSlots, POWERS } from '../../engine/draft';
-import type { EnginePlayer, Slot } from '../../engine/types';
+import { CATEGORIES, categoryRatings, type Category } from '../../engine/teamRating';
+import type { EnginePlayer, LineupSlots, Slot } from '../../engine/types';
 import { recordOf } from '../../game/challenge';
+import * as storage from '../../game/storage';
 import { countryName, t } from '../../i18n';
 import { setAccent } from '../accents';
 import { crowdRoar, vibrate } from '../sound';
@@ -21,6 +28,75 @@ import { rivalName } from '../versus';
 
 const PITCHER_POS: Slot[] = ['SP', 'RP', 'CL'];
 const SPIN_MS = 700;
+
+/** Set once the gate tip has shown; the module flag keeps it to once a page when storage throws. */
+const TIP_KEY = 'invicto.tipBars';
+let tipShown = false;
+
+/** The six category values over the drafted players only; null where nobody counts yet. */
+export type DraftedCategories = Record<Category, number | null>;
+
+const hasAny = (lineup: LineupSlots, slots: readonly Slot[]) => slots.some((slot) => lineup[slot] !== undefined);
+
+/**
+ * The engine's category values for the lineup so far, without the engine's
+ * stand-ins: the hitter categories stay null until a hitter is drafted (the
+ * engine would average whoever is in), and pitching until a pitcher is (the
+ * engine would count 50).
+ */
+export function draftedCategories(lineup: LineupSlots): DraftedCategories {
+  const values = categoryRatings(lineup);
+  const hitters = hasAny(lineup, HITTER_SLOTS);
+  const pitchers = hasAny(lineup, PITCHER_SLOTS);
+  const out = {} as DraftedCategories;
+  for (const c of CATEGORIES) out[c] = (c === 'pitching' ? pitchers : hitters) ? values[c] : null;
+  return out;
+}
+
+export interface Gate {
+  category: Category;
+  value: number;
+}
+
+/** The lowest value the tray has (the first category on a tie, as on the result card); null before the first pick. */
+export function draftGate(values: DraftedCategories): Gate | null {
+  let gate: Gate | null = null;
+  for (const category of CATEGORIES) {
+    const value = values[category];
+    if (value !== null && (gate === null || value < gate.value)) gate = { category, value };
+  }
+  return gate;
+}
+
+/** The tray's six cells: short label, value and a bar on the 0 to 100 scale of every rating, the gate in red. */
+function categoryBars(values: DraftedCategories, gate: Gate | null): HTMLElement {
+  return h(
+    'div.cat-bars',
+    { role: 'group', 'aria-label': t('draft.trayAria') },
+    ...CATEGORIES.map((c) => {
+      const value = values[c];
+      return h(
+        `div.cat-cell${c === gate?.category ? '.gate' : ''}`,
+        { title: t(`scout.cat.${c}`) },
+        h('span.cat-label', {}, t(`draft.cat.short.${c}`)),
+        value === null ? h('span.cat-value.none', {}, '-') : h('span.cat-value', {}, String(Math.round(value))),
+        h('span.cat-bar', {}, value === null ? null : h('span.cat-fill', { style: `width:${Math.min(100, Math.max(0, value))}%` })),
+      );
+    }),
+  );
+}
+
+/**
+ * The first time the tray compares hitter values, one tip over it says what
+ * the red cell means. Never in Hard Mode, and never over another notice.
+ */
+function gateTip(session: Session, tray: HTMLElement | null): void {
+  if (session.mode === 'hard' || session.autoRedrew || !tray || !hasAny(session.state.lineup, HITTER_SLOTS)) return;
+  if (tipShown || storage.get(TIP_KEY)) return;
+  tipShown = true;
+  storage.set(TIP_KEY, '1');
+  toast(t('draft.gateTip'), tray);
+}
 
 /** Club names are proper nouns; only the English notes the data adds to them are translated. */
 function clubLabel(club: string): string {
@@ -50,6 +126,11 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
   clear(screen);
   const country = session.data.countries.get(session.roll.country)!;
   setAccent(spin ? null : session.roll.country);
+  const blind = session.mode === 'hard';
+  const values = draftedCategories(session.state.lineup);
+  const gate = draftGate(values);
+  // Hitter rows show their value at the gate while the gate is a hitter category.
+  const rowGate = !blind && gate && gate.category !== 'pitching' ? { category: gate.category, value: gate.value } : null;
 
   if (session.autoRedrew) toast(t('draft.noEligible'));
 
@@ -113,7 +194,7 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
         .filter((p) => !session.state.draftedPersons.includes(p.personKey) && eligibleSlots(p.positions, open).length > 0)
         .map((p) => p.id),
     );
-    const order = session.mode === 'hard'
+    const order = blind
       ? (a: EnginePlayer, b: EnginePlayer) => a.name.localeCompare(b.name)
       : (a: EnginePlayer, b: EnginePlayer) => b.rating - a.rating;
 
@@ -145,6 +226,24 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
     if (sections.length === 0 && q) rosterEl.append(h('div.roster-empty', {}, t('draft.noResults', { q })));
   };
 
+  // The club, then the player's value at the gate when he can still fill an
+  // open hitter slot: green when it is above the team's value there.
+  const secondLine = (p: EnginePlayer, slots: Slot[]): HTMLElement | null => {
+    const club = p.club ? clubLabel(p.club) : null;
+    if (!rowGate || !slots.some((slot) => HITTER_SLOTS.includes(slot))) return club ? h('span', {}, club) : null;
+    const value = p[rowGate.category];
+    return h(
+      'span.player-sub',
+      {},
+      club ? h('span.player-club', {}, club) : null,
+      h(
+        `span.player-tag${value > rowGate.value ? '.up' : ''}`,
+        {},
+        `${club ? ' · ' : ''}${t(`draft.cat.short.${rowGate.category}`)} ${value}`,
+      ),
+    );
+  };
+
   const playerRow = (p: EnginePlayer, open: Slot[]): HTMLElement => {
     const taken = session.state.draftedPersons.includes(p.personKey);
     const slots = eligibleSlots(p.positions, open);
@@ -162,9 +261,9 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
         'span.player-name',
         {},
         h('b', {}, taken ? `✓ ${p.name}` : p.name),
-        p.club ? h('span', {}, clubLabel(p.club)) : null,
+        secondLine(p, taken ? [] : slots),
       ),
-      session.mode !== 'hard' ? ratingChip(p.rating) : null,
+      blind ? null : ratingChip(p.rating),
     );
   };
 
@@ -174,7 +273,10 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
     // resumes the full lineup instead of reopening the last pick.
     cb.onChange?.();
     if (draftDone(session)) cb.onDone();
-    else drawRound(screen, session, cb, true);
+    else {
+      drawRound(screen, session, cb, true);
+      gateTip(session, screen.querySelector<HTMLElement>('.lineup-tray'));
+    }
   };
 
   // Opens with focus on the first slot, so a keyboard pick is Enter, Enter.
@@ -221,9 +323,9 @@ function drawRound(screen: HTMLElement, session: Session, cb: DraftCallbacks, sp
         h('span', {}, `${t('draft.lineup')} (${SLOTS.length - openSlots(session.state).length}/${SLOTS.length})`),
         h('span', {}, '▴'),
       ),
-      grid,
-      list,
     );
+    if (!blind) tray.append(categoryBars(values, gate));
+    tray.append(grid, list);
   };
   drawTray();
 

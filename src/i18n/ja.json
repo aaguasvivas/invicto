@@ -66,7 +66,10 @@
     "minors": "{club}（マイナー）",
     "farm": "{club}（二軍）",
     "freeAgent": "FA（所属なし）",
-    "posGroups": { "C": "捕手", "IF": "内野手", "OF": "外野手", "DH": "指名打者", "P": "投手" }
+    "posGroups": { "C": "捕手", "IF": "内野手", "OF": "外野手", "DH": "指名打者", "P": "投手" },
+    "trayAria": "項目別のスタメンの力",
+    "gateTip": "いちばん低い能力がチーム全体の上限になる",
+    "cat": { "short": { "contact": "ミート", "power": "パワー", "speed": "走力", "defense": "守備", "clutch": "チャンス", "pitching": "投手" } }
   },
   "sim": {
     "title": "プレイボール！",

@@ -29,9 +29,10 @@ export function clear(el: HTMLElement): void {
   while (el.firstChild) el.removeChild(el.firstChild);
 }
 
-export function toast(message: string): void {
+/** One message at a time, for 2.6 s. parent: where it hangs (the stylesheet places a toast by its parent). */
+export function toast(message: string, parent: HTMLElement = document.body): void {
   document.querySelector('.toast')?.remove();
   const el = h('div.toast', { role: 'status' }, message);
-  document.body.append(el);
+  parent.append(el);
   setTimeout(() => el.remove(), 2600);
 }

@@ -66,7 +66,10 @@
     "minors": "{club} (menores)",
     "farm": "{club} (menores)",
     "freeAgent": "Agente libre",
-    "posGroups": { "C": "Receptores", "IF": "Infielders", "OF": "Jardineros", "DH": "Bateadores designados", "P": "Lanzadores" }
+    "posGroups": { "C": "Receptores", "IF": "Infielders", "OF": "Jardineros", "DH": "Bateadores designados", "P": "Lanzadores" },
+    "trayAria": "Fuerza de tu lineup por categoría",
+    "gateTip": "La barra más baja frena a todo tu equipo",
+    "cat": { "short": { "contact": "CON", "power": "POD", "speed": "VEL", "defense": "DEF", "clutch": "CLU", "pitching": "PIT" } }
   },
   "sim": {
     "title": "¡A jugar el Clásico!",

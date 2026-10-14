@@ -75,6 +75,7 @@ const DYNAMIC_KEYS = [
   ...['C', 'IF', 'OF', 'DH', 'P'].map((group) => `draft.posGroups.${group}`), // draft.ts roster groups
   ...['minors', 'farm'].map((note) => `draft.${note}`), // draft.ts clubLabel
   ...CATEGORIES.map((c) => `scout.cat.${c}`), // scoutCard.ts bars and leverage line
+  ...CATEGORIES.map((c) => `draft.cat.short.${c}`), // draft.ts tray bars and roster row tags
   ...['pool', 'qf', 'sf', 'final', 'campeon', 'invicto'].map((tier) => `stats.tier.${tier}`), // stats.ts chart rows
 ];
 

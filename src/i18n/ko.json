@@ -66,7 +66,10 @@
     "minors": "{club} (마이너)",
     "farm": "{club} (2군)",
     "freeAgent": "FA (소속팀 없음)",
-    "posGroups": { "C": "포수", "IF": "내야수", "OF": "외야수", "DH": "지명타자", "P": "투수" }
+    "posGroups": { "C": "포수", "IF": "내야수", "OF": "외야수", "DH": "지명타자", "P": "투수" },
+    "trayAria": "항목별 내 라인업 전력",
+    "gateTip": "가장 낮은 능력치가 팀 전체의 한계를 정해요",
+    "cat": { "short": { "contact": "컨택", "power": "파워", "speed": "주력", "defense": "수비", "clutch": "클러치", "pitching": "투수" } }
   },
   "sim": {
     "title": "플레이볼!",

@@ -66,7 +66,10 @@
     "minors": "{club} (minors)",
     "farm": "{club} (farm)",
     "freeAgent": "Free agent",
-    "posGroups": { "C": "Catchers", "IF": "Infielders", "OF": "Outfielders", "DH": "Designated hitters", "P": "Pitchers" }
+    "posGroups": { "C": "Catchers", "IF": "Infielders", "OF": "Outfielders", "DH": "Designated hitters", "P": "Pitchers" },
+    "trayAria": "Your lineup strength by category",
+    "gateTip": "Your lowest bar caps your whole team",
+    "cat": { "short": { "contact": "CON", "power": "POW", "speed": "SPD", "defense": "DEF", "clutch": "CLU", "pitching": "PIT" } }
   },
   "sim": {
     "title": "Play ball!",

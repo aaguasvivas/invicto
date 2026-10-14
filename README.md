@@ -32,6 +32,16 @@ Title → draft → sim reveal → result poster (`src/main.ts` routes them). Th
 before the roster JSON has loaded; the data is awaited only when a run starts, and a failed
 load shows a retry card instead of a blank screen.
 
+Outside Hard Mode the draft tray shows the lineup's six category values (the five hitter means
+and the pitching mean, from the engine's `categoryRatings` over the players drafted so far) with
+the gate, the lowest value, in red, and each hitter row adds his value at the gate while it is a
+hitter category. A hitter category reads "-" until the first hitter is in, and pitching until the
+first pitcher. The first time the tray compares hitter values, one tip explains the red cell. Hard
+Mode shows no numbers at all. It is display only (rolls, picks and the simulation are unchanged),
+but it makes the draft easier: in the audit's simulations a player who drafts by the categories
+wins 7-0 about twice as often as one who drafts by OVR (about 3% of runs against 1.4%), so results
+from before this change and after it do not compare.
+
 The result carries a scouting report (`src/game/scout.ts`, drawn by `src/ui/scoutCard.ts`): the
 Team OVR, the six category bars with the weak spot, what ten more points there would buy, each
 loss with its chance before the dice, best pick and weakest link against a median player at the
@@ -78,6 +88,7 @@ Everything the game remembers lives in `localStorage`:
 | `invicto.run` | autosave of an unfinished run, written after every pick and reroll; cleared when the run ends, and a daily snapshot expires with its day |
 | `invicto.mine` | the last 30 finished runs (seed, player ids, day), so a challenge link to one of them opens on the comparison |
 | `invicto.nick` | the optional nickname that signs challenge links |
+| `invicto.tipBars` | set once the draft tray's gate tip has shown |
 
 Versions before Your numbers also kept `invicto.streak` and `invicto.lastDaily`. Nothing reads or
 writes them now; they stay in older browsers' storage, ignored.
