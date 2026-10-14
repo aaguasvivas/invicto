@@ -52,7 +52,12 @@ export function heroLine(game: GameResult, lineup: LineupSlots): string | null {
   return t(`hero.${key}`, params);
 }
 
-const EMOJI_TAIL = /\S+ (?:\p{Extended_Pictographic}|\p{Emoji_Modifier}|\u200d|\ufe0f)+$/u;
+/**
+ * The last word, a space and a trailing emoji. Japanese writes no spaces and
+ * can break after any kana or kanji, so there a lone character counts as the
+ * last word: a whole sentence in the tail could not wrap.
+ */
+const EMOJI_TAIL = /(?:[^\s\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}]+|[\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}]) (?:\p{Extended_Pictographic}|\p{Emoji_Modifier}|\u200d|\ufe0f)+$/u;
 
 /**
  * A line's last word and trailing emoji, split off as [lead, tail] so the tail
@@ -157,9 +162,9 @@ export function renderSim(app: HTMLElement, run: RunResult, data: GameData, line
         h(
           'div.game-score',
           {},
-          h('span' + (game.win ? '.w' : '.l'), {}, `${t('sim.you')} ${game.teamScore}`),
+          h('span.team' + (game.win ? '.w' : '.l'), {}, `${t('sim.you')} ${game.teamScore}`),
           h('span', { style: 'color:var(--text-dim)' }, ' · '),
-          h('span', {}, `${oppName} ${game.oppScore}`),
+          h('span.team', {}, `${oppName} ${game.oppScore}`),
         ),
         h('div.game-flavor', {}, lead, tail ? h('span.tail', {}, tail) : null),
         star ? h('div.game-flavor.hero', {}, star) : null,

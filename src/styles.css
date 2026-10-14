@@ -758,6 +758,8 @@ html:has(dialog[open]) { overflow: hidden; }
 .game-flag { font-size: 26px; flex: none; }
 .game-info { flex: 1; min-width: 0; }
 .game-score { font-family: var(--display); font-size: 21px; }
+/* a team's name and score wrap as one (República Dominicana 12, ドミニカ共和国 12), unless wider than the card */
+.game-score .team { display: inline-block; }
 .game-score .w { color: var(--green); }
 .game-score .l { color: var(--red); }
 .game-flavor { color: var(--text-dim); font-size: 12px; line-height: 1.35; }

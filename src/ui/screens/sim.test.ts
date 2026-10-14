@@ -125,6 +125,25 @@ describe('splitEmojiTail', () => {
     expect(splitEmojiTail('No emoji at the end 🔥 here')).toEqual(['No emoji at the end 🔥 here', '']);
     expect(splitEmojiTail('🔥')).toEqual(['🔥', '']);
   });
+
+  test('in Japanese, where every character is a break point, the tail stays short so the line still wraps', async () => {
+    vi.resetModules();
+    installDom(['ja-JP']);
+    installStorage();
+    const { splitEmojiTail } = await import('./sim');
+    expect(splitEmojiTail('ドミニカ共和国にリズムを与えなかった：14-5 🎺')).toEqual(['ドミニカ共和国にリズムを与えなかった', '：14-5 🎺']);
+    expect(splitEmojiTail('歴史的大勝：14-5。ドミニカ共和国は帰りのバスへ 🚌')).toEqual(['歴史的大勝：14-5。ドミニカ共和国は帰りのバス', 'へ 🚌']);
+    expect(splitEmojiTail('サヨナラ負け 💔')).toEqual(['サヨナラ負', 'け 💔']);
+  });
+
+  test('in Korean, which spaces its words, the tail is the last word', async () => {
+    vi.resetModules();
+    installDom(['ko-KR']);
+    installStorage();
+    const { splitEmojiTail } = await import('./sim');
+    expect(splitEmojiTail('역사적인 대승: 14-5. 도미니카 공화국 벤치는 집에 가고 싶었다 🚌')).toEqual(['역사적인 대승: 14-5. 도미니카 공화국 벤치는 집에 가고 ', '싶었다 🚌']);
+    expect(splitEmojiTail('도미니카 공화국 벤치는 끝내 리듬을 못 찾았다: 14-5 🎺')).toEqual(['도미니카 공화국 벤치는 끝내 리듬을 못 찾았다: ', '14-5 🎺']);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -196,6 +215,13 @@ describe('sim layout', () => {
     const line = sim.card('pool-1').querySelector('.game-flavor')!;
     expect(line.textContent).toBe('Ugly but it counts: 5-2 😮‍💨');
     expect(line.querySelector('span.tail')!.textContent).toBe('5-2 😮‍💨');
+  });
+
+  test("a revealed card's score row keeps each team's name and score in one block", async () => {
+    const sim = await startSim(ALL_WINS);
+    await vi.advanceTimersByTimeAsync(500);
+    const teams = sim.card('pool-1').querySelector('.game-score')!.querySelectorAll('.team');
+    expect(teams.map((s) => s.textContent)).toEqual(['Your Team 5', 'Japan 2']);
   });
 });
 
