@@ -19,6 +19,13 @@ export type BadgeId = (typeof BADGE_IDS)[number];
 
 const STORE_KEY = 'invicto.badges';
 const EDITIONS = [2006, 2009, 2013, 2017, 2023, 2026];
+/**
+ * Picks from one edition for una_sola_edicion. All 12 was out of reach: each
+ * round's edition comes from its own roll, and in 100,000 dealt drafts no
+ * edition held more than 9 of the 12 rolls. 7 or more comes up in about 1% of
+ * drafts, more with the edition reroll.
+ */
+const ONE_EDITION_PICKS = 7;
 
 /** Badge ids this run earns (regardless of what was already unlocked). */
 export function evaluateBadges(lineup: LineupSlots, run: RunResult): BadgeId[] {
@@ -26,12 +33,13 @@ export function evaluateBadges(lineup: LineupSlots, run: RunResult): BadgeId[] {
   const won = run.outcome === 'invicto' || run.outcome === 'campeon';
   const finalGame = run.games.find((g) => g.stage === 'final');
   const earned: BadgeId[] = [];
+  const perEdition = (year: number) => players.filter((p) => p.edition === year).length;
 
   if (run.outcome === 'invicto') earned.push('invicto');
   if (won) earned.push('campeon');
   if (won && players.filter((p) => p.rating < 60).length >= 5) earned.push('matagigantes');
   if (won && players.every((p) => p.rating < 80)) earned.push('sin_estrellas');
-  if (players.length === 12 && new Set(players.map((p) => p.edition)).size === 1) earned.push('una_sola_edicion');
+  if (EDITIONS.some((year) => perEdition(year) >= ONE_EDITION_PICKS)) earned.push('una_sola_edicion');
   if (players.length === 12 && new Set(players.map((p) => p.country)).size === 12) earned.push('vuelta_al_mundo');
   if (EDITIONS.every((year) => players.some((p) => p.edition === year))) earned.push('seis_editiones');
   if (finalGame?.win && finalGame.oppScore === 0) earned.push('blanqueada_final');

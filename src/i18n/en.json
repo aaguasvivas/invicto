@@ -17,7 +17,7 @@
     "doneEyebrow": "Challenge #{n}",
     "donePending": "Your result is waiting in the tournament.",
     "nextDailyLive": "Next challenge in {time}",
-    "stats": "📊 Stats",
+    "stats": "📊 Your numbers",
     "practice": "🔁 Practice",
     "depth": "{players} real players · {countries} countries · {editions} Classics",
     "resume": "▶️ Resume run",
@@ -314,10 +314,25 @@
     "campeon": { "name": "CAMPEÓN", "desc": "You lifted the Classic trophy." },
     "matagigantes": { "name": "Giant Slayer", "desc": "Champion with five or more players rated under 60." },
     "sin_estrellas": { "name": "No Stars Needed", "desc": "Champion without a single 80+ player. All heart." },
-    "una_sola_edicion": { "name": "Single Vintage", "desc": "All 12 picks from the same edition." },
+    "una_sola_edicion": { "name": "Vintage Core", "desc": "Seven or more picks from the same edition." },
     "vuelta_al_mundo": { "name": "Around the World", "desc": "12 different countries in one lineup." },
     "seis_editiones": { "name": "Twenty Years of Classic", "desc": "At least one pick from every edition, 2006 to 2026." },
     "blanqueada_final": { "name": "Golden Shutout", "desc": "Won the final without allowing a run." }
+  },
+  "stats": {
+    "title": "Your numbers",
+    "played": "Played",
+    "streak": "Streak",
+    "bestStreak": "Best streak",
+    "titlePct": "Title %",
+    "chart": "How your dailies ended",
+    "tier": { "pool": "Pool", "qf": "Quarters", "sf": "Semis", "final": "Final", "campeon": "CAMPEÓN", "invicto": "INVICTO" },
+    "cabinet": "Trophy case",
+    "earned": "Earned {date}",
+    "notYet": "Not yet",
+    "empty": "Play the Daily Challenge to start your numbers.",
+    "freeBest": "Free play best",
+    "hardBest": "Hard Mode best"
   },
   "tip": { "cta": "Buy me a coffee ☕" },
   "boot": {
@@ -344,7 +359,6 @@
     "close": "Close"
   },
   "a11y": {
-    "stats": "Your stats",
     "sound": "Sound"
   },
   "meta": {

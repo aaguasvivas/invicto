@@ -1,9 +1,9 @@
-// One modal dialog for every overlay: the slot picker, How to play, About and
-// the load error. The native <dialog> opened with showModal() brings the
-// dialog role, a background that cannot be clicked or tabbed into, Escape and
-// the top layer. This adds the rest: the name from the heading, a 44 px close
-// button, closing from the backdrop, the first focus, and focus back on the
-// control that opened it.
+// One modal dialog for every overlay: the slot picker, How to play, About,
+// Your numbers and the load error. The native <dialog> opened with
+// showModal() brings the dialog role, a background that cannot be clicked or
+// tabbed into, Escape and the top layer. This adds the rest: the name from the
+// heading, a 44 px close button, closing from the backdrop, the first focus,
+// and focus back on the control that opened it.
 
 import { t } from '../i18n';
 import { h } from './dom';
@@ -14,8 +14,8 @@ export interface DialogSpec {
   content: (Node | null)[];
   /** Extra class on the <dialog>, e.g. 'sheet' docks it to the bottom on phones. */
   variant?: string;
-  /** Focused on open. Default: the first button in `content`, else the close button. */
-  focus?: HTMLElement;
+  /** Focused on open: an element of `content`, or 'close'. Default: the first button in `content`, else the close button. */
+  focus?: HTMLElement | 'close';
   /** Runs once the dialog has closed and left the page, however it was closed. */
   onClose?: () => void;
 }
@@ -65,6 +65,6 @@ export function openDialog({ heading, content, variant, focus, onClose }: Dialog
 
   document.body.append(dialog);
   dialog.showModal();
-  (focus ?? body.querySelector('button') ?? closeBtn).focus({ preventScroll: true });
+  (focus === 'close' ? closeBtn : (focus ?? body.querySelector('button') ?? closeBtn)).focus({ preventScroll: true });
   return dialog;
 }

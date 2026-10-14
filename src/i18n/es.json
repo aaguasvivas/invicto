@@ -17,7 +17,7 @@
     "doneEyebrow": "Reto #{n}",
     "donePending": "Tu resultado te espera en el torneo.",
     "nextDailyLive": "Próximo reto en {time}",
-    "stats": "📊 Estadísticas",
+    "stats": "📊 Tus números",
     "practice": "🔁 Practicar",
     "depth": "{players} jugadores reales · {countries} países · {editions} Clásicos",
     "resume": "▶️ Continuar partida",
@@ -314,10 +314,25 @@
     "campeon": { "name": "CAMPEÓN", "desc": "Levantaste la copa del Clásico." },
     "matagigantes": { "name": "Mata-gigantes", "desc": "Campeón con cinco o más peloteros de menos de 60." },
     "sin_estrellas": { "name": "Sin estrellas", "desc": "Campeón sin un solo pelotero de 80 o más. Puro corazón." },
-    "una_sola_edicion": { "name": "Cosecha única", "desc": "Los 12 picks de la misma edición." },
+    "una_sola_edicion": { "name": "Núcleo de una edición", "desc": "Siete picks o más de la misma edición." },
     "vuelta_al_mundo": { "name": "La vuelta al mundo", "desc": "12 países distintos en un solo lineup." },
     "seis_editiones": { "name": "Veinte años de Clásico", "desc": "Al menos un pick de cada edición, del 2006 al 2026." },
     "blanqueada_final": { "name": "Blanqueada de oro", "desc": "Ganaste la final y el rival se fue en cero." }
+  },
+  "stats": {
+    "title": "Tus números",
+    "played": "Jugados",
+    "streak": "Racha",
+    "bestStreak": "Mejor racha",
+    "titlePct": "% de títulos",
+    "chart": "Cómo terminaron tus retos",
+    "tier": { "pool": "Grupos", "qf": "Cuartos", "sf": "Semis", "final": "Final", "campeon": "CAMPEÓN", "invicto": "INVICTO" },
+    "cabinet": "Vitrina",
+    "earned": "Ganada el {date}",
+    "notYet": "Por ganar",
+    "empty": "Juega el Reto del Día para empezar tus números.",
+    "freeBest": "Mejor marca en Juego libre",
+    "hardBest": "Mejor marca en Modo Duro"
   },
   "tip": { "cta": "Invítame un cafecito ☕" },
   "boot": {
@@ -344,7 +359,6 @@
     "close": "Cerrar"
   },
   "a11y": {
-    "stats": "Tus estadísticas",
     "sound": "Sonido"
   },
   "meta": {

@@ -11,7 +11,7 @@ import { canEditionReroll, POWERS, rollBase, rollCountryReroll } from './engine/
 import { SLOTS } from './engine/positions';
 import type { EditionTeams, EnginePlayer, Roll } from './engine/types';
 import { draftGrade } from './game/scout';
-import { dailyNumber, formatDayKey } from './game/state';
+import { dailyNumber, formatDayKey, previousDayKey } from './game/state';
 import en from './i18n/en.json';
 import es from './i18n/es.json';
 import ja from './i18n/ja.json';
@@ -138,8 +138,19 @@ function rosterGroups(): { label: string; rows: { name: string; pickable: boolea
 }
 
 const DAILY = `⭐ ${en.title.daily}`;
+/** The Your numbers chart row (stats.tier.*) for each way a run ends. */
+const TIERS = {
+  'eliminated-pool': 'pool', 'eliminated-qf': 'qf', 'eliminated-sf': 'sf', subcampeon: 'final', campeon: 'campeon', invicto: 'invicto',
+} as const;
 const dailyResult = (day: string) => (store.has(`invicto.daily.${day}`) ? JSON.parse(store.get(`invicto.daily.${day}`)!) : null);
 const posts = () => apiCalls.filter((c) => c === 'POST /api/result').length;
+
+/** Scored dailies on the n days in a row that end on `last`, as finish.ts writes them; the streak is read from these keys. */
+function playedDays(last: string, n: number): void {
+  for (let i = 0, day = last; i < n; i++, day = previousDayKey(day)) {
+    store.set(`invicto.daily.${day}`, JSON.stringify({ record: '4-2', wins: 4, losses: 2, outcome: 'eliminated-sf' }));
+  }
+}
 
 describe('daily challenge', () => {
   test('the 12th pick is autosaved, so the snapshot holds the full lineup', async () => {
@@ -173,6 +184,7 @@ describe('daily challenge', () => {
     expect(card.textContent).not.toContain(committed.record);
     expect(card.querySelectorAll('button')).toHaveLength(0); // a practice run now would throw the reveal away
     expect(page.app.querySelector('.meta-chips')).toBeNull();
+    expect(page.app.querySelectorAll('button').filter((b) => b.textContent.includes('📊'))).toEqual([]); // Your numbers would show the day's result
     await tap(en.title.watch);
     await skipSim();
     expect(page.app.querySelector('.poster-record')!.textContent).toBe(committed.record);
@@ -197,8 +209,7 @@ describe('daily challenge', () => {
 
   test('a run started at 23:59 and reloaded at 00:03 resumes and keeps the streak', async () => {
     vi.setSystemTime(new Date(2026, 9, 11, 23, 59));
-    store.set('invicto.lastDaily', '2026-10-10');
-    store.set('invicto.streak', '5');
+    playedDays('2026-10-10', 5);
     await load();
     await tap(DAILY);
     draft(3);
@@ -961,12 +972,11 @@ describe('title buttons', () => {
 });
 
 describe('the daily card on the title', () => {
-  /** A scored daily already in storage, as finish.ts writes it. */
+  /** A scored daily already in storage, as finish.ts writes it, on the last day of a streak. */
   function played(day: string, record = '5-2', streak = 3): void {
+    playedDays(previousDayKey(day), streak - 1);
     const [wins, losses] = record.split('-').map(Number);
     store.set(`invicto.daily.${day}`, JSON.stringify({ record, wins, losses, outcome: 'subcampeon' }));
-    store.set('invicto.lastDaily', day);
-    store.set('invicto.streak', String(streak));
   }
   const countdown = () => page.app.querySelector('.countdown')!.textContent;
   const at = (time: string) => en.title.nextDailyLive.replace('{time}', time);
@@ -1044,13 +1054,13 @@ describe('the daily card on the title', () => {
   });
 
   test('a streak alive from yesterday asks to play today; a broken one says nothing', async () => {
-    store.set('invicto.lastDaily', '2026-10-10');
-    store.set('invicto.streak', '4');
+    playedDays('2026-10-10', 4);
     await load();
     expect(page.app.querySelector('.streak-risk')!.textContent).toBe(en.title.streakRisk.replace('{n}', '4'));
     expect(find('button', DAILY).classList.contains('primary')).toBe(true);
 
-    store.set('invicto.lastDaily', '2026-10-09');
+    store.clear();
+    playedDays('2026-10-09', 4);
     await load();
     expect(page.app.querySelector('.streak-risk')).toBeNull();
   });
@@ -1079,8 +1089,7 @@ describe('the daily card on the title', () => {
     expect(sound.getAttribute('aria-pressed')).toBe('false');
     sound.click();
     expect(sound.getAttribute('aria-pressed')).toBe('true');
-    // The 📊 chip ships with the Stats dialog; until then the title shows no dead control.
-    expect(page.app.querySelectorAll('button').filter((b) => b.textContent.includes('📊'))).toEqual([]);
+    expect(find('button', '📊').getAttribute('aria-label')).toBe(en.stats.title); // named for the dialog it opens
   });
 });
 
@@ -1166,8 +1175,7 @@ describe('honest numbers', () => {
 
 describe('the daily panel on the result', () => {
   test('a scored daily shows the streak it grew, the countdown and a Free play button', async () => {
-    store.set('invicto.lastDaily', '2026-10-10');
-    store.set('invicto.streak', '4');
+    playedDays('2026-10-10', 4);
     await load();
     await tap(DAILY);
     draft(12);
@@ -1627,6 +1635,141 @@ describe('dialogs', () => {
     openDialog()[0].querySelector('button.slot-option')!.click();
     expect(openDialog()).toHaveLength(0);
     expect(page.app.querySelector('.roll-round')!.textContent).toBe(en.draft.round.replace('{n}', '2'));
+  });
+
+  describe('Your numbers', () => {
+    const result = (record: string, outcome: string) => {
+      const [wins, losses] = record.split('-').map(Number);
+      return JSON.stringify({ record, wins, losses, outcome });
+    };
+    const stats = () => openDialog().find((d) => d.classList.contains('stats'))!;
+    const tiles = (dialog: FakeElement) =>
+      dialog.querySelectorAll('.stat-tile').map((tile) => [tile.querySelector('dt')!.textContent, tile.querySelector('dd')!.textContent]);
+
+    test('the 📊 chip opens it named by its heading, with focus on close; Escape closes it and focus returns to the chip', async () => {
+      await load();
+      const chip = find('button', '📊');
+      await press(chip);
+      const dialog = stats();
+      const heading = dialog.querySelector('h2')!;
+      expect(heading.textContent).toBe(en.stats.title);
+      expect(dialog.getAttribute('aria-labelledby')).toBe(heading.id);
+      expect(activeElement()).toBe(dialog.querySelector('button.dialog-close'));
+      pressKey('Escape');
+      expect(openDialog()).toHaveLength(0);
+      expect(activeElement()).toBe(chip);
+    });
+
+    test("a returning player's history: the tiles, how each daily ended with today's in gold, the bests and the trophy case", async () => {
+      const days: [string, string, string][] = [
+        ['2026-10-04', '4-2', 'eliminated-sf'],
+        ['2026-10-05', '2-2', 'eliminated-pool'],
+        ['2026-10-06', '3-2', 'eliminated-qf'],
+        ['2026-10-07', '5-2', 'subcampeon'],
+        // 2026-10-08 missed
+        ['2026-10-09', '3-2', 'eliminated-qf'],
+        ['2026-10-10', '7-0', 'invicto'],
+        ['2026-10-11', '6-1', 'campeon'], // today
+      ];
+      for (const [day, record, outcome] of days) store.set(`invicto.daily.${day}`, result(record, outcome));
+      store.set('invicto.best.free', result('6-1', 'campeon'));
+      store.set('invicto.best.hard', result('5-2', 'subcampeon'));
+      store.set('invicto.badges', JSON.stringify({ invicto: '2026-10-10T12:00:00.000Z', una_sola_edicion: '2026-09-20T12:00:00.000Z' }));
+      await load();
+      find('button', '📊').click();
+      const dialog = stats();
+
+      expect(tiles(dialog)).toEqual([
+        [en.stats.played, '7'],
+        [en.stats.streak, '3'],
+        [en.stats.bestStreak, '4'],
+        [en.stats.titlePct, '29'], // 2 titles in 7
+      ]);
+      expect(dialog.querySelector('.stats-section')!.querySelector('.stats-head')!.textContent).toBe(en.stats.chart);
+      const rows = dialog.querySelectorAll('.tier-row').map((row) => [row.querySelector('.tier-label')!.textContent, row.querySelector('.tier-bar')!.textContent]);
+      expect(rows).toEqual([
+        [en.stats.tier.pool, '1'],
+        [en.stats.tier.qf, '2'],
+        [en.stats.tier.sf, '1'],
+        [en.stats.tier.final, '1'],
+        [en.stats.tier.campeon, '1'],
+        [en.stats.tier.invicto, '1'],
+      ]);
+      expect(dialog.querySelectorAll('.tier-row.today').map((row) => row.querySelector('.tier-label')!.textContent)).toEqual([en.stats.tier.campeon]);
+      expect(dialog.querySelector('.tier-row.qf')!.querySelector('.tier-bar')!.style.cssText).toBe('--share:1');
+      expect(dialog.querySelector('.tier-row.pool')!.querySelector('.tier-bar')!.style.cssText).toBe('--share:0.5');
+
+      expect(dialog.querySelectorAll('.best-row').map((row) => row.textContent)).toEqual([`${en.stats.freeBest}6-1`, `${en.stats.hardBest}5-2`]);
+      expect(dialog.querySelector('.best-row')!.querySelector('b')!.classList.contains('won')).toBe(true);
+
+      const cabinet = dialog.querySelectorAll('.stats-section')[1];
+      expect(cabinet.querySelector('.stats-head')!.textContent).toBe(`${en.stats.cabinet}2/8`);
+      const trophies = cabinet.querySelectorAll('li.trophy');
+      expect(trophies).toHaveLength(8);
+      const earned = trophies.filter((tr) => tr.classList.contains('earned'));
+      expect(earned.map((tr) => tr.querySelector('.trophy-name')!.textContent)).toEqual([`🏅 ${en.badges.invicto.name}`, `🏅 ${en.badges.una_sola_edicion.name}`]);
+      expect(earned.map((tr) => tr.querySelector('.trophy-when')!.textContent)).toEqual([
+        en.stats.earned.replace('{date}', 'Oct 10, 2026'),
+        en.stats.earned.replace('{date}', 'Sep 20, 2026'),
+      ]);
+      const locked = trophies.find((tr) => !tr.classList.contains('earned'))!;
+      expect(locked.querySelector('.trophy-name')!.textContent).toBe(en.badges.campeon.name);
+      expect(locked.querySelector('.trophy-desc')!.textContent).toBe(en.badges.campeon.desc); // the goal
+      expect(locked.querySelector('.trophy-when')!.textContent).toBe(en.stats.notYet);
+    });
+
+    test('a fresh profile gets one line and a button that starts today\'s scored daily', async () => {
+      await load();
+      find('button', '📊').click();
+      const dialog = stats();
+      expect(dialog.querySelector('.stat-tiles')).toBeNull();
+      expect(dialog.querySelector('.tier-bars')).toBeNull();
+      expect(dialog.querySelector('.stats-empty')!.querySelector('p')!.textContent).toBe(en.stats.empty);
+      expect(dialog.querySelector('.stats-bests')).toBeNull();
+      expect(dialog.querySelectorAll('li.trophy.earned')).toHaveLength(0);
+      expect(activeElement()).toBe(dialog.querySelector('button.dialog-close'));
+
+      const play = dialog.querySelector('.stats-empty')!.querySelector('button')!;
+      expect(play.textContent).toBe(`⭐ ${en.title.dailyNum.replace('{n}', String(dailyNumber('2026-10-11')))}`);
+      play.click();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(openDialog()).toHaveLength(0);
+      expect(page.app.querySelector('.draft-screen')).not.toBeNull();
+      expect(page.body.querySelector('.toast')?.textContent).not.toBe(en.draft.practiceNote); // the scored daily
+    });
+
+    test('with storage that throws, it opens on the empty state', async () => {
+      await load('blocked');
+      find('button', '📊').click();
+      expect(stats().querySelector('.stats-empty')!.querySelector('p')!.textContent).toBe(en.stats.empty);
+    });
+
+    test("the day card's Stats button opens it too", async () => {
+      playedDays('2026-10-11', 2);
+      await load();
+      const button = page.app.querySelector('.daily-done')!.querySelector('button')!;
+      expect(button.textContent).toBe(en.title.stats);
+      await press(button);
+      expect(tiles(stats())[1]).toEqual([en.stats.streak, '2']);
+      pressKey('Escape');
+      expect(activeElement()).toBe(button);
+    });
+
+    test("the result's daily panel opens it on the run just scored, marked in gold", async () => {
+      await load();
+      await tap(DAILY);
+      draft(12);
+      await skipSim();
+      const outcome = dailyResult('2026-10-11').outcome as keyof typeof TIERS;
+      const button = page.app.querySelector('.daily-panel')!.querySelector('button')!;
+      expect(button.textContent).toBe(en.title.stats);
+      await press(button);
+      const dialog = stats();
+      expect(tiles(dialog).slice(0, 2)).toEqual([[en.stats.played, '1'], [en.stats.streak, '1']]);
+      expect(dialog.querySelectorAll('.tier-row.today').map((row) => row.querySelector('.tier-label')!.textContent)).toEqual([en.stats.tier[TIERS[outcome]]]);
+      pressKey('Escape');
+      expect(activeElement()).toBe(button);
+    });
   });
 
   test('load error: opens with focus on Retry; Escape returns to the button tapped; Retry loads again', async () => {

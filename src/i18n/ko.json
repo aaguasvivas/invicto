@@ -17,7 +17,7 @@
     "doneEyebrow": "챌린지 #{n}",
     "donePending": "결과는 토너먼트에서 확인하세요.",
     "nextDailyLive": "다음 챌린지까지 {time}",
-    "stats": "📊 통계",
+    "stats": "📊 내 기록",
     "practice": "🔁 연습",
     "depth": "실존 선수 {players}명 · {countries}개국 · 클래식 {editions}개 대회",
     "resume": "▶️ 이어서 하기",
@@ -314,10 +314,25 @@
     "campeon": { "name": "CAMPEÓN", "desc": "클래식 트로피를 들어 올렸다." },
     "matagigantes": { "name": "자이언트 킬러", "desc": "60 미만 선수 5명 이상으로 우승." },
     "sin_estrellas": { "name": "별 없이 우승", "desc": "80 이상 선수 없이 정상에 올랐다." },
-    "una_sola_edicion": { "name": "한 시대의 팀", "desc": "12명 전원이 같은 대회 출신." },
+    "una_sola_edicion": { "name": "한 대회의 주축", "desc": "같은 대회에서 7명 이상 지명." },
     "vuelta_al_mundo": { "name": "세계 일주", "desc": "한 라인업에 12개국." },
     "seis_editiones": { "name": "클래식 20년사", "desc": "2006부터 2026까지 모든 대회에서 한 명 이상." },
     "blanqueada_final": { "name": "결승 완봉승", "desc": "결승에서 상대를 무득점으로 막았다." }
+  },
+  "stats": {
+    "title": "내 기록",
+    "played": "플레이 수",
+    "streak": "연속 플레이",
+    "bestStreak": "최장 연속",
+    "titlePct": "우승률",
+    "chart": "지금까지의 챌린지 결과",
+    "tier": { "pool": "조별리그", "qf": "8강", "sf": "4강", "final": "준우승", "campeon": "CAMPEÓN", "invicto": "INVICTO" },
+    "cabinet": "배지 컬렉션",
+    "earned": "{date} 획득",
+    "notYet": "미획득",
+    "empty": "오늘의 챌린지를 플레이하면 여기에 기록이 쌓입니다.",
+    "freeBest": "자유 플레이 최고 기록",
+    "hardBest": "하드 모드 최고 기록"
   },
   "tip": { "cta": "커피 한 잔 후원하기 ☕" },
   "boot": {
@@ -344,7 +359,6 @@
     "close": "닫기"
   },
   "a11y": {
-    "stats": "내 통계",
     "sound": "사운드"
   },
   "meta": {

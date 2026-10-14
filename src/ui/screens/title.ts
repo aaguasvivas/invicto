@@ -8,9 +8,8 @@ import { cycleLang, getLocale, howtoPanels, nextLangLabel, t } from '../../i18n'
 import { IS_PORTAL } from '../../portal';
 import { BADGE_IDS, earnedBadgeCount } from '../../game/badges';
 import type { ChallengeKind } from '../../game/challenge';
-import {
-  currentStreak, dailyNumber, dailyResult, personalBest, previousDayKey, setSound, soundOn, todayKey, type Mode, type StoredResult,
-} from '../../game/state';
+import { currentStreak } from '../../game/history';
+import { dailyNumber, dailyResult, personalBest, previousDayKey, setSound, soundOn, todayKey, type Mode, type StoredResult } from '../../game/state';
 import { fetchToday, MIN_PUBLIC_SAMPLE } from '../../game/stats';
 import { setAccent } from '../accents';
 import { mountAd } from '../ads';
@@ -20,6 +19,7 @@ import { crowdRoar, unlockAudio } from '../sound';
 import { openDialog } from '../dialog';
 import { countdownLine, lineWith, streakChip } from '../dayCard';
 import { clear, h } from '../dom';
+import { showStats } from './stats';
 
 export interface TitleCallbacks {
   onStart: (mode: Mode) => void;
@@ -31,8 +31,6 @@ export interface TitleCallbacks {
    * complete: all 12 picks are in, so the run is saved and only its reveal is left.
    */
   resume?: { mode: Mode; round: number; complete: boolean; onResume: () => void };
-  /** Opens the Stats dialog. The 📊 controls show only when it is set (it ships with that dialog). */
-  onStats?: () => void;
   /** A friend's challenge link, waiting for Accept or Not now. It never starts a run by itself. */
   challenge?: TitleChallenge;
 }
@@ -60,7 +58,7 @@ export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
   const resume = cb.resume;
   // A saved run whose reveal is still to watch: nothing here may give its result away.
   const revealPending = resume?.complete === true;
-  const onStats = revealPending ? undefined : cb.onStats;
+  const onStats = revealPending ? undefined : () => showStats({ onPlayDaily: () => cb.onStart('daily') });
   const played = dailyResult();
   const streak = currentStreak();
   const challenge = cb.challenge ? challengeCard(cb.challenge) : null;
@@ -95,7 +93,7 @@ export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
     h(
       'div.hdr-btns',
       {},
-      onStats ? h('button.chip-btn', { type: 'button', 'aria-label': t('a11y.stats'), onclick: onStats }, '📊') : null,
+      onStats ? h('button.chip-btn', { type: 'button', 'aria-label': t('stats.title'), onclick: onStats }, '📊') : null,
       sound,
       h('button.chip-btn', { type: 'button', onclick: () => { cycleLang(); cb.onRerender(); } }, `🌐 ${nextLangLabel()}`),
     ),

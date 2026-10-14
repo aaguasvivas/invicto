@@ -17,7 +17,7 @@
     "doneEyebrow": "チャレンジ #{n}",
     "donePending": "結果はトーナメントを見てのお楽しみ。",
     "nextDailyLive": "次のチャレンジまで {time}",
-    "stats": "📊 成績",
+    "stats": "📊 自分の成績",
     "practice": "🔁 練習",
     "depth": "実在の選手{players}人 · {countries}の国と地域 · クラシック{editions}大会",
     "resume": "▶️ 続きからプレイ",
@@ -314,10 +314,25 @@
     "campeon": { "name": "CAMPEÓN", "desc": "クラシックの頂点に立った。" },
     "matagigantes": { "name": "ジャイアントキリング", "desc": "60未満の選手5人以上で優勝。" },
     "sin_estrellas": { "name": "ノースター優勝", "desc": "80以上の選手なしで頂点へ。" },
-    "una_sola_edicion": { "name": "オール同期", "desc": "12人全員が同じ大会の出身。" },
+    "una_sola_edicion": { "name": "同期の主力", "desc": "同じ大会から7人以上を指名。" },
     "vuelta_al_mundo": { "name": "世界一周", "desc": "ひとつのラインナップに12の国と地域。" },
     "seis_editiones": { "name": "クラシック20年史", "desc": "2006年から2026年まで、全大会から指名。" },
     "blanqueada_final": { "name": "決勝完封", "desc": "決勝で相手を無得点に抑えて優勝。" }
+  },
+  "stats": {
+    "title": "自分の成績",
+    "played": "プレイ数",
+    "streak": "連続プレイ",
+    "bestStreak": "最長連続",
+    "titlePct": "優勝率",
+    "chart": "これまでのチャレンジ結果",
+    "tier": { "pool": "1次ラウンド", "qf": "準々決勝", "sf": "準決勝", "final": "準優勝", "campeon": "CAMPEÓN", "invicto": "INVICTO" },
+    "cabinet": "バッジコレクション",
+    "earned": "{date} 獲得",
+    "notYet": "未獲得",
+    "empty": "今日のチャレンジをプレイすると、ここに成績がたまっていきます。",
+    "freeBest": "フリープレイ自己ベスト",
+    "hardBest": "ハードモード自己ベスト"
   },
   "tip": { "cta": "コーヒーを一杯おごる ☕" },
   "boot": {
@@ -344,7 +359,6 @@
     "close": "閉じる"
   },
   "a11y": {
-    "stats": "自分の成績",
     "sound": "サウンド"
   },
   "meta": {

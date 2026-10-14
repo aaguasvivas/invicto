@@ -1,5 +1,5 @@
-// The one dialog helper behind the slot picker, How to play, About and the
-// load error. The fake DOM stands in for the browser: showModal() opens,
+// The one dialog helper behind the slot picker, How to play, About, Your
+// numbers and the load error. The fake DOM stands in for the browser: showModal() opens,
 // pressKey('Escape') cancels the topmost dialog the way a browser does, and
 // focus is tracked, so these check the wiring that every overlay relies on.
 
@@ -69,6 +69,11 @@ describe('openDialog', () => {
     const heading = h('h2', {}, 'How to play');
     openDialog({ heading, content: [heading, h('button', {}, 'Back'), given], focus: given });
     expect(activeElement()).toBe(fake(given));
+  });
+
+  test("focus: 'close' focuses the close button even when the content has buttons", () => {
+    const { dialog } = open({ focus: 'close' });
+    expect(activeElement()).toBe(closeButton(dialog));
   });
 
   test('with no button in its content, focuses its close button, which has a localized name', () => {

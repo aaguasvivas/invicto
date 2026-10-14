@@ -83,11 +83,12 @@ describe('evaluateBadges', () => {
     expect(evaluateBadges(noStars, makeRun('subcampeon'))).not.toContain('sin_estrellas');
   });
 
-  test('una_sola_edicion: all 12 picks from one edition, any outcome', () => {
-    const oneYear = fullLineup(() => ({ edition: 2013 }));
-    expect(evaluateBadges(oneYear, makeRun('eliminated-pool'))).toContain('una_sola_edicion');
-    const mixed = fullLineup((_slot, i) => ({ edition: i === 0 ? 2006 : 2013 }));
-    expect(evaluateBadges(mixed, makeRun('invicto'))).not.toContain('una_sola_edicion');
+  test('una_sola_edicion: seven or more picks from one edition, any outcome', () => {
+    // The other picks spread over the remaining editions, so 2009 is the only one with more than two.
+    const from2009 = (n: number) => fullLineup((_slot, i) => ({ edition: i < n ? 2009 : EDITIONS.filter((y) => y !== 2009)[i % 5] }));
+    expect(evaluateBadges(from2009(7), makeRun('eliminated-pool'))).toContain('una_sola_edicion');
+    expect(evaluateBadges(from2009(6), makeRun('invicto'))).not.toContain('una_sola_edicion');
+    expect(evaluateBadges(fullLineup(() => ({ edition: 2013 })), makeRun('eliminated-qf'))).toContain('una_sola_edicion');
   });
 
   test('vuelta_al_mundo: 12 picks from 12 different countries', () => {

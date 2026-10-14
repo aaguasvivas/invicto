@@ -48,6 +48,13 @@ the same lineup. The result screen runs one pass per task after it paints and st
 leave. Your grade is the scout's Team OVR minus yours, in tenths: S at 0 or less, A to 1.5, B to
 3, C to 5, D above. A scored daily keeps its grade, and the next day's title shows it.
 
+Your numbers (`src/ui/screens/stats.ts`, opened from the 📊 chip, the day card and the result's
+daily panel) shows dailies played, the current and best streak, the title rate, how each daily
+ended, the Free play and Hard Mode bests, and all eight badges with the day each was earned.
+`src/game/history.ts` reads all of it back from the day keys below, so a player who started
+before the dialog existed sees their whole history, and a daily saved after the next day's
+(a run finished in another tab after midnight) still counts toward the streak.
+
 Every result can be shared as a challenge link (`src/game/challenge.ts`). The link's fragment
 carries the run's seed, its 12 picks as indexes into the sorted player ids, the record it claims
 and an optional nickname: `#r=<seed>.<fp><pattern><picks>[~nick]` (a full link is about 85
@@ -65,13 +72,15 @@ Everything the game remembers lives in `localStorage`:
 | Key | Holds |
 | --- | --- |
 | `invicto.lang`, `invicto.sound` | settings |
-| `invicto.daily.<YYYY-MM-DD>` | the scored result for that day's Reto del Día (one per day) |
-| `invicto.streak`, `invicto.lastDaily` | daily streak bookkeeping (calendar-day math, DST-safe) |
+| `invicto.daily.<YYYY-MM-DD>` | the scored result for that day's Reto del Día (one per day); the daily history, the streak and the best streak in Your numbers are derived from these keys (`src/game/history.ts`, calendar-day math, DST-safe) |
 | `invicto.best.<mode>` | personal best per mode |
-| `invicto.badges` | earned badge ids (`src/game/badges.ts`) |
+| `invicto.badges` | earned badge ids with the date each was first earned (`src/game/badges.ts`) |
 | `invicto.run` | autosave of an unfinished run, written after every pick and reroll; cleared when the run ends, and a daily snapshot expires with its day |
 | `invicto.mine` | the last 30 finished runs (seed, player ids, day), so a challenge link to one of them opens on the comparison |
 | `invicto.nick` | the optional nickname that signs challenge links |
+
+Versions before Your numbers also kept `invicto.streak` and `invicto.lastDaily`. Nothing reads or
+writes them now; they stay in older browsers' storage, ignored.
 
 The resume snapshot stores player ids, not player objects, and is rebuilt against the current
 data on load (`src/game/resume.ts`); a snapshot that no longer matches is dropped silently.

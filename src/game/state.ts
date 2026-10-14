@@ -1,6 +1,6 @@
-// Persistence (through storage.ts): daily attempts, streak, personal bests,
-// settings. Daily challenge number is days since launch (#1 = launch day),
-// local time.
+// Persistence (through storage.ts): daily attempts, personal bests, settings.
+// The streak is not stored: game/history.ts derives it from the daily attempts.
+// Daily challenge number is days since launch (#1 = launch day), local time.
 //
 // All date math is calendar arithmetic on local day keys ("YYYY-MM-DD"), never
 // "now minus 24 hours": DST days are 23 or 25 hours long, and a run that starts
@@ -78,19 +78,13 @@ export function dailyResult(dateKey = todayKey()): StoredResult | null {
 
 /**
  * Record the scored attempt for the day the run was dealt (not the day the
- * result screen happens to render). One scored attempt per day.
+ * result screen happens to render). One scored attempt per day. Its key is the
+ * whole record of that day: the history and the streak are read back from
+ * these keys (game/history.ts), in whatever order the days were saved.
  */
 export function saveDailyResult(result: StoredResult, day = todayKey()): void {
   if (dailyResult(day)) return;
   storage.set(`invicto.daily.${day}`, JSON.stringify(result));
-
-  // A result for a day before the last scored one (yesterday's run finished in
-  // another tab after today's) is kept, but never moves the streak backwards.
-  const last = storage.get('invicto.lastDaily');
-  if (last && last > day) return;
-  const streak = last === previousDayKey(day) ? currentStreak(day) + 1 : 1;
-  storage.set('invicto.streak', String(streak));
-  storage.set('invicto.lastDaily', day);
 }
 
 /**
@@ -104,15 +98,8 @@ export function saveDailyGrade(day: string, grade: DraftGrade): void {
   storage.set(`invicto.daily.${day}`, JSON.stringify({ ...saved, ...grade }));
 }
 
-/** Streak as of a given day: alive if the last daily was that day or the day before. */
-export function currentStreak(today = todayKey()): number {
-  const last = storage.get('invicto.lastDaily');
-  if (!last) return 0;
-  if (last !== today && last !== previousDayKey(today)) return 0; // streak broken
-  return Number(storage.get('invicto.streak') ?? '0');
-}
-
-const OUTCOME_RANK: Outcome[] = ['eliminated-pool', 'eliminated-qf', 'eliminated-sf', 'subcampeon', 'campeon', 'invicto'];
+/** Every way a run ends, worst first. */
+export const OUTCOME_RANK: Outcome[] = ['eliminated-pool', 'eliminated-qf', 'eliminated-sf', 'subcampeon', 'campeon', 'invicto'];
 
 export function personalBest(mode: Mode): StoredResult | null {
   return read<StoredResult>(`invicto.best.${mode}`);

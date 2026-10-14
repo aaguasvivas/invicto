@@ -17,7 +17,8 @@ import type { Session } from '../../game/session';
 import type { BadgeId } from '../../game/badges';
 import { encodeChallenge, NICK_MAX, recordOf, savedNick, saveNick } from '../../game/challenge';
 import type { DraftGrade } from '../../game/scout';
-import { currentStreak, dailyNumber, dailyResult, saveDailyGrade, todayKey } from '../../game/state';
+import { currentStreak } from '../../game/history';
+import { dailyNumber, dailyResult, saveDailyGrade, todayKey } from '../../game/state';
 import { percentileBeaten, rarestPick, submitResult, topSharePct, type TodayStats } from '../../game/stats';
 import { setAccent } from '../accents';
 import { mountAd } from '../ads';
@@ -31,13 +32,12 @@ import type { PosterData } from '../poster';
 import { canChallenge, challengeLink, emojiCard, posterDraft, posterFooter, sharePoster, shareText, type ShareContext } from '../share';
 import { countdownLine, lineWith, streakChip } from '../dayCard';
 import { rivalName, versusCard } from '../versus';
+import { showStats } from './stats';
 
 export interface ResultCallbacks {
   onAgain: () => void;
   onFree: () => void;
   onHome: () => void;
-  /** Opens the Stats dialog. The panel's 📊 button shows only when it is set (it ships with that dialog). */
-  onStats?: () => void;
 }
 
 /**
@@ -291,7 +291,12 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
         practice ? h('div.day-line', {}, t('result.practice')) : null,
         scoredToday ? h('div.day-line', {}, ...lineWith('result.scoredAttempt', 'record', h('b', {}, scoredToday.record))) : null,
         countdown,
-        cb.onStats ? h('div.day-actions', {}, h('button.chip-btn', { type: 'button', onclick: cb.onStats }, t('title.stats'))) : null,
+        h(
+          'div.day-actions',
+          {},
+          // The numbers as of the day this run was dealt; onAgain deals today's daily.
+          h('button.chip-btn', { type: 'button', onclick: () => showStats({ day: session.day, onPlayDaily: cb.onAgain }) }, t('title.stats')),
+        ),
       )
     : null;
 

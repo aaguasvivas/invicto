@@ -12,7 +12,8 @@ import { ownRun } from './challenge';
 import type { GameData } from './data';
 import { recordRun } from './finish';
 import type { Session } from './session';
-import { currentStreak, dailyResult, personalBest } from './state';
+import { currentStreak } from './history';
+import { dailyResult, personalBest, previousDayKey } from './state';
 
 const data: GameData = { players: [], byTeam: new Map(), editionTeams: {}, countries: new Map() };
 const lineup = lineupWithMeans(72, 70, 56, 58, 72, 70); // all 12 from the 2023 edition
@@ -102,9 +103,11 @@ describe('recordRun: my runs, for challenge comparisons', () => {
 });
 
 describe('recordRun: the streak', () => {
-  function playedThrough(day: string, streak: number) {
-    store.set('invicto.lastDaily', day);
-    store.set('invicto.streak', String(streak));
+  /** Scored dailies on the n days in a row that end on `last`, as saveDailyResult writes them. */
+  function playedThrough(last: string, n: number) {
+    for (let i = 0, day = last; i < n; i++, day = previousDayKey(day)) {
+      store.set(`invicto.daily.${day}`, JSON.stringify({ record: '4-2', wins: 4, losses: 2, outcome: 'eliminated-sf' }));
+    }
   }
 
   test('grows when the previous day was played', () => {
@@ -129,12 +132,11 @@ describe('recordRun: the streak', () => {
     expect(currentStreak('2026-10-11')).toBe(1);
   });
 
-  test('a late result for an earlier day leaves the newer streak alone', () => {
-    playedThrough('2026-10-12', 3);
-    recordRun(session(), qf);
+  test('a late result for the day before the newest one joins the streak', () => {
+    playedThrough('2026-10-12', 1);
+    recordRun(session(), qf); // day 10-11, finished in another tab after 10-12 was saved
     expect(dailyResult('2026-10-11')?.record).toBe('3-2');
-    expect(store.get('invicto.lastDaily')).toBe('2026-10-12');
-    expect(currentStreak('2026-10-12')).toBe(3);
+    expect(currentStreak('2026-10-12')).toBe(2);
   });
 });
 
