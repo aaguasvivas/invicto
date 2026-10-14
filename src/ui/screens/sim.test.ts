@@ -5,12 +5,16 @@
 
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { makePlayer } from '../../engine/test-helpers';
-import type { GameResult, HeroMoment, LineupSlots } from '../../engine/types';
+import type { GameResult, HeroMoment, LineupSlots, RunResult, Stage } from '../../engine/types';
 import type { Rival } from '../../game/challenge';
-import { installDom, installStorage } from '../../test/fakedom';
+import type { GameData } from '../../game/data';
+import { installDom, installStorage, pressKey, type FakeDom, type FakeElement } from '../../test/fakedom';
 
 afterEach(() => {
-  for (const name of ['document', 'window', 'Node', 'scrollTo', 'navigator', 'localStorage']) Reflect.deleteProperty(globalThis, name);
+  vi.useRealTimers();
+  for (const name of ['document', 'window', 'Node', 'scrollTo', 'scrollBy', 'innerHeight', 'matchMedia', 'navigator', 'localStorage']) {
+    Reflect.deleteProperty(globalThis, name);
+  }
 });
 
 /** heroLine on a fresh page whose browser speaks this language. */
@@ -105,5 +109,277 @@ describe('rivalLine', () => {
     expect(rivalLine(rival({ run, lineup: {} }), 'pool-1', STAGES)).toBe('⚔️ Ana: 7-5 ✅');
     expect(rivalLine(rival({ run, lineup: {} }), 'qf', STAGES)).toBe('⚔️ Ana: 2-4 ❌');
     expect(rivalLine(rival({ run, lineup: {} }), 'final', STAGES)).toBe('⚔️ Ana: no llegó');
+  });
+});
+
+describe('splitEmojiTail', () => {
+  test('splits off the last word and a trailing emoji, so they wrap as one', async () => {
+    vi.resetModules();
+    installDom(['en-US']);
+    installStorage();
+    const { splitEmojiTail } = await import('./sim');
+    expect(splitEmojiTail('Walked off: 3-2 💔')).toEqual(['Walked off: ', '3-2 💔']);
+    expect(splitEmojiTail('Cruel ending: 3-2 🗡️')).toEqual(['Cruel ending: ', '3-2 🗡️']); // with its variation selector
+    expect(splitEmojiTail('Ugly but it counts: 3-2 😮‍💨')).toEqual(['Ugly but it counts: ', '3-2 😮‍💨']); // a joined sequence
+    expect(splitEmojiTail('Hammer 🔨')).toEqual(['', 'Hammer 🔨']);
+    expect(splitEmojiTail('No emoji at the end 🔥 here')).toEqual(['No emoji at the end 🔥 here', '']);
+    expect(splitEmojiTail('🔥')).toEqual(['🔥', '']);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The screen itself, on fake timers. A 7-0 run reveals at 500 ms (pool 1), then
+// 600 ms apart through pool 4 (2300), the QF at 3050, the 5-0 soft beat at 4000,
+// the SF at 4400, the 6-0 gold beat at 5700 and the final at 8100.
+
+const STAGES: Stage[] = ['pool-1', 'pool-2', 'pool-3', 'pool-4', 'qf', 'sf', 'final'];
+const DATA = { countries: new Map([['JPN', { code: 'JPN', nameEn: 'Japan', nameEs: 'Japón', flag: '🇯🇵' }]]) } as unknown as GameData;
+const ALL_WINS = [true, true, true, true, true, true, true];
+const OUT_IN_QF = [true, true, true, false, false];
+
+/** A run with these results, stage by stage (the engine deals no game after an elimination). */
+function runOf(marks: boolean[]): RunResult {
+  const games = marks.map((win, i) =>
+    game(closer, { stage: STAGES[i], win, teamScore: win ? 5 : 2, oppScore: win ? 2 : 5, flavorKey: win ? 'win-close' : 'loss-close' }),
+  );
+  const wins = marks.filter(Boolean).length;
+  return { teamRating: 80, games, wins, losses: marks.length - wins, outcome: 'campeon' };
+}
+
+interface Sim {
+  page: FakeDom;
+  done: ReturnType<typeof vi.fn>;
+  card(stage: Stage): FakeElement;
+  bracket: FakeElement;
+  record: FakeElement;
+}
+
+async function startSim(marks: boolean[]): Promise<Sim> {
+  vi.useFakeTimers();
+  vi.resetModules();
+  const page = installDom(['en-US']);
+  installStorage();
+  const { renderSim } = await import('./sim');
+  const done = vi.fn();
+  renderSim(page.app as unknown as HTMLElement, runOf(marks), DATA, lineup, done);
+  const cards = page.app.querySelectorAll('.game-card');
+  return {
+    page,
+    done,
+    card: (stage) => cards[STAGES.indexOf(stage)],
+    bracket: page.app.querySelector('.bracket')!,
+    record: page.app.querySelector('.sim-record')!,
+  };
+}
+
+const revealed = (sim: Sim) => sim.page.app.querySelectorAll('.game-card').filter((c) => c.classList.contains('reveal')).length;
+
+describe('sim layout', () => {
+  test('pool play and the knockout are two columns, in bracket order', async () => {
+    const sim = await startSim(ALL_WINS);
+    const [pool, ko] = sim.bracket.children;
+    expect(sim.bracket.children.map((c) => c.className)).toEqual(['bracket-col pool', 'bracket-col ko']);
+    expect(pool.querySelectorAll('.game-card')).toHaveLength(4);
+    expect(ko.querySelectorAll('.game-card')).toHaveLength(3);
+    expect(ko.querySelectorAll('.bracket-section').map((s) => s.textContent)).toEqual(['Quarterfinal', 'Semifinal', 'THE FINAL']);
+  });
+
+  test('the record and the stage label share one sticky head', async () => {
+    const sim = await startSim(ALL_WINS);
+    const head = sim.page.app.querySelector('.sim-head')!;
+    expect(head.children.map((c) => c.className)).toEqual(['sim-record', 'sim-stage-label']);
+  });
+
+  test("a revealed card's flavor line keeps its last word and trailing emoji on one line", async () => {
+    const sim = await startSim(ALL_WINS);
+    await vi.advanceTimersByTimeAsync(500);
+    const line = sim.card('pool-1').querySelector('.game-flavor')!;
+    expect(line.textContent).toBe('Ugly but it counts: 5-2 😮‍💨');
+    expect(line.querySelector('span.tail')!.textContent).toBe('5-2 😮‍💨');
+  });
+});
+
+describe('skipping the reveal', () => {
+  test('the skip hint is a real button, and clicking it skips', async () => {
+    const sim = await startSim(ALL_WINS);
+    const button = sim.page.app.querySelector('.skip-hint')!;
+    expect(button.tagName).toBe('button');
+    expect(button.type).toBe('button');
+    await vi.advanceTimersByTimeAsync(400);
+    button.click();
+    expect(revealed(sim)).toBe(7);
+    await vi.advanceTimersByTimeAsync(900);
+    expect(sim.done).toHaveBeenCalledTimes(1);
+  });
+
+  test.each(['Enter', ' ', 'Escape'])('%j skips, once the stray-tap guard is over', async (key) => {
+    const sim = await startSim(ALL_WINS);
+    const body = document.body as unknown as FakeElement;
+    await vi.advanceTimersByTimeAsync(100); // the key that made the last pick, still down
+    body.dispatch('keydown', key);
+    expect(revealed(sim)).toBe(0);
+
+    await vi.advanceTimersByTimeAsync(300);
+    const press = body.dispatch('keydown', key);
+    expect(press.defaultPrevented).toBe(true); // Space would scroll the page, Enter would click a focused button
+    expect(revealed(sim)).toBe(7);
+    pressKey(key); // a second press while the result loads
+    await vi.advanceTimersByTimeAsync(900);
+    expect(sim.done).toHaveBeenCalledTimes(1);
+  });
+
+  test('other keys do not skip', async () => {
+    const sim = await startSim(ALL_WINS);
+    await vi.advanceTimersByTimeAsync(400);
+    for (const key of ['Tab', 'ArrowDown', 'a']) pressKey(key);
+    expect(revealed(sim)).toBe(0);
+  });
+
+  test('the finished screen leaves no key, wheel or touch listener on the page', async () => {
+    const sim = await startSim(ALL_WINS);
+    await vi.runAllTimersAsync();
+    expect(sim.done).toHaveBeenCalledTimes(1);
+    const root = document.documentElement as unknown as FakeElement;
+    for (const type of ['keydown', 'wheel', 'touchmove']) expect(root.listenerCount(type), type).toBe(0);
+  });
+});
+
+describe('after an elimination', () => {
+  test('the cards the run never reached turn to ghosts', async () => {
+    const sim = await startSim(OUT_IN_QF);
+    await vi.advanceTimersByTimeAsync(3050); // the QF loss
+    expect(sim.card('sf').classList.contains('pending')).toBe(true);
+    await vi.advanceTimersByTimeAsync(600); // the closing pause
+    for (const stage of ['sf', 'final'] as const) {
+      expect(sim.card(stage).classList.contains('unreached'), stage).toBe(true);
+      expect(sim.card(stage).classList.contains('pending'), stage).toBe(false);
+    }
+    expect(sim.page.app.querySelectorAll('.game-card').filter((c) => c.classList.contains('unreached'))).toHaveLength(2);
+  });
+
+  test('a skip marks them too', async () => {
+    const sim = await startSim(OUT_IN_QF);
+    await vi.advanceTimersByTimeAsync(400);
+    sim.page.app.querySelector('.sim-screen')!.click();
+    expect(sim.page.app.querySelectorAll('.game-card').filter((c) => c.classList.contains('unreached'))).toHaveLength(2);
+  });
+
+  test("a champion's bracket has none", async () => {
+    const sim = await startSim(ALL_WINS);
+    await vi.runAllTimersAsync();
+    expect(sim.page.app.querySelectorAll('.game-card').filter((c) => c.classList.contains('unreached'))).toHaveLength(0);
+  });
+});
+
+describe('the 6-0 beat', () => {
+  test('dims the bracket, lifts the record, buzzes a heartbeat and holds for 2.4 s', async () => {
+    const sim = await startSim(ALL_WINS);
+    const vibrate = vi.spyOn(navigator, 'vibrate');
+    await vi.advanceTimersByTimeAsync(5700);
+    const beat = sim.page.app.querySelector('.beat-line')!;
+    expect(beat.textContent).toBe('FOR THE PERFECT RUN…');
+    expect(beat.parentNode!.childNodes[beat.parentNode!.childNodes.indexOf(beat) + 1]).toBe(sim.card('final'));
+    expect(sim.bracket.classList.contains('final-beat')).toBe(true);
+    expect(sim.record.classList.contains('beat')).toBe(true);
+    expect(vibrate).toHaveBeenLastCalledWith([0, 90, 200, 90]);
+
+    await vi.advanceTimersByTimeAsync(2399);
+    expect(sim.card('final').classList.contains('pending')).toBe(true);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(sim.card('final').classList.contains('pending')).toBe(false);
+    expect(sim.bracket.classList.contains('final-beat')).toBe(false);
+    expect(sim.record.classList.contains('beat')).toBe(false);
+    expect(sim.page.app.querySelector('.beat-line')).toBeNull();
+  });
+
+  test('a skip mid-beat clears it', async () => {
+    const sim = await startSim(ALL_WINS);
+    await vi.advanceTimersByTimeAsync(6000);
+    sim.page.app.querySelector('.sim-screen')!.click();
+    expect(revealed(sim)).toBe(7);
+    expect(sim.bracket.classList.contains('final-beat')).toBe(false);
+    expect(sim.record.classList.contains('beat')).toBe(false);
+  });
+});
+
+describe('follow-scroll', () => {
+  const g = globalThis as Record<string, unknown>;
+
+  /** A 667 px phone with a 64 px sticky head; every card sits in the middle of the frame unless a test moves it. */
+  function phone(sim: Sim): ReturnType<typeof vi.fn> {
+    const scrollBy = vi.fn();
+    g.scrollBy = scrollBy;
+    g.innerHeight = 667;
+    sim.page.app.querySelector('.sim-head')!.rect = { top: 0, bottom: 64, height: 64 };
+    for (const stage of STAGES) place(sim, stage, 300);
+    return scrollBy;
+  }
+  const place = (sim: Sim, stage: Stage, top: number) => {
+    sim.card(stage).rect = { top, bottom: top + 56, height: 56 };
+  };
+  /** Where a scroll puts a card's middle: the middle of the space between the head and the bottom of the frame. */
+  const centering = (top: number) => top + 28 - (64 + 667) / 2;
+
+  test('a card below the fold glides to the middle of the frame before it flips', async () => {
+    const sim = await startSim(ALL_WINS);
+    const scrollBy = phone(sim);
+    place(sim, 'qf', 700);
+    await vi.advanceTimersByTimeAsync(2300); // pool 4 flips; the QF is next
+    expect(scrollBy).toHaveBeenCalledTimes(1);
+    expect(scrollBy).toHaveBeenCalledWith({ top: centering(700), behavior: 'smooth' });
+    expect(sim.card('qf').classList.contains('pending')).toBe(true);
+  });
+
+  test('a card hidden under the sticky record comes back into view', async () => {
+    const sim = await startSim(ALL_WINS);
+    const scrollBy = phone(sim);
+    place(sim, 'pool-3', 20);
+    await vi.advanceTimersByTimeAsync(1100);
+    expect(scrollBy).toHaveBeenCalledWith({ top: centering(20), behavior: 'smooth' });
+  });
+
+  test('a card just above the fold moves too: its reveal adds lines under it', async () => {
+    const sim = await startSim(ALL_WINS);
+    const scrollBy = phone(sim);
+    place(sim, 'pool-2', 667 - 56 - 20);
+    await vi.advanceTimersByTimeAsync(500);
+    expect(scrollBy).toHaveBeenCalledTimes(1);
+  });
+
+  test('cards already in frame do not move the page', async () => {
+    const sim = await startSim(ALL_WINS);
+    const scrollBy = phone(sim);
+    await vi.runAllTimersAsync();
+    expect(scrollBy).not.toHaveBeenCalled();
+  });
+
+  test('the 6-0 beat frames the final card under its beat line', async () => {
+    const sim = await startSim(ALL_WINS);
+    const scrollBy = phone(sim);
+    await vi.advanceTimersByTimeAsync(4400); // the SF flips with the final in frame
+    expect(scrollBy).not.toHaveBeenCalled();
+    place(sim, 'final', 640); // the beat line pushes it down
+    await vi.advanceTimersByTimeAsync(1300);
+    expect(sim.page.app.querySelector('.beat-line')).not.toBeNull();
+    expect(scrollBy).toHaveBeenCalledWith({ top: centering(640), behavior: 'smooth' });
+  });
+
+  test('with reduced motion the page jumps instead of gliding', async () => {
+    const sim = await startSim(ALL_WINS);
+    const scrollBy = phone(sim);
+    g.matchMedia = (query: string) => ({ matches: query === '(prefers-reduced-motion: reduce)' });
+    place(sim, 'qf', 700);
+    await vi.advanceTimersByTimeAsync(2300);
+    expect(scrollBy).toHaveBeenCalledWith({ top: centering(700), behavior: 'auto' });
+  });
+
+  test.each(['wheel', 'touchmove'])('the first %s hands the scroll back to the player', async (type) => {
+    const sim = await startSim(ALL_WINS);
+    const scrollBy = phone(sim);
+    await vi.advanceTimersByTimeAsync(1000);
+    sim.card('pool-2').dispatch(type);
+    for (const stage of STAGES) place(sim, stage, 900);
+    await vi.runAllTimersAsync();
+    expect(scrollBy).not.toHaveBeenCalled();
   });
 });

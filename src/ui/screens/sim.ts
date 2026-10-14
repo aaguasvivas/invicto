@@ -1,8 +1,10 @@
 // Simulation screen: bracket cards flip one at a time, and the pacing escalates
-// with the stakes (after a short guard, a tap anywhere skips everything, even
-// mid-beat). A 6-0 team gets a gold pre-reveal beat before the final: THE moment.
-// With a rival from a challenge link, each card adds the rival's game at the
-// same stage, and the gold beat says what the final means against them.
+// with the stakes (after a short guard, a tap anywhere, Enter, Space or Escape
+// skips everything, even mid-beat). A 6-0 team gets a gold pre-reveal beat
+// before the final: THE moment. The record stays in a sticky head and the page
+// follows each reveal until the player scrolls. With a rival from a challenge
+// link, each card adds the rival's game at the same stage, and the gold beat
+// says what the final means against them.
 
 import type { GameResult, LineupSlots, RunResult, Stage } from '../../engine/types';
 import type { Rival } from '../../game/challenge';
@@ -15,10 +17,19 @@ import { rivalName } from '../versus';
 
 /** Delay before each card flips, by stage: anticipation grows with the stakes. */
 const REVEAL_MS = { pool: 600, qf: 750, sf: 950, final: 1300 } as const;
-const FINAL_BEAT_MS = 1800;
+const FINAL_BEAT_MS = 2400;
 const SF_BEAT_MS = 400;
 /** Taps this soon after the screen appears are the draft's last pick landing twice, not a skip. */
 const SKIP_GUARD_MS = 400;
+const SKIP_KEYS = new Set(['Enter', ' ', 'Escape']);
+/** A heartbeat at the 6-0 beat (Android; iOS Safari has no Vibration API). */
+const HEARTBEAT_BUZZ = [0, 90, 200, 90];
+/**
+ * A card grows by up to about this much when it flips on a phone (a score row
+ * and a flavor and star line that each wrap, plus the rival line), so a pending
+ * card needs that room under it.
+ */
+const REVEAL_ROOM_PX = 112;
 /** The mercy rule (a 10-run lead) ends a game after the 7th. */
 const MERCY_INNINGS = 7;
 
@@ -41,6 +52,18 @@ export function heroLine(game: GameResult, lineup: LineupSlots): string | null {
   return t(`hero.${key}`, params);
 }
 
+const EMOJI_TAIL = /\S+ (?:\p{Extended_Pictographic}|\p{Emoji_Modifier}|\u200d|\ufe0f)+$/u;
+
+/**
+ * A line's last word and trailing emoji, split off as [lead, tail] so the tail
+ * can wrap as one: a narrow card then never leaves the emoji alone on a line,
+ * or breaks a closing score like 12-3 at its dash. tail is '' without an emoji.
+ */
+export function splitEmojiTail(text: string): [lead: string, tail: string] {
+  const match = EMOJI_TAIL.exec(text);
+  return match ? [text.slice(0, match.index), match[0]] : [text, ''];
+}
+
 /**
  * The rival's game at a stage: their score and mark (the mark alone when only
  * the claimed record is known), or that they never got this far.
@@ -60,8 +83,12 @@ export function renderSim(app: HTMLElement, run: RunResult, data: GameData, line
 
   const recordEl = h('div.sim-record', {}, '0-0');
   const stageEl = h('div.sim-stage-label', {}, t('sim.title'));
-  const bracket = h('div.bracket');
-  const screen = h('div.sim-screen', {}, recordEl, stageEl, bracket, h('div.skip-hint', {}, t('sim.skip')));
+  const head = h('div.sim-head', {}, recordEl, stageEl);
+  // Pool play and the knockout: stacked on phones, side by side on desktop.
+  const poolCol = h('div.bracket-col.pool');
+  const koCol = h('div.bracket-col.ko');
+  const bracket = h('div.bracket', {}, poolCol, koCol);
+  const screen = h('div.sim-screen', {}, head, bracket, h('button.chip-btn.skip-hint', { type: 'button' }, t('sim.skip')));
   app.append(screen);
 
   const stageOf = (s: Stage) => (s.startsWith('pool') ? 'pool' : s) as 'pool' | 'qf' | 'sf' | 'final';
@@ -71,13 +98,15 @@ export function renderSim(app: HTMLElement, run: RunResult, data: GameData, line
   let lastSection = '';
   for (const stage of allStages) {
     const section = stageOf(stage);
+    const col = section === 'pool' ? poolCol : koCol;
     if (section !== lastSection) {
-      bracket.append(h('div.bracket-section', {}, t(`sim.stages.${section}`)));
+      col.append(h('div.bracket-section', {}, t(`sim.stages.${section}`)));
       lastSection = section;
     }
-    const card = h('div.game-card.pending', {}, h('span.game-flag', {}, '⚾'), h('div.game-info', {}, h('div.game-flavor', {}, '· · ·')));
+    // \ufe0f: the colour emoji, not the text glyph some Japanese fonts draw for a bare ⚾
+    const card = h('div.game-card.pending', {}, h('span.game-flag', {}, '⚾\ufe0f'), h('div.game-info', {}, h('div.game-flavor', {}, '· · ·')));
     cards.set(stage, card);
-    bracket.append(card);
+    col.append(card);
   }
 
   let wins = 0;
@@ -89,7 +118,26 @@ export function renderSim(app: HTMLElement, run: RunResult, data: GameData, line
   const clearBeat = () => {
     beatLine?.remove();
     beatLine = null;
+    bracket.classList.remove('final-beat');
+    recordEl.classList.remove('beat');
     for (const card of cards.values()) card.classList.remove('beat-gold', 'beat-soft');
+  };
+
+  // Follow-scroll: while the next card waits to flip, a card hidden under the
+  // sticky head, or too near the fold to show its result, glides to the middle
+  // of the frame. Only this page scrolls (never a host page around the portal's
+  // iframe), and the player's first wheel or swipe ends the following.
+  let following = true;
+  const stopFollowing = () => {
+    following = false;
+  };
+  const follow = (card: HTMLElement) => {
+    if (!following) return;
+    const frame = head.getBoundingClientRect();
+    const box = card.getBoundingClientRect();
+    if (box.top >= frame.bottom && box.bottom + REVEAL_ROOM_PX <= window.innerHeight) return;
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches === true;
+    window.scrollBy({ top: box.top + box.height / 2 - (frame.height + window.innerHeight) / 2, behavior: reduced ? 'auto' : 'smooth' });
   };
 
   const revealCard = (game: GameResult) => {
@@ -97,6 +145,7 @@ export function renderSim(app: HTMLElement, run: RunResult, data: GameData, line
     const country = data.countries.get(game.opponent.country)!;
     const oppName = countryName(country);
     const star = heroLine(game, lineup);
+    const [lead, tail] = splitEmojiTail(flavor(game.flavorKey, game.flavorVariant, { opp: oppName, us: game.teamScore, them: game.oppScore }));
     clear(card);
     card.classList.remove('pending');
     card.classList.add(game.win ? 'win' : 'loss', 'reveal');
@@ -112,7 +161,7 @@ export function renderSim(app: HTMLElement, run: RunResult, data: GameData, line
           h('span', { style: 'color:var(--text-dim)' }, ' · '),
           h('span', {}, `${oppName} ${game.oppScore}`),
         ),
-        h('div.game-flavor', {}, flavor(game.flavorKey, game.flavorVariant, { opp: oppName, us: game.teamScore, them: game.oppScore })),
+        h('div.game-flavor', {}, lead, tail ? h('span.tail', {}, tail) : null),
         star ? h('div.game-flavor.hero', {}, star) : null,
         rival ? h('div.game-flavor.rival', {}, rivalLine(rival, game.stage, allStages)) : null,
       ),
@@ -131,6 +180,15 @@ export function renderSim(app: HTMLElement, run: RunResult, data: GameData, line
   const finish = () => {
     window.clearTimeout(timer);
     screen.removeEventListener('click', skipAll);
+    document.removeEventListener('keydown', onKey);
+    document.removeEventListener('wheel', stopFollowing);
+    document.removeEventListener('touchmove', stopFollowing);
+    // After an elimination, the games never played fade to ghosts.
+    for (const card of cards.values()) {
+      if (!card.classList.contains('pending')) continue;
+      card.classList.remove('pending');
+      card.classList.add('unreached');
+    }
     setTimeout(onDone, 900);
   };
   const step = () => {
@@ -142,8 +200,12 @@ export function renderSim(app: HTMLElement, run: RunResult, data: GameData, line
       // Against a rival: win and you beat them, or (they went 7-0) win and you match them.
       const stakes = rival ? t(rival.wins.every(Boolean) ? 'challenge.simMatch' : 'challenge.simBeat', { name: rivalName(rival) }) : null;
       beatLine = h('div.beat-line', {}, t('sim.beatFinal'), stakes ? h('div.beat-rival', {}, stakes) : null);
-      bracket.insertBefore(beatLine, card);
+      koCol.insertBefore(beatLine, card);
       card.classList.add('beat-gold');
+      bracket.classList.add('final-beat');
+      recordEl.classList.add('beat');
+      vibrate(HEARTBEAT_BUZZ);
+      follow(card);
       timer = window.setTimeout(step, FINAL_BEAT_MS);
       return;
     }
@@ -156,7 +218,9 @@ export function renderSim(app: HTMLElement, run: RunResult, data: GameData, line
     clearBeat();
     revealCard(game);
     next++;
-    timer = window.setTimeout(step, next < run.games.length ? REVEAL_MS[stageOf(run.games[next].stage)] : REVEAL_MS.pool);
+    const upcoming = run.games[next];
+    if (upcoming) follow(cards.get(upcoming.stage)!);
+    timer = window.setTimeout(step, upcoming ? REVEAL_MS[stageOf(upcoming.stage)] : REVEAL_MS.pool);
   };
   let skippable = false;
   const skipAll = () => {
@@ -166,7 +230,15 @@ export function renderSim(app: HTMLElement, run: RunResult, data: GameData, line
     while (next < run.games.length) revealCard(run.games[next++]);
     finish();
   };
-  screen.addEventListener('click', skipAll);
+  const onKey = (e: KeyboardEvent) => {
+    if (e.repeat || !SKIP_KEYS.has(e.key)) return; // a held key is the last pick's, not a skip
+    e.preventDefault();
+    skipAll();
+  };
+  screen.addEventListener('click', skipAll); // the skip button's click lands here too
+  document.addEventListener('keydown', onKey);
+  document.addEventListener('wheel', stopFollowing, { passive: true });
+  document.addEventListener('touchmove', stopFollowing, { passive: true });
   window.setTimeout(() => { skippable = true; }, SKIP_GUARD_MS);
   timer = window.setTimeout(step, 500);
 }

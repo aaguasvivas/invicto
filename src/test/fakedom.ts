@@ -124,6 +124,8 @@ export class FakeElement extends FakeNode {
   open = false;
   offsetLeft = 0;
   scrollLeft = 0;
+  /** No layout: the viewport box a test sets is what getBoundingClientRect() reports. */
+  rect = { top: 0, bottom: 0, height: 0 };
   private readonly styleDecl = new FakeStyle();
   private readonly attrs = new Map<string, string>();
   private readonly listeners = new Map<string, { fn: Listener; once: boolean }[]>();
@@ -190,6 +192,15 @@ export class FakeElement extends FakeNode {
 
   removeEventListener(type: string, fn: Listener): void {
     this.listeners.set(type, (this.listeners.get(type) ?? []).filter((l) => l.fn !== fn));
+  }
+
+  /** How many listeners of this type are attached (a screen that is gone must leave none behind). */
+  listenerCount(type: string): number {
+    return this.listeners.get(type)?.length ?? 0;
+  }
+
+  getBoundingClientRect(): { top: number; bottom: number; height: number } {
+    return { ...this.rect };
   }
 
   /** Simple selectors only: "tag", ".a.b" or "tag.a.b". Anything else matches nothing. */
@@ -329,12 +340,17 @@ export function installDom(languages: string[] = ['en-US'], hash = ''): FakeDom 
     querySelector: (selector: string) => (selector === '#app' ? app : documentElement.querySelector(selector)),
     querySelectorAll: (selector: string) => documentElement.querySelectorAll(selector),
     execCommand: () => false,
+    // Document listeners hang on <html>: every event bubbles that far, as it would to the document.
+    addEventListener: (type: string, fn: Listener, opts?: { once?: boolean }) => documentElement.addEventListener(type, fn, opts),
+    removeEventListener: (type: string, fn: Listener) => documentElement.removeEventListener(type, fn),
   };
   const g = globalThis as Record<string, unknown>;
   g.document = doc;
   g.window = globalThis;
   g.Node = FakeNode;
+  g.innerHeight = 800;
   g.scrollTo = () => {};
+  g.scrollBy = () => {};
   // A frame every 16 ms, on whatever timers the test runs (fake ones included).
   g.requestAnimationFrame = (paint: (time: number) => void) => setTimeout(() => paint(Date.now()), 16);
   const location = { pathname: '/', search: '', hash };
