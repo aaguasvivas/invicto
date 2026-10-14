@@ -11,7 +11,10 @@ export interface PosterData {
   tierLabel: string;
   lineup: { slot: string; flag: string; name: string; edition: number }[];
   games: { flag: string; win: boolean }[];
+  /** Where and when: "invictobaseball.com · 13 oct 2026 · #125" */
   footer: string;
+  /** The run's numbers, on their own line under the footer: "OVR 80.4 · B · Top 3% de hoy" */
+  stats: string;
   hard: boolean;
   /** "vs Ana 5-2 · same rolls": a run dealt by a challenge link; it takes the tagline's place */
   versus?: string;
@@ -106,7 +109,7 @@ export function drawSharePoster(canvas: HTMLCanvasElement, data: PosterData): vo
   // lineup (12 rows: 9 hitters + SP/RP/CL)
   ctx.textAlign = 'left';
   const top = 648;
-  const lineH = 52;
+  const lineH = 50;
   data.lineup.forEach((row, i) => {
     const y = top + i * lineH;
     ctx.fillStyle = DIM;
@@ -126,10 +129,14 @@ export function drawSharePoster(canvas: HTMLCanvasElement, data: PosterData): vo
     ctx.textAlign = 'left';
   });
 
+  // Two lines, so each fits SAFE at its natural width in every locale: as one
+  // line, the site, the date, the number, the OVR, the grade and the crowd rank
+  // ran to about 1260 px and the canvas squeezed the glyphs to fit.
   ctx.textAlign = 'center';
   ctx.fillStyle = DIM;
   ctx.font = '700 30px Inter, sans-serif';
-  ctx.fillText(data.footer, 540, 1295, SAFE);
+  ctx.fillText(data.footer, 540, 1266, SAFE);
+  ctx.fillText(data.stats, 540, 1308, SAFE);
 }
 
 /** 1200×630 OG card (no lineup, headline treatment). */

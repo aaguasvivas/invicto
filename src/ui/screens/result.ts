@@ -117,7 +117,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
   };
   paintFoot();
   const versusLine = rival ? t('challenge.poster', { name: rivalName(rival), record: recordOf(rival.wins) }) : null;
-  const posterData: PosterData = {
+  const posterData: Omit<PosterData, 'stats'> = {
     brand: 'INVICTO',
     tagline: t('tagline'),
     record,
@@ -125,7 +125,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
     tierLabel: t(`result.${run.outcome}`),
     lineup: lineupRows,
     games: gameFlags,
-    footer: footerWithDraft(),
+    footer: footerLine,
     hard: session.mode === 'hard',
     ...(versusLine ? { versus: versusLine } : {}),
   };
@@ -160,9 +160,11 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
   let globalTopPct: number | null = null;
   const globalLine = () => (globalTopPct !== null ? t('global.top', { pct: globalTopPct }) : null);
   const extraLines = () => [globalLine(), badgeLine].filter(Boolean).join('\n') || null;
+  // The image gives the run's numbers a line of their own under the footer:
+  // the Team OVR, the grade once the scout has run, and a scored daily's crowd rank.
   const posterForShare = (): PosterData => ({
     ...posterData,
-    footer: [footerWithDraft(), globalTopPct !== null ? t('global.top', { pct: globalTopPct }) : null].filter(Boolean).join('  ·  '),
+    stats: [posterDraft(run.teamRating, graded?.grade), globalLine()].filter(Boolean).join('  ·  '),
   });
   const statsEl = h('div.result-meta.global-lines');
   // Portal builds have no stats backend (see title.ts).

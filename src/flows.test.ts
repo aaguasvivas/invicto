@@ -835,8 +835,8 @@ describe('CrazyGames portal build', () => {
   });
 
   test('without invite links the image share, the poster and its footer name no website, and no challenge is offered', async () => {
-    const drawn: { footer: string; versus?: string }[] = [];
-    vi.doMock('./ui/poster', () => ({ ensurePosterFonts: async () => {}, drawSharePoster: (_: unknown, data: { footer: string }) => drawn.push(data) }));
+    const drawn: { footer: string; stats: string; versus?: string }[] = [];
+    vi.doMock('./ui/poster', () => ({ ensurePosterFonts: async () => {}, drawSharePoster: (_: unknown, data: { footer: string; stats: string }) => drawn.push(data) }));
     vi.stubGlobal('File', class { constructor(readonly parts: unknown[], readonly name: string) {} });
     const shared: string[] = [];
     await loadPortal(fakeSdk('en-US'));
@@ -856,7 +856,7 @@ describe('CrazyGames portal build', () => {
     expect(shared[0]).not.toContain(en.challenge.shareLine); // no dare without a link to answer it
     // The date (free play has no daily number), then the Team OVR and the draft grade.
     expect(poster).toMatch(/^Oct 11, 2026  ·  OVR \d{2}\.\d  ·  [SABCD]$/);
-    expect(drawn[0].footer).toBe(poster);
+    expect(`${drawn[0].footer}  ·  ${drawn[0].stats}`).toBe(poster);
   });
 
   test("a challenge goes out as CrazyGames' invite link, and the link it opens deals that challenge", async () => {
@@ -1143,6 +1143,24 @@ describe('honest numbers', () => {
     expect(wins).toBeGreaterThan(0); // the 2026-10-11 test daily wins games, so 29 runs can sit below it
     expect(lines()).toEqual([en.global.beat.replace('{pct}', '100'), counts(30, 0)]);
     expect(card).toContain(en.global.top.replace('{pct}', '3'));
+  });
+
+  // As one line, the site, date, number, OVR, grade and Top line ran past the
+  // image's 900 px text width in every locale, and the canvas squeezed the glyphs.
+  test('a top half run shares an image with where and when on one footer line and the OVR, the grade and the Top line on the next', async () => {
+    const drawn: { footer: string; stats: string }[] = [];
+    vi.doMock('./ui/poster', () => ({ ensurePosterFonts: async () => {}, drawSharePoster: (_: unknown, data: { footer: string; stats: string }) => drawn.push(data) }));
+    vi.stubGlobal('File', class { constructor(readonly parts: unknown[], readonly name: string) {} });
+    try {
+      await scoredDaily((w) => ({ total: 30, invictos: 0, distribution: { [w - 1]: 29, [w]: 1 }, yourPicks: [] }));
+      Object.assign(navigator, { share: async () => {}, canShare: () => true });
+      await tap(en.challenge.shareImage);
+    } finally {
+      vi.doUnmock('./ui/poster');
+    }
+    expect(drawn).toHaveLength(1);
+    expect(drawn[0].footer).toBe(`invictobaseball.com/en  ·  Oct 11, 2026  ·  #${dailyNumber('2026-10-11')}`);
+    expect(drawn[0].stats).toMatch(new RegExp(`^OVR \\d{2}\\.\\d  ·  [SABCD]  ·  ${en.global.top.replace('{pct}', '3')}$`));
   });
 });
 
