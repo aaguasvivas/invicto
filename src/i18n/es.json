@@ -114,6 +114,16 @@
     "odds": "Con este lineup: título {t}% · INVICTO {i}%",
     "hardReveal": "Draftaste a ciegas. Así eran tus números:",
     "howEngine": "Cómo lo calcula el motor",
+    "lineupTitle": "Lineup del scout",
+    "lineupLine": "Con tus mismas 12 tiradas, sin cambios, el scout armó un lineup con OVR del equipo {n} ({record}).",
+    "grade": "Tu nota de draft: {g}",
+    "gradeS": "S: ¡Le ganaste al scout!",
+    "loading": "El scout está revisando tus tiradas…",
+    "toggle": "Ver lineup del scout",
+    "rerolledHere": "🔁 Aquí te tocó otra tirada",
+    "scoutCol": "Scout",
+    "recordBeat": "📈 También le ganaste al scout en récord: {record} contra {par}",
+    "yesterday": "Ayer #{n}: tú {record} · scout {par} · nota {g}",
     "engine": {
       "blend": "Las seis categorías se combinan con un mínimo suave: la más baja es la que más pesa.",
       "ovr": "Esa mezcla se lleva a la escala de los rivales:",
@@ -261,6 +271,8 @@
   "share": {
     "title": "INVICTO",
     "practice": "(práctica)",
+    "draftLine": "📋 Draft {g} · OVR {n}",
+    "posterOvr": "OVR {n}",
     "tiers": { "invicto": "7-0 ⭐ INVICTO", "campeon": "{record} 🏆 CAMPEÓN", "subcampeon": "Subcampeón {record} 🥈" }
   },
   "challenge": {

@@ -7,13 +7,20 @@
 // at 23:58 must still count for the day it was dealt.
 
 import type { Outcome } from '../engine/types';
+import type { DraftGrade } from './scout';
 import * as storage from './storage';
 
 export type Mode = 'daily' | 'free' | 'hard';
 
 export const DAILY_EPOCH = '2026-06-11'; // launch day = Reto del Día #1
 
-export interface StoredResult {
+/**
+ * A finished run as the daily record and the personal bests keep it. A scored
+ * daily gains its draft grade (game/scout.ts) once the scout has run on the
+ * result screen; entries saved before grades existed have none, and nothing
+ * shows one for them.
+ */
+export interface StoredResult extends Partial<DraftGrade> {
   record: string;
   wins: number;
   losses: number;
@@ -84,6 +91,17 @@ export function saveDailyResult(result: StoredResult, day = todayKey()): void {
   const streak = last === previousDayKey(day) ? currentStreak(day) + 1 : 1;
   storage.set('invicto.streak', String(streak));
   storage.set('invicto.lastDaily', day);
+}
+
+/**
+ * Add the draft grade to the scored daily of the day the run was dealt. The
+ * first grade stays: a replay of the same run (a reload during the reveal)
+ * grades the same lineup again.
+ */
+export function saveDailyGrade(day: string, grade: DraftGrade): void {
+  const saved = dailyResult(day);
+  if (!saved || saved.grade) return;
+  storage.set(`invicto.daily.${day}`, JSON.stringify({ ...saved, ...grade }));
 }
 
 /** Streak as of a given day: alive if the last daily was that day or the day before. */

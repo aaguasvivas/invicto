@@ -335,6 +335,8 @@ export function installDom(languages: string[] = ['en-US'], hash = ''): FakeDom 
   g.window = globalThis;
   g.Node = FakeNode;
   g.scrollTo = () => {};
+  // A frame every 16 ms, on whatever timers the test runs (fake ones included).
+  g.requestAnimationFrame = (paint: (time: number) => void) => setTimeout(() => paint(Date.now()), 16);
   const location = { pathname: '/', search: '', hash };
   g.location = location;
   const history = {

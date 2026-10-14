@@ -114,6 +114,16 @@
     "odds": "この編成で優勝{t}% · INVICTO {i}%",
     "hardReveal": "能力値を見ずにドラフトした。本当の数字はこちら：",
     "howEngine": "エンジンの計算方法",
+    "lineupTitle": "スカウトの編成",
+    "lineupLine": "同じ12回の出目から変更なしで、スカウトが組んだ編成はチーム総合{n}（{record}）。",
+    "grade": "ドラフト評価：{g}",
+    "gradeS": "S：スカウト超え！",
+    "loading": "スカウトが出目をチェック中…",
+    "toggle": "スカウトの編成を見る",
+    "rerolledHere": "🔁 ここは別の出目だった",
+    "scoutCol": "スカウト",
+    "recordBeat": "📈 成績でもスカウトを上回った：{record} 対 {par}",
+    "yesterday": "昨日 #{n}：あなた {record}・スカウト {par}・評価 {g}",
     "engine": {
       "blend": "6つのカテゴリーを「ソフト最小値」でまとめる。いちばん低い数字がいちばん効く。",
       "ovr": "その値を対戦相手と同じ尺度に直す：",
@@ -261,6 +271,8 @@
   "share": {
     "title": "INVICTO",
     "practice": "(練習)",
+    "draftLine": "📋 Draft {g} · OVR {n}",
+    "posterOvr": "OVR {n}",
     "tiers": { "invicto": "7-0 ⭐ INVICTO", "campeon": "{record} 🏆 CAMPEÓN", "subcampeon": "準優勝 {record} 🥈" }
   },
   "challenge": {

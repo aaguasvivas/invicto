@@ -8,7 +8,9 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { canEditionReroll, POWERS, rollBase, rollCountryReroll } from './engine/draft';
+import { SLOTS } from './engine/positions';
 import type { EditionTeams, EnginePlayer, Roll } from './engine/types';
+import { draftGrade } from './game/scout';
 import { dailyNumber, formatDayKey } from './game/state';
 import en from './i18n/en.json';
 import es from './i18n/es.json';
@@ -174,6 +176,8 @@ describe('daily challenge', () => {
     await tap(en.title.watch);
     await skipSim();
     expect(page.app.querySelector('.poster-record')!.textContent).toBe(committed.record);
+    const graded = dailyResult('2026-10-11');
+    expect(graded).toMatchObject(committed); // the same run, now with its draft grade
     // Recorded at the commit, so no longer new, but this is the reveal they belong to.
     expect(page.app.querySelectorAll('.badge-chip')).toHaveLength(unlocked.length);
     expect(page.app.textContent).not.toContain(en.result.practice);
@@ -187,7 +191,7 @@ describe('daily challenge', () => {
     draft(12);
     await skipSim();
     expect(page.app.textContent).toContain(en.result.practice);
-    expect(dailyResult('2026-10-11')).toEqual(committed);
+    expect(dailyResult('2026-10-11')).toEqual(graded);
     expect(posts()).toBe(1);
   });
 
@@ -850,7 +854,9 @@ describe('CrazyGames portal build', () => {
     const poster = page.app.querySelector('.poster-foot')!.textContent;
     for (const text of [shared[0], drawn[0].footer, poster]) expect(text).not.toMatch(/invictobaseball|\.com|https?:/);
     expect(shared[0]).not.toContain(en.challenge.shareLine); // no dare without a link to answer it
-    expect(poster).toBe('Oct 11, 2026'); // the footer is the date alone (free play has no daily number)
+    // The date (free play has no daily number), then the Team OVR and the draft grade.
+    expect(poster).toMatch(/^Oct 11, 2026  ·  OVR \d{2}\.\d  ·  [SABCD]$/);
+    expect(drawn[0].footer).toBe(poster);
   });
 
   test("a challenge goes out as CrazyGames' invite link, and the link it opens deals that challenge", async () => {
@@ -1179,7 +1185,7 @@ describe('the daily panel on the result', () => {
     expect(panel.textContent).toContain(en.result.scoredAttempt.replace('{record}', scored));
     await tap(en.challenge.button);
     expect(copied[0].split('\n')[0]).toBe(`INVICTO #${dailyNumber('2026-10-11')} ${en.share.practice} ⚾`);
-    expect(page.app.querySelector('.poster-foot')!.textContent.endsWith(`#${dailyNumber('2026-10-11')} ${en.share.practice}`)).toBe(true);
+    expect(page.app.querySelector('.poster-foot')!.textContent).toContain(`  ·  #${dailyNumber('2026-10-11')} ${en.share.practice}  ·  OVR `);
   });
 
   test('a daily dealt before midnight and finished after keeps its number and date, and the next button deals the new day', async () => {
@@ -1192,7 +1198,7 @@ describe('the daily panel on the result', () => {
     vi.setSystemTime(new Date(2026, 9, 11, 0, 5));
     await skipSim();
 
-    expect(page.app.querySelector('.poster-foot')!.textContent).toBe('invictobaseball.com/en  ·  Oct 10, 2026  ·  #122');
+    expect(page.app.querySelector('.poster-foot')!.textContent).toMatch(/^invictobaseball\.com\/en  ·  Oct 10, 2026  ·  #122  ·  OVR /);
     await tap(en.challenge.button);
     expect(copied[0].split('\n')[0]).toBe('INVICTO #122 ⚾');
     expect(page.app.textContent).not.toContain(en.result.practiceAgain);
@@ -1315,6 +1321,158 @@ describe('the scouting report on the result', () => {
     draft(12);
     await skipSim();
     expect(page.app.querySelector('.scout-reveal')).toBeNull();
+  });
+});
+
+describe('the scout’s lineup and the draft grade', () => {
+  /** Skip the reveal and stop the moment the result screen renders, before its first frame. */
+  async function landOnResult(): Promise<void> {
+    const sim = page.app.querySelector('.sim-screen')!;
+    await vi.advanceTimersByTimeAsync(400);
+    sim.click();
+    await vi.advanceTimersByTimeAsync(900);
+    expect(page.app.dataset.screen).toBe('result');
+  }
+  const section = () => page.app.querySelector('.scout-lineup')!;
+  const fill = (template: string, params: Record<string, string>) => template.replace(/\{(\w+)\}/g, (_, key: string) => params[key]);
+  /** The scout the engine builds on a seed, from the rosters the page loaded. */
+  async function engineScout(seed: string) {
+    const [{ loadData }, { scoutLineup }] = await Promise.all([import('./game/data'), import('./game/scout')]);
+    return scoutLineup(seed, await loadData())!;
+  }
+
+  test('holds its place with a loading line, then grades the draft against the scout and keeps the grade with the day', async () => {
+    const copied: string[] = [];
+    await load();
+    Object.assign(navigator, { clipboard: { writeText: async (text: string) => void copied.push(text) } });
+    await tap(DAILY);
+    draft(12);
+    await landOnResult();
+    const card = page.app.querySelector('.scout-card')!;
+    expect(section().querySelector('.scout-lineup-title')!.textContent).toBe(en.scout.lineupTitle);
+    expect(section().querySelector('.scout-loading')!.textContent).toBe(en.scout.loading);
+    expect(section().querySelector('.grade-badge')!.textContent).toBe('');
+    expect(dailyResult('2026-10-11').grade).toBeUndefined();
+
+    await vi.advanceTimersByTimeAsync(1000);
+    const scout = await engineScout('daily-2026-10-11');
+    const saved = dailyResult('2026-10-11');
+    expect(saved.ovr).toBe(Number(card.querySelector('.scout-ovr')!.textContent));
+    expect(saved.par).toEqual({ ovr: Math.round(scout.ovr * 10) / 10, wins: scout.run.wins, losses: scout.run.losses });
+    expect(saved.grade).toBe(draftGrade(saved.par.ovr - saved.ovr));
+    expect(section().querySelector('.scout-loading')).toBeNull();
+    expect(section().querySelector('.grade-badge')!.textContent).toBe(saved.grade);
+    expect(section().querySelector('.scout-grade-label')!.textContent).toBe(saved.grade === 'S' ? en.scout.gradeS : fill(en.scout.grade, { g: saved.grade }));
+    const par = `${saved.par.wins}-${saved.par.losses}`;
+    expect(section().querySelector('.scout-grade-line')!.textContent).toBe(fill(en.scout.lineupLine, { n: saved.par.ovr.toFixed(1), record: par }));
+
+    // Twelve slots, yours against the scout's, the picks you share dimmed.
+    const more = card.querySelector('details.scout-more')!;
+    expect(more.querySelector('summary')!.textContent).toBe(en.scout.toggle);
+    expect(more.querySelector('thead')!.textContent).toBe(`${en.challenge.you}${saved.ovr.toFixed(1)}${en.scout.scoutCol}${saved.par.ovr.toFixed(1)}`);
+    const rows = more.querySelector('tbody')!.querySelectorAll('tr');
+    expect(rows.map((row) => row.querySelector('th')!.textContent)).toEqual([...SLOTS]);
+    const pick = (td: FakeElement) => `${td.querySelector('.scout-vs-name')!.textContent} ${td.querySelector('.ed')!.textContent}`;
+    rows.forEach((row, i) => {
+      const [yours, theirs] = row.querySelectorAll('td').map(pick);
+      const want = scout.lineup[SLOTS[i]]!;
+      expect(theirs).toBe(`${want.name} '${String(want.edition).slice(2)}`);
+      expect(row.classList.contains('same')).toBe(yours === theirs);
+    });
+
+    // The poster and the share card carry it.
+    expect(page.app.querySelector('.poster-foot')!.textContent.endsWith(`  ·  OVR ${saved.ovr.toFixed(1)}  ·  ${saved.grade}`)).toBe(true);
+    await tap(en.challenge.button);
+    expect(copied[0].split('\n')).toContain(`📋 Draft ${saved.grade} · OVR ${saved.ovr.toFixed(1)}`);
+  });
+
+  test('stops for good when the player leaves the result before it lands: no grade, no error', async () => {
+    await load();
+    await tap(DAILY);
+    draft(12);
+    await landOnResult();
+    await goHome();
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(page.app.dataset.screen).toBe('title');
+    expect(dailyResult('2026-10-11').grade).toBeUndefined();
+  });
+
+  test('a practice replay is graded on screen but never replaces the scored run’s grade', async () => {
+    await load();
+    await tap(DAILY);
+    draft(12);
+    await skipSim();
+    const scored = dailyResult('2026-10-11');
+    expect(scored.grade).toMatch(/^[SABCD]$/);
+    await tap(en.result.practiceAgain);
+    draft(12, 'last');
+    await skipSim();
+    expect(section().querySelector('.grade-badge')!.textContent).toMatch(/^[SABCD]$/);
+    expect(dailyResult('2026-10-11')).toEqual(scored);
+  });
+
+  test('a round played on a roll the scout never saw is marked, and the mark is explained once', async () => {
+    await load();
+    await tap(en.title.free);
+    page.app.querySelector('.roll-card')!.click(); // land the first roll
+    await tap(en.draft.rerollCountry);
+    draft(12);
+    await skipSim();
+    const marks = page.app.querySelectorAll('.scout-reroll');
+    expect(marks).toHaveLength(1);
+    expect(marks[0].getAttribute('aria-label')).toBe(en.scout.rerolledHere);
+    expect(page.app.querySelector('.scout-reroll-note')!.textContent).toBe(en.scout.rerolledHere);
+  });
+
+  test('a run that never touched a reroll explains no mark', async () => {
+    await load();
+    await tap(en.title.free);
+    draft(12);
+    await skipSim();
+    const marks = page.app.querySelectorAll('.scout-reroll').length;
+    expect(page.app.querySelectorAll('.scout-reroll-note')).toHaveLength(marks > 0 ? 1 : 0); // a free roll can still change a round
+  });
+
+  test('Hard Mode grades the draft after the ratings it kept hidden', async () => {
+    await load();
+    await tap(en.title.hard);
+    draft(12);
+    await skipSim();
+    const card = page.app.querySelector('.scout-card')!;
+    const order = card.querySelectorAll('div').map((el) => el.className);
+    expect(order.indexOf('scout-reveal scout-section')).toBeLessThan(order.indexOf('scout-lineup scout-section'));
+    expect(section().querySelector('.grade-badge')!.textContent).toMatch(/^[SABCD]$/);
+  });
+
+  describe('yesterday on the title', () => {
+    const strip = () => page.app.querySelector('.yesterday-strip');
+
+    test('shows one line once yesterday’s scored daily carries its grade', async () => {
+      store.set(
+        'invicto.daily.2026-10-10',
+        JSON.stringify({ record: '4-2', wins: 4, losses: 2, outcome: 'eliminated-sf', ovr: 80.4, grade: 'B', par: { ovr: 82.9, wins: 5, losses: 2 } }),
+      );
+      await load();
+      expect(strip()!.textContent).toBe(fill(en.scout.yesterday, { n: String(dailyNumber('2026-10-10')), record: '4-2', par: '5-2', g: 'B' }));
+      const children = page.app.querySelector('.title-screen')!.children;
+      expect(children.indexOf(strip()!)).toBe(children.indexOf(page.app.querySelector('.menu')!) + 1);
+    });
+
+    test('an entry saved before grades existed renders the title with no strip and no error', async () => {
+      store.set('invicto.daily.2026-10-10', JSON.stringify({ record: '4-2', wins: 4, losses: 2, outcome: 'eliminated-sf' }));
+      await load();
+      expect(page.app.querySelector('.menu')).not.toBeNull();
+      expect(strip()).toBeNull();
+    });
+
+    test('only yesterday’s: an older graded daily shows nothing', async () => {
+      store.set(
+        'invicto.daily.2026-10-09',
+        JSON.stringify({ record: '4-2', wins: 4, losses: 2, outcome: 'eliminated-sf', ovr: 80.4, grade: 'B', par: { ovr: 82.9, wins: 5, losses: 2 } }),
+      );
+      await load();
+      expect(strip()).toBeNull();
+    });
   });
 });
 

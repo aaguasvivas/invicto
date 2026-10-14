@@ -1,15 +1,15 @@
 // Title screen: a friend's challenge link when one was opened, resume an
 // interrupted run, today's challenge (or, once it is played, the day card: its
 // record, the streak and a live countdown), free play, hard mode, how-to,
-// footer. Renders instantly; player data may still be loading in the
-// background when it appears.
+// yesterday's daily against the scout, footer. Renders instantly; player data
+// may still be loading in the background when it appears.
 
 import { cycleLang, getLocale, howtoPanels, nextLangLabel, t } from '../../i18n';
 import { IS_PORTAL } from '../../portal';
 import { BADGE_IDS, earnedBadgeCount } from '../../game/badges';
 import type { ChallengeKind } from '../../game/challenge';
 import {
-  currentStreak, dailyNumber, dailyResult, personalBest, setSound, soundOn, todayKey, type Mode, type StoredResult,
+  currentStreak, dailyNumber, dailyResult, personalBest, previousDayKey, setSound, soundOn, todayKey, type Mode, type StoredResult,
 } from '../../game/state';
 import { fetchToday, MIN_PUBLIC_SAMPLE } from '../../game/stats';
 import { setAccent } from '../accents';
@@ -172,6 +172,7 @@ export function renderTitle(app: HTMLElement, cb: TitleCallbacks): void {
         h('div.flag-strip', {}, '🇻🇪 🇩🇴 🇵🇷 🇯🇵 🇺🇸 🇲🇽 🇨🇺 🇰🇷 🇳🇱 🇹🇼'),
       ),
       menu,
+      revealPending ? null : yesterdayStrip(),
       streakRisk,
       revealPending ? null : statusChips(),
       metaLine(cb.depth),
@@ -264,6 +265,19 @@ function doneCard(played: StoredResult, streak: number, pending: boolean, cb: Ti
           h('button.chip-btn', { type: 'button', onclick: () => cb.onStart('daily') }, t('title.practice')),
         ),
   );
+}
+
+/**
+ * Yesterday's daily against the scout, in one line. It reads only what the
+ * result screen saved with the day (game/state.ts saveDailyGrade), so nothing
+ * is computed here, and a day saved before grades existed shows nothing.
+ */
+function yesterdayStrip(): HTMLElement | null {
+  const day = previousDayKey(todayKey());
+  const played = dailyResult(day);
+  if (!played?.grade || !played.par) return null;
+  const par = `${played.par.wins}-${played.par.losses}`;
+  return h('p.yesterday-strip', {}, t('scout.yesterday', { n: dailyNumber(day), record: played.record, par, g: played.grade }));
 }
 
 /** A returning player's numbers, one unbreakable chip each (a record never splits at its hyphen). */

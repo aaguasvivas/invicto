@@ -169,6 +169,9 @@ h1, h2, h3 { margin: 0; }
 /* the streak is alive and today is unplayed */
 .streak-risk { margin: 14px 0 0; text-align: center; font-size: 13px; font-weight: 600; color: var(--gold-2); text-wrap: balance; }
 
+/* yesterday's daily against the scout, read back from what its result screen saved */
+.yesterday-strip { margin: 14px 0 0; text-align: center; color: var(--text-dim); font-size: 13px; font-weight: 600; text-wrap: balance; }
+
 /* a returning player's numbers: one chip each, so a record never splits at its hyphen */
 .meta-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 14px; }
 .meta-chip {
@@ -687,6 +690,7 @@ html:has(dialog[open]) { overflow: hidden; }
 .poster-line .ed { margin-left: auto; color: var(--text-dim); font-size: 12px; }
 .poster-games { display: flex; justify-content: center; gap: 5px; font-size: 15px; margin-top: 14px; flex-wrap: wrap; }
 .poster-foot { color: #5e6b96; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; margin-top: 12px; text-transform: uppercase; text-wrap: balance; }
+.poster-foot span { white-space: nowrap; }
 .result-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
 .result-meta { text-align: center; color: var(--text-dim); font-size: 13px; margin-top: 12px; }
 /* signs the challenge links; optional, never in the way */
@@ -854,10 +858,83 @@ html:has(dialog[open]) { overflow: hidden; }
 
 .scout-odds { color: var(--text-dim); font-size: 13.5px; line-height: 1.5; }
 
+/* The draft grade against the scout's lineup. While the scout works, the
+   grade's lines sit hidden under the loading line, so the row already has its
+   landed height and nothing below it moves when the grade lands. */
+.scout-lineup-title { margin-bottom: 10px; }
+.scout-grade { display: flex; align-items: center; gap: 12px; }
+.grade-badge {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 24px;
+  line-height: 1;
+}
+/* gold for S and A, the card's own colors for B, dim for C and D */
+.grade-badge.grade-s {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--gold) 0%, #e8a52c 100%);
+  color: #1a1404;
+  box-shadow: 0 4px 18px rgba(245, 185, 66, 0.3);
+}
+.grade-badge.grade-a { border-color: rgba(245, 185, 66, 0.55); background: rgba(245, 185, 66, 0.12); color: var(--gold); }
+.grade-badge.grade-c, .grade-badge.grade-d { background: transparent; color: var(--text-dim); }
+.scout-grade-text { position: relative; min-width: 0; }
+.scout-grade-text.pending > :not(.scout-loading) { visibility: hidden; }
+.scout-grade-text .scout-loading { position: absolute; inset: 0; display: flex; align-items: center; margin: 0; }
+.scout-grade-label { margin: 0; font-size: 15px; font-weight: 800; line-height: 1.35; }
+.scout-grade-label.top { color: var(--gold-2); }
+.scout-grade-line, .scout-loading { margin: 2px 0 0; color: var(--text-dim); font-size: 13.5px; line-height: 1.45; }
+.scout-beat {
+  display: inline-block;
+  max-width: 100%;
+  margin: 10px 0 0;
+  padding: 5px 12px;
+  border: 1px solid rgba(245, 185, 66, 0.45);
+  border-radius: 12px;
+  background: rgba(245, 185, 66, 0.12);
+  color: var(--gold-2);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .grade-badge.pending, .scout-grade .scout-loading { animation: scout-pulse 0.9s ease-in-out infinite alternate; }
+  .grade-badge:not(.pending) { animation: badge-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards; }
+}
+@keyframes scout-pulse { to { opacity: 0.4; } }
+
+/* your lineup next to the scout's: slot | yours | the scout's. Fixed columns,
+   so a long name ellipsizes and the edition and the reroll mark stay in view. */
+.scout-more-body { padding: 0 16px 14px; }
+.scout-vs { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 13px; }
+.scout-vs th, .scout-vs td { height: 28px; padding: 0 0 0 10px; text-align: left; white-space: nowrap; overflow: hidden; }
+.scout-vs th[scope='row'], .scout-vs thead td { width: 30px; padding-left: 0; }
+.scout-vs th[scope='row'] { color: var(--text-dim); font-size: 11px; font-weight: 800; }
+.scout-vs tbody tr { border-top: 1px solid var(--line); }
+.scout-vs thead th { height: 24px; color: var(--text-dim); font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; text-overflow: ellipsis; }
+.scout-vs thead th:lang(ja), .scout-vs thead th:lang(ko) { letter-spacing: 0.02em; }
+.scout-vs-ovr { margin-left: 6px; color: var(--text); letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
+.scout-vs-pick { display: flex; align-items: baseline; gap: 5px; min-width: 0; }
+.scout-vs-pick > * { flex: none; }
+.scout-vs-pick .scout-vs-name { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.scout-vs-pick .ed { color: var(--text-dim); font-size: 12px; }
+.scout-reroll { font-size: 12px; }
+.scout-vs tbody td + td { color: var(--gold-2); font-weight: 600; } /* where the scout went another way */
+.scout-vs tr.same td { color: var(--text-dim); font-weight: 400; opacity: 0.7; }
+.scout-reroll-note { margin-top: 10px; }
+
 /* how the engine calculates it: closed by default, the formula with this lineup's numbers.
-   The head-to-head's lineups disclosure (.vs-lineups) shares the summary styles. */
-.scout-engine { margin: 12px -16px 0; border-top: 1px solid var(--line); }
-:is(.scout-engine, .vs-lineups) summary {
+   The scout's lineup (.scout-more) and the head-to-head's lineups (.vs-lineups) share the summary styles. */
+.scout-engine, .scout-more { margin: 12px -16px 0; border-top: 1px solid var(--line); }
+.scout-more + .scout-engine { margin-top: 0; }
+:is(.scout-engine, .scout-more, .vs-lineups) summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -871,8 +948,8 @@ html:has(dialog[open]) { overflow: hidden; }
   list-style: none;
   -webkit-tap-highlight-color: transparent;
 }
-:is(.scout-engine, .vs-lineups) summary::-webkit-details-marker { display: none; }
-:is(.scout-engine, .vs-lineups) summary::after {
+:is(.scout-engine, .scout-more, .vs-lineups) summary::-webkit-details-marker { display: none; }
+:is(.scout-engine, .scout-more, .vs-lineups) summary::after {
   content: '';
   flex: none;
   width: 7px;
@@ -881,9 +958,9 @@ html:has(dialog[open]) { overflow: hidden; }
   border-width: 0 2px 2px 0;
   transform: translateY(-2px) rotate(45deg);
 }
-:is(.scout-engine, .vs-lineups)[open] summary::after { transform: translateY(2px) rotate(-135deg); }
-:is(.scout-engine, .vs-lineups) summary:active { background: var(--surface-2); }
-:is(.scout-engine, .vs-lineups) summary:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
+:is(.scout-engine, .scout-more, .vs-lineups)[open] summary::after { transform: translateY(2px) rotate(-135deg); }
+:is(.scout-engine, .scout-more, .vs-lineups) summary:active { background: var(--surface-2); }
+:is(.scout-engine, .scout-more, .vs-lineups) summary:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
 .scout-engine summary:focus-visible { border-radius: 0 0 14px 14px; }
 .scout-engine-body { padding: 0 16px 16px; }
 .scout-step { margin: 10px 0 6px; color: var(--text-dim); font-size: 13px; line-height: 1.5; }

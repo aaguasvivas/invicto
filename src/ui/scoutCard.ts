@@ -2,19 +2,20 @@
 // game/scout.ts). Top to bottom: the Team OVR, the six category bars with the
 // weak spot in red, what ten more points there would buy, one line per loss
 // with its chance before the dice, best pick and weakest link, the odds of this
-// bracket (after the explanation, never before), and a disclosure with this
-// lineup's formula and the engine source. Hard Mode adds the ratings the draft
-// kept hidden.
+// bracket (after the explanation, never before), the draft grade against the
+// scout's lineup, and two disclosures: that lineup next to yours, and this
+// lineup's formula with the engine source. Hard Mode adds the ratings the
+// draft kept hidden.
 
 import { SLOTS } from '../engine/positions';
 import { GAME_NOISE_SD, LOGISTIC_SCALE } from '../engine/simulate';
 import { CAL_A, CAL_B, CATEGORIES, categoryBlend, type Category } from '../engine/teamRating';
-import type { RunResult, Slot } from '../engine/types';
-import { scoutReport, type Verdict } from '../game/scout';
+import type { EnginePlayer, RunResult, Slot } from '../engine/types';
+import { gradeDraft, rerolledSlots, scoutReport, scoutSearch, type DraftGrade, type ScoutLineup, type Verdict } from '../game/scout';
 import type { Session } from '../game/session';
 import { countryName, t } from '../i18n';
 import { IS_PORTAL } from '../portal';
-import { h } from './dom';
+import { clear, h } from './dom';
 import { ratingChip } from './ratingChip';
 
 const ENGINE_SOURCE = 'https://github.com/aaguasvivas/invicto/blob/main/src/engine/';
@@ -53,7 +54,112 @@ function rich(key: string, params: Record<string, string>, bold: string[]): (str
     });
 }
 
-export function scoutCard(session: Session, run: RunResult): HTMLElement {
+/**
+ * Step a search one pass per task, from the first task after the next paint,
+ * and stop for good once `alive` says the screen it reports to is gone.
+ */
+function runInTasks<T>(steps: Generator<void, T, void>, alive: () => boolean, done: (value: T) => void): void {
+  const step = () => {
+    if (!alive()) return;
+    const next = steps.next();
+    if (next.done) done(next.value);
+    else setTimeout(step, 0);
+  };
+  requestAnimationFrame(() => setTimeout(step, 0));
+}
+
+/** Your lineup next to the scout's, slot by slot: the picks you share dimmed, rounds the scout never saw marked. */
+function comparison(session: Session, graded: DraftGrade, scout: ScoutLineup): HTMLElement[] {
+  const { lineup } = session.state;
+  const rerolled = rerolledSlots(session.seed, lineup, session.data.editionTeams);
+  const mark = t('scout.rerolledHere');
+  const pick = (p: EnginePlayer, marked: boolean) =>
+    h(
+      'div.scout-vs-pick',
+      {},
+      h('span.scout-vs-name', {}, p.name),
+      h('span.ed', {}, `'${String(p.edition).slice(2)}`),
+      marked ? h('span.scout-reroll', { role: 'img', 'aria-label': mark, title: mark }, '🔁') : null,
+    );
+  const column = (who: string, n: number) => h('th', { scope: 'col' }, who, h('span.scout-vs-ovr', {}, ovr(n)));
+  const table = h(
+    'table.scout-vs',
+    {},
+    h('thead', {}, h('tr', {}, h('td'), column(t('challenge.you'), graded.ovr), column(t('scout.scoutCol'), graded.par.ovr))),
+    h(
+      'tbody',
+      {},
+      ...SLOTS.map((slot) => {
+        const mine = lineup[slot]!;
+        const theirs = scout.lineup[slot]!;
+        return h(
+          `tr${mine.id === theirs.id ? '.same' : ''}`,
+          {},
+          h('th', { scope: 'row' }, slot),
+          h('td', {}, pick(mine, rerolled.includes(slot))),
+          h('td', {}, pick(theirs, false)),
+        );
+      }),
+    ),
+  );
+  return rerolled.length > 0 ? [table, h('p.scout-note.scout-reroll-note', {}, mark)] : [table];
+}
+
+/**
+ * The draft grade against the scout's lineup, and the disclosure that lays
+ * the two side by side. The search starts after the result has painted and
+ * runs one pass per task, so the screen never waits on it, and it stops for
+ * good when the player leaves. Until it lands, a loading line holds the
+ * grade's place; base rolls that cannot fill a lineup leave nothing to grade
+ * against, and both parts go.
+ */
+function scoutLineupParts(session: Session, run: RunResult, onGraded: (graded: DraftGrade) => void): HTMLElement[] {
+  // While the scout works, the grade's lines are laid out (hidden) with stand-in
+  // numbers under the loading line, so the row is already as tall as it will be.
+  const lineParts = (n: string, record: string) => rich('scout.lineupLine', { n, record }, ['n', 'record']);
+  const badge = h('span.grade-badge.pending', { 'aria-hidden': 'true' });
+  const label = h('p.scout-grade-label', {}, t('scout.grade', { g: 'B' }));
+  const line = h('p.scout-grade-line', {}, ...lineParts('00.0', '0-0'));
+  const loading = h('p.scout-loading', {}, t('scout.loading'));
+  const text = h('div.scout-grade-text.pending', {}, label, line, loading);
+  const section = h(
+    'div.scout-lineup.scout-section',
+    {},
+    h('h3.eyebrow.scout-lineup-title', {}, t('scout.lineupTitle')),
+    h('div.scout-grade', { 'aria-live': 'polite' }, badge, text),
+  );
+  const body = h('div.scout-more-body', {}, h('p.scout-loading', {}, t('scout.loading')));
+  const more = h('details.scout-more', {}, h('summary', {}, t('scout.toggle')), body);
+
+  runInTasks(scoutSearch(session.seed, session.data), () => section.isConnected, (scout) => {
+    if (!scout) {
+      section.remove();
+      more.remove();
+      return;
+    }
+    const graded = gradeDraft(run.teamRating, scout);
+    const { grade } = graded;
+    badge.className = `grade-badge grade-${grade.toLowerCase()} display`;
+    badge.textContent = grade;
+    label.classList.toggle('top', grade === 'S');
+    label.textContent = grade === 'S' ? t('scout.gradeS') : t('scout.grade', { g: grade });
+    clear(line);
+    line.append(...lineParts(ovr(graded.par.ovr), `${scout.run.wins}-${scout.run.losses}`));
+    loading.remove();
+    text.classList.remove('pending');
+    // A record only beats the scout's with a higher Team OVR (each game is won above a line the seed sets), so this comes with an S.
+    if (run.wins > scout.run.wins) {
+      section.append(h('p.scout-beat', {}, t('scout.recordBeat', { record: `${run.wins}-${run.losses}`, par: `${scout.run.wins}-${scout.run.losses}` })));
+    }
+    clear(body);
+    body.append(...comparison(session, graded, scout));
+    onGraded(graded);
+  });
+  return [section, more];
+}
+
+/** onGraded: the draft grade, once the scout has run (the poster, the share card and the day's record take it). */
+export function scoutCard(session: Session, run: RunResult, onGraded: (graded: DraftGrade) => void): HTMLElement {
   const { lineup } = session.state;
   const report = scoutReport(lineup, run, session.seed, session.data.players);
   const country = (code: string) => session.data.countries.get(code)!;
@@ -176,5 +282,5 @@ export function scoutCard(session: Session, run: RunResult): HTMLElement {
     ),
   );
 
-  return h('section.scout-card', {}, head, bars, leverage, losses, picks, reveal, odds, engine);
+  return h('section.scout-card', {}, head, bars, leverage, losses, picks, reveal, odds, ...scoutLineupParts(session, run, onGraded), engine);
 }

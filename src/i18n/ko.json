@@ -114,6 +114,16 @@
     "odds": "이 라인업의 우승 확률 {t}% · INVICTO {i}%",
     "hardReveal": "능력치 없이 드래프트했다. 실제 숫자는 이랬다:",
     "howEngine": "엔진 계산 방식",
+    "lineupTitle": "스카우트 라인업",
+    "lineupLine": "같은 12번의 뽑기로 변경 없이 스카우트가 짠 라인업: 팀 종합 {n} ({record}).",
+    "grade": "드래프트 등급: {g}",
+    "gradeS": "S: 스카우트를 넘었다!",
+    "loading": "스카우트가 뽑기 결과를 살펴보는 중…",
+    "toggle": "스카우트 라인업 보기",
+    "rerolledHere": "🔁 여기서는 다른 뽑기가 나왔다",
+    "scoutCol": "스카우트",
+    "recordBeat": "📈 성적도 스카우트를 앞섰다: {record} 대 {par}",
+    "yesterday": "어제 #{n}: 나 {record} · 스카우트 {par} · 등급 {g}",
     "engine": {
       "blend": "6개 카테고리를 '소프트 최솟값'으로 합친다. 가장 낮은 수치가 가장 크게 작용한다.",
       "ovr": "그 값을 상대 팀과 같은 척도로 옮긴다:",
@@ -261,6 +271,8 @@
   "share": {
     "title": "INVICTO",
     "practice": "(연습)",
+    "draftLine": "📋 Draft {g} · OVR {n}",
+    "posterOvr": "OVR {n}",
     "tiers": { "invicto": "7-0 ⭐ INVICTO", "campeon": "{record} 🏆 CAMPEÓN", "subcampeon": "준우승 {record} 🥈" }
   },
   "challenge": {

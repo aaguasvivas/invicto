@@ -39,6 +39,15 @@ slot, and the title and 7-0 odds of that bracket. It reads the engine's own func
 (`categoryRatings`, `ratingFromCategories`, `winChance`) and draws nothing, so seeded runs never
 change. From 960 px wide the result is two columns, with the report in a sticky right column.
 
+The report ends with a draft grade against the scout (`scoutSearch` in `src/game/scout.ts`). The
+scout drafts the run's 12 base rolls with no rerolls: a round-to-slot matching, then passes that
+give a round a better player or let two rounds trade slots, from three fixed starts, with ties to
+the lower player id. It draws nothing and reads no clock, so a seed always gets the same scout,
+and its ranking uses products and one division (no `Math.pow`), so V8 and JavaScriptCore build
+the same lineup. The result screen runs one pass per task after it paints and stops when you
+leave. Your grade is the scout's Team OVR minus yours, in tenths: S at 0 or less, A to 1.5, B to
+3, C to 5, D above. A scored daily keeps its grade, and the next day's title shows it.
+
 Every result can be shared as a challenge link (`src/game/challenge.ts`). The link's fragment
 carries the run's seed, its 12 picks as indexes into the sorted player ids, the record it claims
 and an optional nickname: `#r=<seed>.<fp><pattern><picks>[~nick]` (a full link is about 85

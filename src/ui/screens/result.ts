@@ -4,9 +4,11 @@
 // poster image and play-again. A run dealt by a challenge link opens on the
 // head-to-head (ui/versus.ts). A daily run also gets the day card: its
 // challenge, the streak and the countdown to the next one. The scouting
-// report (ui/scoutCard.ts) explains the run. From 960 px the screen is two
-// columns: the head-to-head, the poster and its buttons on the left, the day
-// card and the report in a sticky column on the right.
+// report (ui/scoutCard.ts) explains the run and grades the draft against the
+// scout's lineup; the grade then joins the poster footer, the share card and a
+// scored daily's record. From 960 px the screen is two columns: the
+// head-to-head, the poster and its buttons on the left, the day card and the
+// report in a sticky column on the right.
 
 import { SLOTS } from '../../engine/positions';
 import type { RunResult } from '../../engine/types';
@@ -14,7 +16,8 @@ import { getLocale, t } from '../../i18n';
 import type { Session } from '../../game/session';
 import type { BadgeId } from '../../game/badges';
 import { encodeChallenge, NICK_MAX, recordOf, savedNick, saveNick } from '../../game/challenge';
-import { currentStreak, dailyNumber, dailyResult, todayKey } from '../../game/state';
+import type { DraftGrade } from '../../game/scout';
+import { currentStreak, dailyNumber, dailyResult, saveDailyGrade, todayKey } from '../../game/state';
 import { percentileBeaten, rarestPick, submitResult, topSharePct, type TodayStats } from '../../game/stats';
 import { setAccent } from '../accents';
 import { mountAd } from '../ads';
@@ -25,7 +28,7 @@ import { clear, h, toast } from '../dom';
 import { confetti } from '../confetti';
 import { scoutCard } from '../scoutCard';
 import type { PosterData } from '../poster';
-import { canChallenge, challengeLink, emojiCard, posterFooter, sharePoster, shareText, type ShareContext } from '../share';
+import { canChallenge, challengeLink, emojiCard, posterDraft, posterFooter, sharePoster, shareText, type ShareContext } from '../share';
 import { countdownLine, lineWith, streakChip } from '../dayCard';
 import { rivalName, versusCard } from '../versus';
 
@@ -99,6 +102,20 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
           : t('result.eliminatedShare', { stage: t(`result.stageShort.${stageKey}`), record });
 
   const shareCtx: ShareContext = { dailyNum, practice, hard: session.mode === 'hard', streak, tierLine, gameFlags };
+  // The draft grade lands a moment after the screen (see scoutCard); until then the footer carries the Team OVR alone.
+  let graded: DraftGrade | null = null;
+  const footerWithDraft = () => `${footerLine}  ·  ${posterDraft(run.teamRating, graded?.grade)}`;
+  // On screen each part stays whole, so a wrapping footer never splits its date.
+  const footEl = h('div.poster-foot');
+  const paintFoot = () => {
+    clear(footEl);
+    const parts = (footerWithDraft() + (session.mode === 'hard' ? '  ·  🔥' : '')).split('  ·  ');
+    parts.forEach((part, i) => {
+      if (i > 0) footEl.append('  ·  ');
+      footEl.append(h('span', {}, part));
+    });
+  };
+  paintFoot();
   const versusLine = rival ? t('challenge.poster', { name: rivalName(rival), record: recordOf(rival.wins) }) : null;
   const posterData: PosterData = {
     brand: 'INVICTO',
@@ -108,7 +125,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
     tierLabel: t(`result.${run.outcome}`),
     lineup: lineupRows,
     games: gameFlags,
-    footer: footerLine,
+    footer: footerWithDraft(),
     hard: session.mode === 'hard',
     ...(versusLine ? { versus: versusLine } : {}),
   };
@@ -135,7 +152,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
       ),
     ),
     h('div.poster-games', {}, ...gameFlags.map((g) => h('span', {}, `${g.flag}${g.win ? '✅' : '❌'}`))),
-    h('div.poster-foot', {}, footerLine + (session.mode === 'hard' ? '  ·  🔥' : '')),
+    footEl,
   );
 
   // Global daily stats: submit scored dailies, then enrich the screen + shares.
@@ -143,8 +160,10 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
   let globalTopPct: number | null = null;
   const globalLine = () => (globalTopPct !== null ? t('global.top', { pct: globalTopPct }) : null);
   const extraLines = () => [globalLine(), badgeLine].filter(Boolean).join('\n') || null;
-  const posterForShare = (): PosterData =>
-    globalTopPct !== null ? { ...posterData, footer: `${footerLine}  ·  ${t('global.top', { pct: globalTopPct })}` } : posterData;
+  const posterForShare = (): PosterData => ({
+    ...posterData,
+    footer: [footerWithDraft(), globalTopPct !== null ? t('global.top', { pct: globalTopPct }) : null].filter(Boolean).join('  ·  '),
+  });
   const statsEl = h('div.result-meta.global-lines');
   // Portal builds have no stats backend (see title.ts).
   if (daily && session.scored && !compare && !IS_PORTAL) {
@@ -167,7 +186,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
   // portal build that cannot make one: the card then names no site at all).
   const challengeText = async (): Promise<string> => {
     const code = encodeChallenge(session.seed, session.state.lineup, run, session.data.players, savedNick());
-    return emojiCard(shareCtx, extraLines(), await challengeLink(code));
+    return emojiCard({ ...shareCtx, draft: graded }, extraLines(), await challengeLink(code));
   };
   const sendChallenge = async () => {
     if ((await shareText(await challengeText())) === 'copied') toast(t('challenge.copied'));
@@ -274,6 +293,12 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
       )
     : null;
 
+  const onGraded = (grade: DraftGrade) => {
+    graded = grade;
+    paintFoot();
+    if (daily && session.scored && !compare) saveDailyGrade(session.day, grade);
+  };
+
   app.append(
     h(
       'div.result-screen',
@@ -283,7 +308,7 @@ export function renderResult(app: HTMLElement, session: Session, run: RunResult,
         'div.result-grid',
         {},
         h('div.result-main', {}, vsCard, posterEl, badgesEl, buttons, nickField),
-        h('div.result-side', {}, dailyPanel, scoutCard(session, run), statsEl),
+        h('div.result-side', {}, dailyPanel, scoutCard(session, run, onGraded), statsEl),
       ),
       tipLink() ? h('div.result-meta', {}, tipLink()) : null,
       daily && !compare ? h('div.result-meta', {}, t('result.dailyNote')) : null,

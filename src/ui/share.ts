@@ -5,6 +5,7 @@
 // copy. The poster goes as a PNG with the card as its caption, then to the
 // clipboard.
 
+import type { Grade } from '../game/scout';
 import { getLang, getLocale, t } from '../i18n';
 import { IS_PORTAL, portalCanInvite, portalInviteLink } from '../portal';
 import { openDialog } from './dialog';
@@ -52,6 +53,11 @@ export function posterFooter(day: string, dailyNum: number | null, practice: boo
   return [siteUrl()?.replace(/\/$/, ''), date, challenge].filter(Boolean).join('  ·  ');
 }
 
+/** The poster footer's draft tag: the Team OVR to the tenth, then the draft grade once the scout has run. */
+export function posterDraft(ovr: number, grade?: Grade): string {
+  return [t('share.posterOvr', { n: ovr.toFixed(1) }), grade].filter(Boolean).join('  ·  ');
+}
+
 export interface ShareContext {
   /** The challenge number of the day the run was dealt; null outside the daily. */
   dailyNum: number | null;
@@ -62,6 +68,8 @@ export interface ShareContext {
   streak: number;
   tierLine: string; // localized: "7-0 ⭐ INVICTO" or "Eliminado en semis 5-1"
   gameFlags: { flag: string; win: boolean }[];
+  /** The draft grade and your Team OVR (game/scout.ts), once the scout has run. */
+  draft?: { grade: Grade; ovr: number } | null;
 }
 
 /** link: the challenge link; the card then ends with the dare and the link. Without one it names no site at all. */
@@ -81,6 +89,7 @@ export function emojiCard(ctx: ShareContext, extraLine?: string | null, link?: s
   const ko = ctx.gameFlags.slice(4).map((g) => `${g.flag}${g.win ? '✅' : '❌'}`).join(' ');
   const games = ko ? `${pool} | ${ko}` : pool;
   const lines = [header, games, ctx.tierLine];
+  if (ctx.draft) lines.push(t('share.draftLine', { g: ctx.draft.grade, n: ctx.draft.ovr.toFixed(1) }));
   if (extraLine) lines.push(extraLine);
   if (link) lines.push(t('challenge.shareLine'), link);
   return lines.join('\n');

@@ -2,8 +2,9 @@
 // countdown must be calendar-correct (DST days are 23 or 25 hours long, so
 // "now minus 24h" is not "yesterday").
 
-import { afterAll, beforeAll, describe, expect, test } from 'vitest';
-import { dailyNumber, formatCountdown, msUntilNextDay, previousDayKey } from './state';
+import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'vitest';
+import { installStorage } from '../test/fakedom';
+import { dailyNumber, dailyResult, formatCountdown, msUntilNextDay, previousDayKey, saveDailyGrade, saveDailyResult, type StoredResult } from './state';
 
 describe('previousDayKey', () => {
   test('steps back one calendar day', () => {
@@ -83,5 +84,39 @@ describe('dailyNumber', () => {
     expect(dailyNumber('2026-06-11')).toBe(1);
     expect(dailyNumber('2026-06-12')).toBe(2);
     expect(dailyNumber('2026-07-11')).toBe(31);
+  });
+});
+
+describe('the draft grade on a scored daily', () => {
+  const played: StoredResult = { record: '4-2', wins: 4, losses: 2, outcome: 'eliminated-sf' };
+  const graded = { ovr: 80.4, grade: 'B' as const, par: { ovr: 82.9, wins: 5, losses: 2 } };
+  let store: Map<string, string>;
+  beforeEach(() => {
+    store = installStorage();
+  });
+
+  test('joins the day’s scored daily once the scout has run', () => {
+    saveDailyResult(played, '2026-10-11');
+    saveDailyGrade('2026-10-11', graded);
+    expect(dailyResult('2026-10-11')).toEqual({ ...played, ...graded });
+  });
+
+  test('keeps the first grade: a replay of the same run grades it again', () => {
+    saveDailyResult(played, '2026-10-11');
+    saveDailyGrade('2026-10-11', graded);
+    saveDailyGrade('2026-10-11', { ...graded, grade: 'A' });
+    expect(dailyResult('2026-10-11')?.grade).toBe('B');
+  });
+
+  test('writes nothing for a day with no scored daily', () => {
+    saveDailyGrade('2026-10-11', graded);
+    expect(store.size).toBe(0);
+  });
+
+  test('a daily saved before grades existed reads back without them', () => {
+    store.set('invicto.daily.2026-06-20', JSON.stringify(played));
+    const old = dailyResult('2026-06-20')!;
+    expect(old).toEqual(played);
+    expect([old.ovr, old.grade, old.par]).toEqual([undefined, undefined, undefined]);
   });
 });

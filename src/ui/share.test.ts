@@ -78,7 +78,23 @@ describe('emojiCard header', () => {
   test('free play has no number', () => {
     expect(header(share.emojiCard(ctx({ dailyNum: null })))).toBe('INVICTO ⚾');
   });
+});
 
+describe('the draft grade in the card', () => {
+  test('a graded draft follows the result line', () => {
+    expect(share.emojiCard(ctx({ draft: { grade: 'B', ovr: 80 } })).split('\n').slice(2)).toEqual(['Runner-up 5-2 🥈', '📋 Draft B · OVR 80.0']);
+  });
+
+  test('before the scout has run, the card has no draft line', () => {
+    expect(share.emojiCard(ctx({ draft: null }))).not.toContain('📋');
+  });
+
+  test('reads the same in every language', async () => {
+    for (const lang of ['es-DO', 'ja-JP', 'ko-KR']) {
+      await page(lang);
+      expect(share.emojiCard(ctx({ draft: { grade: 'S', ovr: 84.6 } }))).toContain('\n📋 Draft S · OVR 84.6');
+    }
+  });
 });
 
 describe('the challenge in the card', () => {
@@ -119,5 +135,12 @@ describe('posterFooter', () => {
 
   test('marks a practice replay next to its number', () => {
     expect(share.posterFooter('2026-10-10', 122, true)).toBe('invictobaseball.com/en  ·  Oct 10, 2026  ·  #122 (practice)');
+  });
+});
+
+describe('posterDraft', () => {
+  test('the Team OVR to the tenth, then the grade once the scout has run', () => {
+    expect(share.posterDraft(80.36)).toBe('OVR 80.4');
+    expect(share.posterDraft(80.36, 'A')).toBe('OVR 80.4  ·  A');
   });
 });
